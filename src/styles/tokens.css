@@ -57,11 +57,13 @@
 
 [data-tipo="desafio"] {
   --carta-fondo: #ee6b47;
-  --carta-tinta: #ffffff;
+  /* Corregido en código (Figma tiene #ffffff, pero la carta dibuja el texto en tinta) */
+  --carta-tinta: #1b1340;
   --carta-linea: #ffffff;
   --carta-mazo-1: #f7a3e0;
   --carta-mazo-2: #ffd23f;
-  --carta-mazo-3: #3aa8f0;
+  /* Corregido en código (Figma tiene #3aa8f0; el resto de tipos usa #2fa4f0) */
+  --carta-mazo-3: #2fa4f0;
   --carta-pegatina-fondo: #ffffff;
   --carta-pegatina-tinta: #ee6b47;
 }

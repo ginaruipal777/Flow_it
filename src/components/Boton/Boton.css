@@ -47,12 +47,30 @@
 .boton[data-estilo="texto"] {
   border: none;
   color: var(--superficie-crema);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
-/* Pulsado — en Figma solo cambia visualmente el estilo Texto (fondo blanco) */
+/* Sombra dura de 4 px; al pulsar baja a 1 px y el botón se hunde 3 px.
+   Corregido en código: la descripción de Figma la pide, pero las variantes no la tienen. */
+.boton:not([data-estilo="texto"]) {
+  box-shadow: 0 4px 0 var(--marca-tinta);
+  transition:
+    transform 80ms ease-out,
+    box-shadow 80ms ease-out;
+}
+.boton:not([data-estilo="texto"]):active:not(:disabled),
+.boton:not([data-estilo="texto"])[data-pulsado] {
+  box-shadow: 0 1px 0 var(--marca-tinta);
+  transform: translateY(3px);
+}
+
+/* Texto · Pulsado: fondo blanco con tinta (en Figma la letra crema no se leía) */
 .boton[data-estilo="texto"]:active:not(:disabled),
 .boton[data-estilo="texto"][data-pulsado] {
   background: var(--superficie-blanco);
+  color: var(--marca-tinta);
 }
 
 /* Desactivado */
