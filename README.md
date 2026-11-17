@@ -42,7 +42,7 @@ Los datos se guardan en el navegador (`localStorage`) y la app arranca con tarea
 
 ## Estado
 
-Fase 1. La PWA (manifest y service worker) llega en fases posteriores.
+Flujo completo de «prot final», instalable como PWA y publicado en https://ginaruipal777.github.io/Flow_it/ (con `npm run publicar`). Aún sin cuentas ni base de datos: los datos se guardan en cada navegador.
 
 ## Cómo se crean los retos
 
