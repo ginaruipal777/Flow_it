@@ -1,0 +1,30 @@
+.tareas {
+  display: flex;
+  flex-direction: column;
+  padding: 64px 24px 36px;
+}
+.tareas__volver {
+  margin-left: -12px;
+}
+.tareas__titulo {
+  margin-top: 12px;
+  color: var(--superficie-crema);
+  font-variation-settings: "opsz" 14;
+}
+.tareas__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+.tareas__cuerpo .libreta {
+  width: 100%;
+}
+.tareas__nota {
+  color: var(--superficie-crema);
+  opacity: 0.8;
+}
+.tareas__pie {
+  margin-top: auto;
+  padding-top: 32px;
+}

@@ -1,0 +1,125 @@
+.entrar {
+  padding: 52px 8px 40px;
+}
+.entrar__cabecera {
+  padding: 0 16px;
+}
+.entrar__cuerpo {
+  display: flex;
+  flex-direction: column;
+  margin-top: 60px;
+  padding: 16px;
+}
+.entrar__titulo {
+  margin-bottom: 32px;
+  font-variation-settings: "opsz" 14;
+}
+.entrar__crema {
+  color: var(--superficie-crema);
+}
+.entrar__lima {
+  color: var(--marca-lima);
+}
+
+/* Campos de texto */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--superficie-crema);
+}
+.campo + .campo {
+  margin-top: 16px;
+}
+.campo__control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1.5px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+}
+input.campo__control,
+.campo__control input {
+  font-family: var(--fuente-texto);
+  outline: none;
+}
+.campo__control input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+.campo__control:focus-within,
+input.campo__control:focus {
+  box-shadow: 0 0 0 3px var(--marca-lima);
+}
+.campo__control::placeholder,
+.campo__control input::placeholder {
+  color: var(--texto-secundario);
+}
+.campo__accion {
+  border: 0;
+  padding: 8px 0 8px 8px;
+  background: none;
+  color: var(--marca-violeta);
+  cursor: pointer;
+}
+
+.entrar__olvido {
+  align-self: flex-start;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--superficie-crema);
+  cursor: pointer;
+}
+.entrar__principal {
+  margin-top: 32px;
+}
+
+.entrar__separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 16px;
+  color: var(--superficie-crema);
+}
+.entrar__separador span {
+  flex: 1;
+  height: 1px;
+  background: var(--superficie-crema);
+  opacity: 0.5;
+}
+
+.entrar__otras {
+  display: flex;
+  gap: 12px;
+}
+.entrar__otras > .boton {
+  flex: 1;
+}
+
+.entrar__pie {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  color: var(--superficie-crema);
+}
+.entrar__crear {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--marca-lima);
+  cursor: pointer;
+}

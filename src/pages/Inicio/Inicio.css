@@ -1,0 +1,169 @@
+.inicio {
+  padding: 48px 16px 40px;
+}
+
+.inicio__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.inicio__perfil {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--superficie-lienzo);
+  color: var(--marca-tinta);
+  cursor: pointer;
+}
+
+.inicio__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  margin-top: 16px;
+  transition: gap 200ms ease;
+}
+.inicio__cuerpo[data-abierto] {
+  gap: 38px;
+}
+.inicio__titulo {
+  color: var(--superficie-crema);
+  font-variation-settings: "opsz" 14;
+}
+.inicio__lima {
+  color: var(--marca-lima);
+}
+
+.inicio__tarea {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Formulario / Tarea */
+.formulario-tarea {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 22px;
+  border: 2px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+}
+.formulario-tarea[data-abierto] {
+  gap: 8px;
+  padding: 16px;
+  border: 0;
+}
+
+.formulario-tarea__campo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.formulario-tarea[data-abierto] .formulario-tarea__campo {
+  padding-left: 16px;
+}
+.formulario-tarea__campo input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--marca-tinta);
+  font-family: var(--fuente-texto);
+  outline: none;
+  caret-color: var(--marca-tinta);
+}
+.formulario-tarea__campo input::placeholder {
+  color: var(--texto-secundario);
+}
+.formulario-tarea__dictar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--marca-tinta);
+  color: var(--marca-lima);
+  cursor: pointer;
+}
+.formulario-tarea__dictar[data-activo] {
+  animation: latido 1s ease-in-out infinite;
+}
+@keyframes latido {
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--marca-lima) 45%, transparent);
+  }
+}
+
+.formulario-tarea__gris {
+  color: var(--texto-secundario);
+}
+.formulario-tarea__historial {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: aparecer-abajo 200ms ease-out;
+}
+.formulario-tarea__historial hr {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  height: 1px;
+  background: var(--borde-suave);
+}
+.formulario-tarea__historial .t-texto-control {
+  color: var(--texto-gris);
+}
+.formulario-tarea__historial ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Sugerencia / Tarea */
+.sugerencia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 6px 0 8px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--marca-tinta);
+  text-align: left;
+  cursor: pointer;
+}
+.sugerencia:hover,
+.sugerencia:focus-visible {
+  background: var(--superficie-lienzo);
+}
+.sugerencia__texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes aparecer-abajo {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

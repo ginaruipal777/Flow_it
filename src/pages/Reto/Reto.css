@@ -1,0 +1,233 @@
+.reto__volver {
+  position: absolute;
+  left: 12px;
+  top: 48px;
+  z-index: 2;
+}
+
+/* Panel blanco que se arrastra */
+.panel-reto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 24px 40px;
+  border-radius: 32px 32px 0 0;
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+  transition: transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.panel-reto[data-arrastrando] {
+  transition: none;
+}
+.panel-reto__asa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--marca-tinta);
+  touch-action: none;
+  cursor: grab;
+}
+.panel-reto__barra {
+  width: 48px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--marca-tinta);
+  opacity: 0.35;
+}
+.panel-reto__pista {
+  align-self: stretch;
+  text-align: left;
+  font-family: var(--fuente-texto);
+  font-weight: 500;
+  font-size: 16px;
+  opacity: 0.6;
+}
+
+.botones-reto {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── 08 · Detalle ──────────────────────────────────── */
+.detalle {
+  display: flex;
+  flex-direction: column;
+}
+.detalle__ilustracion {
+  display: block;
+  width: 240px;
+  height: 250px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+.detalle__panel {
+  flex: 1;
+  margin-top: 0;
+}
+.detalle__panel .botones-reto {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.boton-enfoque {
+  order: -1;
+  height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--carta-pegatina-fondo);
+  color: var(--carta-pegatina-tinta);
+  cursor: pointer;
+}
+/* En Desafío la pegatina es blanca: sin borde no se vería sobre el panel blanco */
+.boton-enfoque[data-tipo="desafio"] {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+
+.primer-paso {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--texto-gris);
+  font-family: var(--fuente-texto);
+}
+.primer-paso__etiqueta {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+.primer-paso__nota {
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+/* ── 09 · Enfoque ──────────────────────────────────── */
+.enfoque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 64px;
+}
+.enfoque__etiqueta {
+  color: var(--superficie-blanco);
+  font-family: var(--fuente-texto);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 23px;
+}
+.enfoque__ilustracion {
+  width: 240px;
+  height: 250px;
+  margin-top: 16px;
+  object-fit: contain;
+}
+.enfoque__ilustracion[data-activa] {
+  animation: flotar 2.4s ease-in-out infinite;
+}
+@keyframes flotar {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.enfoque__crono {
+  margin-top: 72px;
+  color: var(--superficie-crema);
+  font-family: var(--fuente-titular);
+  font-weight: 800;
+  font-size: 84px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: "opsz" 14;
+}
+.enfoque__controles {
+  display: flex;
+  align-items: center;
+  gap: 43px;
+  margin-top: 24px;
+}
+.enfoque__hueco {
+  width: 24px;
+}
+.enfoque__iniciar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--marca-lima);
+  color: var(--marca-tinta);
+  cursor: pointer;
+}
+.enfoque__iniciar .icono {
+  margin-left: 2px;
+}
+.enfoque__reiniciar {
+  display: inline-flex;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--superficie-crema);
+  cursor: pointer;
+}
+.enfoque__reiniciar:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.enfoque__panel {
+  width: 100%;
+  margin-top: auto;
+  padding-bottom: 24px;
+}
+
+/* ── 10 · Reto conseguido ──────────────────────────── */
+.conseguido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 10px 28px;
+}
+.conseguido__titulo {
+  align-self: stretch;
+  padding: 0 6px;
+  color: var(--marca-tinta);
+  font-variation-settings: "opsz" 14;
+}
+.conseguido__carta {
+  padding: 4px 0 0;
+  animation: carta-premio 700ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+@keyframes carta-premio {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-10deg);
+  }
+  60% {
+    transform: scale(1.04) rotate(2deg);
+  }
+}
+.conseguido__bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 0 7px;
+  color: var(--marca-tinta);
+}
+.conseguido__dejar {
+  min-height: 48px;
+  border: 0;
+  background: none;
+  color: var(--marca-tinta);
+  cursor: pointer;
+}

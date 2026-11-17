@@ -1,0 +1,253 @@
+/* ── Pantalla ───────────────────────────────────────── */
+.pantalla {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+.pantalla[data-fondo="violeta"],
+.pantalla[data-fondo="violeta-liso"] {
+  background: var(--marca-violeta);
+  color: var(--superficie-crema);
+}
+.pantalla[data-fondo="lienzo"] {
+  background: var(--superficie-lienzo);
+  color: var(--marca-tinta);
+}
+.pantalla[data-fondo="tinta"] {
+  background: var(--marca-tinta);
+  color: var(--superficie-crema);
+}
+
+.fondo-organico {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: -1;
+  pointer-events: none;
+}
+.fondo-organico__imagen {
+  position: absolute;
+  left: -330px;
+  top: -180px;
+  width: 860px;
+  height: 1290px;
+  object-fit: cover;
+  animation: fondo-deriva 24s ease-in-out infinite alternate;
+}
+.fondo-organico__claro,
+.fondo-organico__oscuro {
+  position: absolute;
+  inset: 0;
+}
+.fondo-organico__claro {
+  background: var(--marca-violeta);
+  mix-blend-mode: multiply;
+}
+.fondo-organico__oscuro {
+  background: var(--marca-violeta-oscuro);
+  mix-blend-mode: lighten;
+}
+@keyframes fondo-deriva {
+  to {
+    transform: translate(-24px, -18px) rotate(1.5deg);
+  }
+}
+
+/* ── Marca y navegación ─────────────────────────────── */
+.logotipo {
+  font-family: var(--fuente-marca);
+  line-height: 1.2;
+  color: var(--superficie-crema);
+  white-space: nowrap;
+}
+
+.boton-volver {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: none;
+  cursor: pointer;
+}
+.boton-volver:focus-visible,
+.acciones-carta__boton:focus-visible,
+.chip-esfuerzo:focus-visible {
+  outline: 3px solid var(--marca-lima);
+  outline-offset: 2px;
+}
+
+/* ── Contador ───────────────────────────────────────── */
+.contador {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--marca-tinta);
+  white-space: nowrap;
+}
+.contador__cartas {
+  display: inline-flex;
+  gap: 3px;
+}
+.contador__carta {
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px dashed var(--gris-carta);
+}
+.contador__carta[data-llena] {
+  border: 0;
+  background: var(--marca-tinta);
+}
+
+/* ── Selector de esfuerzo ───────────────────────────── */
+.selector-esfuerzo {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+}
+.chip-esfuerzo {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+  font-family: var(--fuente-texto);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.chip-esfuerzo[data-activo] {
+  background: var(--marca-lima);
+  border-width: 2.5px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+/* ── Acciones de carta ──────────────────────────────── */
+.acciones-carta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 8px;
+}
+.acciones-carta__boton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: var(--marca-tinta);
+  font-family: var(--fuente-titular);
+  font-weight: 700;
+  font-size: 18px;
+  font-variation-settings: "opsz" 14;
+  cursor: pointer;
+}
+.acciones-carta__boton:active {
+  transform: scale(0.94);
+}
+
+/* ── Overlay ────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+}
+.overlay[data-posicion="centro"] {
+  align-items: center;
+  padding: 0 32px;
+}
+.overlay[data-posicion="abajo"] {
+  align-items: flex-end;
+}
+.overlay__velo {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: color-mix(in srgb, var(--superficie-velo) 88%, transparent);
+  cursor: default;
+  animation: aparecer 180ms ease-out;
+}
+.overlay__contenido {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+}
+.overlay[data-posicion="centro"] .overlay__contenido {
+  max-width: 366px;
+  animation: subir 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.overlay[data-posicion="abajo"] .overlay__contenido {
+  animation: deslizar-arriba 260ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+@keyframes deslizar-arriba {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* ── Pasos ──────────────────────────────────────────── */
+.pasos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pasos__punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--superficie-crema);
+  opacity: 0.45;
+  transition: width 200ms ease;
+}
+.pasos__punto[data-actual] {
+  width: 28px;
+  background: var(--marca-lima);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
