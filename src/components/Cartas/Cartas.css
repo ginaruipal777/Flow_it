@@ -87,12 +87,16 @@
   white-space: nowrap;
 }
 
-/* ── Carta detalle · 382 × 214 ───────────────────── */
+/* ── Carta detalle · 382 × 214 (crece si el reto es largo) ── */
 .carta-detalle {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
   max-width: 382px;
-  height: 214px;
+  min-height: 214px;
+  padding: 24px 18px 22px clamp(160px, 44.5%, 170px);
   border-radius: 24px;
   overflow: hidden;
   background: var(--carta-fondo);
@@ -102,19 +106,15 @@
 .carta-detalle__icono {
   position: absolute;
   left: 22px;
-  top: 45px;
+  top: 50%;
+  transform: translateY(-50%);
   line-height: 0;
 }
 .carta-detalle__contenido {
-  position: absolute;
-  left: clamp(146px, 44.5%, 170px);
-  bottom: 54px;
-  overflow: hidden;
-  right: 20px;
-  top: 24px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 .carta-detalle__etiqueta {
   font-weight: 800;
@@ -122,27 +122,20 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   opacity: 0.85;
-}
-.carta-detalle__reto {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  overflow: hidden;
-}
-.carta-detalle__etiqueta {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.carta-detalle__reto[data-largo] {
+  font-size: 16px;
+  line-height: 1.35;
+}
 .carta-detalle__pie {
-  position: absolute;
-  left: clamp(146px, 44.5%, 170px);
-  right: 20px;
-  top: 160px;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: auto;
+  height: 32px;
 }
 .carta-detalle__numero {
   font-weight: 800;
@@ -176,4 +169,10 @@
   left: 57px;
   top: 66px;
   line-height: 0;
+}
+
+/* Retos largos: letra más pequeña para que quepan antes del pie */
+.carta-v3__reto[data-largo] {
+  font-size: 21px;
+  line-height: 1.3;
 }

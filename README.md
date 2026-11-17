@@ -43,3 +43,15 @@ Los datos se guardan en el navegador (`localStorage`) y la app arranca con tarea
 ## Estado
 
 Fase 1. La PWA (manifest y service worker) llega en fases posteriores.
+
+## Cómo se crean los retos
+
+Siguen la «Guía y Reglas Completas del Sistema de Retos V2» y están en [src/datos/reglas.ts](src/datos/reglas.ts):
+
+1. La tarea se busca en las **49 reglas** (palabras clave → categoría → reto base, la mínima acción viable).
+2. Si no hay regla, se usa una **plantilla genérica** según el verbo («Buscar piso» → «Busca piso y tenlo delante»).
+3. El reto base se adapta a cada **gatillo motivacional**. Cada carta usa uno:
+   Novedad → Novedad · Desafío → Desafío · Pasión → Motivación · Interés → Directo · Urgencia → Urgencia.
+   El gatillo **Amable** es el «Primer paso» del detalle.
+
+Para ampliar el sistema (protocolo 5.2), añade una línea `r('palabras, clave', 'Categoría', 'icono', 'Reto base')` a `REGLAS`.

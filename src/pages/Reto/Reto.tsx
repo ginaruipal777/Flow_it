@@ -6,8 +6,8 @@ import { CartaDetalle, CartaV3 } from '../../components/Cartas/Cartas'
 import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_UI } from '../../components/Icono/iconos'
 import { BotonVolver, Overlay, Pantalla } from '../../components/UI/UI'
-import { NOMBRE_CATEGORIA, type Reto, type Tarea } from '../../datos/modelo'
-import { generarRetos, resumenTarea, tituloTarea } from '../../datos/retos'
+import type { Reto, Tarea } from '../../datos/modelo'
+import { generarRetos, nombreCategoriaReto, resumenTarea, tituloTarea } from '../../datos/retos'
 import { useFlow } from '../../estado/FlowEstado'
 import './Reto.css'
 
@@ -20,7 +20,7 @@ function useRetoAceptado(): { tarea: Tarea; reto: Reto } | null {
   return reto ? { tarea: tareaActual, reto } : null
 }
 
-const etiquetaCarta = (t: Tarea) => `${NOMBRE_CATEGORIA[t.categoria]} · ${resumenTarea(t.texto)}`
+const etiquetaCarta = (t: Tarea) => `${nombreCategoriaReto(t)} · ${resumenTarea(t.texto)}`
 
 /** Panel blanco arrastrable: hacia abajo (detalle → enfoque) o hacia arriba (enfoque → detalle). */
 function Panel({

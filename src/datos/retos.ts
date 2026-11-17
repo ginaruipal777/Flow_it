@@ -1,51 +1,30 @@
 import type { Categoria } from '../components/Icono/iconos'
-import { ORDEN_TIPOS, type Reto, type Tarea } from './modelo'
+import { NOMBRE_CATEGORIA, ORDEN_TIPOS, type Reto, type Tarea } from './modelo'
+import { analizarTarea, GATILLO_DE_CARTA, tono } from './reglas'
 
-/* Sin servidor todavía: los retos se generan aquí.
-   Para la tarea de ejemplo del prototipo se usan los textos de la colección
-   «Reto · Datos» de Figma; para el resto, plantillas por tipo (sistema INCUP). */
-
-const RETOS_EJEMPLO: Omit<Reto, 'tipo' | 'numero'>[] = [
-  { titulo: 'Abre el borrador y escribe solo el saludo.', primerPaso: 'Escribe «Hola, Carlos» y para ahí.' },
-  { titulo: 'Resume tu respuesta en tres frases. Ni una más.', primerPaso: 'Escribe solo la primera frase.' },
-  { titulo: 'Empieza por lo que de verdad quieres decirle.', primerPaso: 'Anota esa idea en una línea, sin pulir.' },
-  { titulo: 'Relee su email y busca la pregunta clave.', primerPaso: 'Copia esa pregunta en el borrador.' },
-  { titulo: 'Contesta ahora, antes de abrir nada más.', primerPaso: 'Pulsa «Responder» y escribe la primera palabra.' },
-]
-
-const PLANTILLAS: Omit<Reto, 'tipo' | 'numero'>[] = [
-  { titulo: 'Haz solo el primer gesto. Nada más.', primerPaso: 'Prepara lo que necesitas y déjalo a la vista.' },
-  { titulo: 'Pon 5 minutos y para cuando suene.', primerPaso: 'Activa el temporizador y empieza ya.' },
-  { titulo: 'Empieza por la parte que más te apetece.', primerPaso: 'Elige esa parte y escríbela en una línea.' },
-  { titulo: 'Busca una cosa de esta tarea que no sepas.', primerPaso: 'Apunta la pregunta y busca la respuesta.' },
-  { titulo: 'Hazlo ahora, antes de abrir nada más.', primerPaso: 'Deja el móvil boca abajo y empieza.' },
-]
-
-export function esEjemplo(texto: string) {
-  return /email de carlos/i.test(texto)
-}
+/* Los retos salen del «Sistema de Retos Anti-Procrastinación (V2)» (ver reglas.ts):
+   regla o plantilla → reto base → un tono por carta. El «primer paso» es el tono Amable. */
 
 export function generarRetos(tarea: Pick<Tarea, 'texto'>): Reto[] {
-  const base = esEjemplo(tarea.texto) ? RETOS_EJEMPLO : PLANTILLAS
-  return ORDEN_TIPOS.map((tipo, i) => ({ tipo, numero: String(i + 1).padStart(2, '0'), ...base[i] }))
+  const { base } = analizarTarea(tarea.texto)
+  return ORDEN_TIPOS.map((tipo, i) => ({
+    tipo,
+    numero: String(i + 1).padStart(2, '0'),
+    titulo: tono(base, GATILLO_DE_CARTA[tipo]),
+    primerPaso: tono(base, 'amable'),
+  }))
 }
-
-const PALABRAS: [RegExp, Categoria][] = [
-  [/email|correo|informe|reuni|jefe|cliente|proyecto|trabajo|oficina/i, 'trabajo'],
-  [/estudi|examen|apuntes|clase|deberes|leer|tesis|tfg/i, 'estudios'],
-  [/llama|tel[eé]fono|dentista|cita|m[eé]dico/i, 'llamadas'],
-  [/perro|gato|mascota|veterin/i, 'mascotas'],
-  [/compra|cocina|comida|cena|comer|receta/i, 'alimentacion'],
-  [/correr|gimnasio|gym|deporte|entrenar|yoga|andar/i, 'deporte'],
-  [/limpi|ordenar|escritorio|barrer|fregar|aspirar/i, 'limpieza'],
-  [/ropa|lavadora|casa|piso|cama|plantas/i, 'casa'],
-  [/amig|quedar|fiesta|cumple|mensaje|familia/i, 'social'],
-  [/ducha|dormir|descansar|meditar|autocuidado|crema/i, 'autocuidado'],
-]
 
 /** Detección automática de categoría (se puede cambiar en la pantalla de selección). */
 export function detectarCategoria(texto: string): Categoria {
-  return PALABRAS.find(([re]) => re.test(texto))?.[1] ?? 'trabajo'
+  return analizarTarea(texto).icono ?? 'trabajo'
+}
+
+/** Nombre que se ve en la carta: la categoría de la regla del PDF («Comunicación», «Ver serie»…).
+    Si la persona cambió la categoría a mano, o no hay regla, se usa la de la app. */
+export function nombreCategoriaReto(tarea: Pick<Tarea, 'texto' | 'categoria'>) {
+  const { regla } = analizarTarea(tarea.texto)
+  return regla && regla.icono === tarea.categoria ? regla.categoria : NOMBRE_CATEGORIA[tarea.categoria]
 }
 
 /** «responder el email de Carlos» -> partes para el título partido en dos líneas. */
@@ -54,7 +33,7 @@ export function tituloTarea(texto: string) {
   return limpio.charAt(0).toLowerCase() + limpio.slice(1)
 }
 
-const ARTICULOS = /^(el|la|los|las|un|una|unos|unas|al|del|a|mi|mis|tu|tus)$/i
+const ARTICULOS = /^(el|la|los|las|un|una|unos|unas|al|del|a|mi|mis|tu|tus|para)$/i
 
 /** Versión corta para las cartas: «responder el email de Carlos» -> «email de Carlos». */
 export function resumenTarea(texto: string) {

@@ -52,3 +52,10 @@
   white-space: nowrap;
   color: var(--carta-tinta);
 }
+
+/* Retos largos (tonos del sistema de retos): letra más pequeña para que quepan */
+.carta-reto__reto[data-largo] {
+  top: 200px;
+  font-size: 21px;
+  line-height: 1.3;
+}
