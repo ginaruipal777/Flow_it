@@ -1,0 +1,63 @@
+/* Medidas tal cual en Figma (componente de 340 × 413,33 px) */
+.carta-reto {
+  /* Color del texto: carta/tinta, salvo Desafío (ver abajo) */
+  --carta-texto: var(--carta-tinta);
+
+  position: relative;
+  flex-shrink: 0; /* todo su contenido es absoluto: sin esto un flex la colapsa a 0 */
+  width: 340px;
+  height: 413.333px;
+  border-radius: 31.733px;
+  overflow: hidden;
+  background: var(--carta-fondo);
+}
+
+/* En Figma, el reto y la pegatina de Desafío usan marca/tinta,
+   aunque carta/tinta de Desafío sea blanco. */
+.carta-reto[data-tipo="desafio"] {
+  --carta-texto: var(--marca-tinta);
+}
+
+.carta-reto__acentos {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--carta-linea);
+}
+
+.carta-reto__categoria {
+  position: absolute;
+  top: 45.33px;
+  left: 115.6px;
+  color: var(--carta-linea);
+}
+
+.carta-reto__reto {
+  position: absolute;
+  top: 215.33px;
+  left: 50%;
+  width: 285.6px;
+  transform: translateX(-50%);
+  text-align: center;
+  color: var(--carta-texto);
+}
+
+.carta-reto__pie {
+  position: absolute;
+  top: 343.07px;
+  left: 27.2px;
+  width: 285.6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.carta-reto__pegatina {
+  display: inline-flex;
+  align-items: center;
+  gap: 7.933px;
+  padding: 11.333px 0;
+  border-radius: 20.4px;
+  white-space: nowrap;
+  color: var(--carta-texto);
+}

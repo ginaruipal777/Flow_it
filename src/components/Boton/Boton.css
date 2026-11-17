@@ -1,0 +1,67 @@
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2.5px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--fuente-titular);
+  font-weight: 700;
+  line-height: normal;
+  font-variation-settings: "opsz" 14;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tamaño */
+.boton[data-tamano="grande"] {
+  height: 56px;
+  padding: 0 26px;
+  gap: 8px;
+  font-size: 18px; /* Titulares/Botón */
+}
+.boton[data-tamano="pequeno"] {
+  height: 40px;
+  padding: 0 18px;
+  gap: 6px;
+  font-size: 14px; /* Titulares/Botón S */
+}
+
+/* Estilo */
+.boton[data-estilo="primario"] {
+  background: var(--marca-lima);
+  border-color: var(--marca-tinta);
+  color: var(--marca-tinta);
+}
+.boton[data-estilo="secundario"] {
+  background: var(--superficie-blanco);
+  border-color: var(--marca-tinta);
+  color: var(--marca-tinta);
+}
+.boton[data-estilo="contorno"] {
+  background: var(--marca-violeta);
+  border-color: var(--superficie-crema);
+  color: var(--superficie-crema);
+}
+.boton[data-estilo="texto"] {
+  border: none;
+  color: var(--superficie-crema);
+}
+
+/* Pulsado — en Figma solo cambia visualmente el estilo Texto (fondo blanco) */
+.boton[data-estilo="texto"]:active:not(:disabled),
+.boton[data-estilo="texto"][data-pulsado] {
+  background: var(--superficie-blanco);
+}
+
+/* Desactivado */
+.boton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.boton:focus-visible {
+  outline: 3px solid var(--marca-lima);
+  outline-offset: 3px;
+}

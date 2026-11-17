@@ -1,0 +1,10 @@
+.icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.icono--escalado > svg {
+  width: 100%;
+  height: 100%;
+}
