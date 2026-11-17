@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Icono de Flow it!: dos cartas de reto (rosa detrás, lima delante) con la estrella de «Novedad» -->
+  <rect width="512" height="512" rx="112" fill="#5b3fe0"/>
+  <g transform="rotate(-14 256 262)">
+    <rect x="150" y="118" width="196" height="262" rx="30" fill="#f7a3e0"/>
+  </g>
+  <g transform="rotate(8 256 262)">
+    <rect x="170" y="134" width="196" height="262" rx="30" fill="#d4ff3a" stroke="#1b1340" stroke-width="10"/>
+    <path transform="translate(188 186) scale(10)" d="M8 2L9.73333 6.13333L14 6.53333L10.6667 9.33333L11.7333 13.6667L8 11.3333L4.26667 13.6667L5.33333 9.33333L2 6.53333L6.26667 6.13333L8 2Z" fill="#1b1340"/>
+  </g>
+</svg>
