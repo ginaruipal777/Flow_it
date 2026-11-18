@@ -1,5 +1,6 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
+import { VARIANTES } from './variantes.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación (V2)
@@ -115,7 +116,9 @@ export const REGLAS: Regla[] = [
   r('desconectar, parar, no hacer nada', 'Desconexión', 'autocuidado', 'Siéntate y tómate un momento', 'has pasado un momento sin pantallas ni tareas'),
 
   // Ampliación (protocolo 5.2): la app tiene categoría «Mascotas»
-  r('perro, gato, mascota, veterinario, pasear al perro, sacar al perro', 'Mascotas', 'mascotas', 'Coge la correa y acércate a la puerta', 'tienes la correa en la mano y estás en la puerta'),
+  r('perro, pasear al perro, sacar al perro', 'Pasear al perro', 'mascotas', 'Coge la correa y acércate a la puerta', 'tienes la correa en la mano y estás en la puerta'),
+  r('veterinario, vacuna, revisión', 'Veterinario', 'mascotas', 'Busca el teléfono del veterinario y tenlo listo', 'tienes el número en la pantalla, listo para llamar'),
+  r('gato, mascota, cuidar a mi mascota', 'Mascotas', 'mascotas', 'Llena el cuenco de agua de tu mascota', 'el cuenco de agua está lleno'),
 ]
 
 /* ── 3. Plantillas de acción genéricas (respaldo) ───────────── */
@@ -246,4 +249,37 @@ export function analizarTarea(tarea: string): Resultado {
     base: plantilla ? plantilla.base(objeto) : RETO_GENERICO,
     hecho: plantilla ? plantilla.hecho(objeto) : HECHO_GENERICO,
   }
+}
+
+/* ── 6. Los 5 retos de una tarea ───────────────────────────────
+   - Si la regla tiene retos propios por carta (variantes.ts), cada carta es un reto distinto:
+     Novedad, Desafío, Pasión e Interés usan su variante; Urgencia usa el reto base + «Hazlo ahora…».
+   - Si no (plantillas genéricas), las 5 cartas dicen el reto base con su fórmula (FRASES).
+   - Si la tarea pesa mucho, cada reto se reduce a su primer paso: con menos esfuerzo cuesta
+     menos arrancar (teoría de regulación del estado, Isaac et al., 2024). */
+
+export type RetoCarta = { tipo: TipoReto; titulo: string; pasos: string[]; hecho: string }
+
+const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
+
+export function retosDe(tarea: string, esfuerzo?: 'ligero' | 'medio' | 'pesado'): RetoCarta[] {
+  const { regla, base, hecho } = analizarTarea(tarea)
+  const variantes = regla ? VARIANTES[regla.categoria] : undefined
+
+  return ORDEN.map((tipo) => {
+    const propia = tipo !== 'urgencia' ? variantes?.[tipo] : undefined
+    let accion = propia ? propia[0] : base
+    let criterio = propia ? propia[1] : hecho
+    let pasos = pasosDe(accion)
+
+    // Los retos propios ya son pequeños: con «Pesado» solo se recorta el reto base
+    if (esfuerzo === 'pesado' && !propia && pasos.length > 1) {
+      accion = pasos[0]
+      pasos = [pasos[0]]
+      criterio = 'has hecho este paso'
+    }
+
+    const titulo = propia ? `${mayuscula(sinPunto(accion))}.` : tono(accion, GATILLO_DE_CARTA[tipo])
+    return { tipo, titulo, pasos, hecho: criterio }
+  })
 }

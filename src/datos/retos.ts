@@ -1,30 +1,13 @@
 import type { Categoria } from '../components/Icono/iconos'
-import { NOMBRE_CATEGORIA, ORDEN_TIPOS, type Reto, type Tarea } from './modelo'
-import { analizarTarea, GATILLO_DE_CARTA, pasosDe, tono } from './reglas'
+import { NOMBRE_CATEGORIA, type Reto, type Tarea } from './modelo'
+import { analizarTarea, retosDe } from './reglas'
 
 /* Los retos salen de las reglas del «Sistema de Retos V2» y del sistema de frases propio (ver reglas.ts):
-   regla o plantilla → reto base → un tono por carta, más sus micropasos y el criterio de éxito. */
+   regla → un reto distinto por carta INCUP (o plantilla → mismo reto con 5 fórmulas), con micropasos y criterio de éxito. */
 
 export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo'>>): Reto[] {
-  const analisis = analizarTarea(tarea.texto)
-  let { base, hecho } = analisis
-  let pasos = pasosDe(base)
-
-  /* Si la tarea pesa mucho, el reto es solo el primer paso: con menos esfuerzo
-     cuesta menos arrancar (teoría de regulación del estado, Isaac et al., 2024). */
-  if (tarea.esfuerzo === 'pesado' && pasos.length > 1) {
-    base = pasos[0]
-    pasos = [pasos[0]]
-    hecho = 'has hecho este paso'
-  }
-
-  return ORDEN_TIPOS.map((tipo, i) => ({
-    tipo,
-    numero: String(i + 1).padStart(2, '0'),
-    titulo: tono(base, GATILLO_DE_CARTA[tipo]),
-    pasos,
-    hecho,
-  }))
+  // Un reto distinto por carta INCUP (ver retosDe en reglas.ts y variantes.ts)
+  return retosDe(tarea.texto, tarea.esfuerzo).map((r, i) => ({ ...r, numero: String(i + 1).padStart(2, '0') }))
 }
 
 /** Detección automática de categoría (se puede cambiar en la pantalla de selección). */
