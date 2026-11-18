@@ -22,16 +22,21 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 
 ## 4. Sin presión
 
-- Sin preguntas que retan o juzgan («¿te atreves?», «¿a que no…?»).
+- Sin preguntas que juzgan («¿a que no…?»). Una pregunta solo puede ser una invitación («¿Te apuntas?»).
 - Sin rachas, castigos ni lenguaje de culpa.
 - Dejar algo a medias es una opción normal y se dice así («Lo dejo aquí por hoy»).
 
-## 5. Predecible
+## 5. Tono atrevido, pero solo en la entradilla
+
+- El titular de cada carta empieza con una entradilla con energía, siempre la misma por tipo: Novedad «¡Plan nuevo!», Desafío «Reto rápido: … ¿Te apuntas?», Pasión «Modo disfrute:», Interés «Hazlo interesante:», Urgencia «¡Ya! …, antes de que te lo pienses».
+- La acción sigue siendo literal y entera. Los pasos y el «Está hecho cuando…» del detalle no llevan entradilla.
+
+## 6. Predecible
 
 - Cada tipo de carta usa siempre la misma estructura alrededor de la acción. Lo que cambia es la acción, no la forma de decirla.
 - Los botones dicen lo que pasa al pulsarlos («Reto conseguido», «Archivar reto»).
 
-## 6. Sin género para la persona
+## 7. Sin género para la persona
 
 - Frases que valen para cualquiera: «ya habrás empezado», no «estarás list@».
 
@@ -39,14 +44,13 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 
 Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES` y `tono`). Para «Responder el email de Carlos»:
 
-| Carta | Texto |
-|---|---|
-| Novedad | Abre el correo y escribe solo el saludo. Puedes hacerlo en un sitio distinto al de siempre. |
-| Desafío | Objetivo: abre el correo y escribe solo el saludo. |
-| Pasión | Abre el correo y escribe solo el saludo. Al hacerlo, ya habrás empezado la tarea. |
-| Interés | Abre el correo y escribe solo el saludo. |
-| Urgencia | Abre el correo y escribe solo el saludo. Hazlo ahora, antes de empezar otra cosa. |
-| Pasos (detalle) | ☐ 1. Abre el correo.<br>☐ 2. Escribe solo el saludo.<br>**Está hecho cuando** el saludo está escrito en el correo. |
+| Carta | Titular de la carta | Está hecho cuando |
+|---|---|---|
+| Novedad | ¡Plan nuevo! Escribe el saludo del correo desde el móvil en vez del ordenador. | el saludo está escrito |
+| Desafío | Reto rápido: escribe la respuesta en 3 frases como máximo. ¿Te apuntas? | el correo tiene 3 frases o menos |
+| Pasión | Modo disfrute: pon una canción que te guste y escribe el saludo mientras suena. | el saludo está escrito |
+| Interés | Hazlo interesante: escribe en una línea qué te pide esa persona. | tienes lo que te pide escrito en una línea |
+| Urgencia | ¡Ya! Abre el correo y escribe solo el saludo, antes de que te lo pienses. | el saludo está escrito en el correo |
 
 ## Diseño de las tareas
 

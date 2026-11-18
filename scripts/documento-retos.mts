@@ -20,12 +20,12 @@ type Tipo = 'novedad' | 'desafio' | 'pasion' | 'interes' | 'urgencia'
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-const CARTAS: { tipo: Tipo; nombre: string; incup: string; fondo: string; tinta: string; busca: string; ejemplo: string; formula: string }[] = [
-  { tipo: 'novedad', nombre: 'Novedad', incup: 'Novedad', fondo: '#5b3fe0', tinta: '#ffffff', busca: 'Hacerlo de otra forma o en otro sitio.', ejemplo: 'Pasea al perro por un sitio distinto al de siempre.', formula: '[Acción]. Puedes hacerlo en un sitio distinto al de siempre.' },
-  { tipo: 'desafio', nombre: 'Desafío', incup: 'Competencia (reto)', fondo: '#ee6b47', tinta: '#1b1340', busca: 'Una meta pequeña que se pueda contar o comprobar.', ejemplo: 'Da un paseo corto: hasta la esquina y vuelta.', formula: 'Objetivo: [acción].' },
-  { tipo: 'pasion', nombre: 'Pasión', incup: 'Pasión', fondo: '#f7a3e0', tinta: '#1b1340', busca: 'Unirlo a algo que te gusta.', ejemplo: 'Ponte tu música o podcast favorito y sal con el perro.', formula: '[Acción]. Al hacerlo, ya habrás empezado la tarea.' },
-  { tipo: 'interes', nombre: 'Interés', incup: 'Interés', fondo: '#2fa4f0', tinta: '#1b1340', busca: 'Hacerlo con otra persona o descubrir algo.', ejemplo: 'Llama a un amigo para dar el paseo juntos.', formula: '[Acción].' },
-  { tipo: 'urgencia', nombre: 'Urgencia', incup: 'Urgencia', fondo: '#ffd23f', tinta: '#1b1340', busca: 'La acción mínima, ahora (el reto base de la regla).', ejemplo: 'Coge la correa y acércate a la puerta. Hazlo ahora, antes de empezar otra cosa.', formula: '[Acción]. Hazlo ahora, antes de empezar otra cosa.' },
+const CARTAS: { tipo: Tipo; nombre: string; incup: string; fondo: string; tinta: string; busca: string; ejemplo: string; formula: string; entradilla: string }[] = [
+  { tipo: 'novedad', nombre: 'Novedad', incup: 'Novedad', fondo: '#5b3fe0', tinta: '#ffffff', busca: 'Hacerlo de otra forma o en otro sitio.', ejemplo: 'Pasea al perro por un sitio distinto al de siempre.', formula: '¡Plan nuevo! [Acción], en un sitio distinto al de siempre.', entradilla: '¡Plan nuevo! [Acción].' },
+  { tipo: 'desafio', nombre: 'Desafío', incup: 'Competencia (reto)', fondo: '#ee6b47', tinta: '#1b1340', busca: 'Una meta pequeña que se pueda contar o comprobar.', ejemplo: 'Da un paseo corto: hasta la esquina y vuelta.', formula: 'Reto rápido: [acción]. ¿Te apuntas?', entradilla: 'Reto rápido: [acción]. ¿Te apuntas?' },
+  { tipo: 'pasion', nombre: 'Pasión', incup: 'Pasión', fondo: '#f7a3e0', tinta: '#1b1340', busca: 'Unirlo a algo que te gusta.', ejemplo: 'Ponte tu música o podcast favorito y sal con el perro.', formula: 'Modo disfrute: [acción].', entradilla: 'Modo disfrute: [acción].' },
+  { tipo: 'interes', nombre: 'Interés', incup: 'Interés', fondo: '#2fa4f0', tinta: '#1b1340', busca: 'Hacerlo con otra persona o descubrir algo.', ejemplo: 'Llama a un amigo para dar el paseo juntos.', formula: 'Hazlo interesante: [acción].', entradilla: 'Hazlo interesante: [acción].' },
+  { tipo: 'urgencia', nombre: 'Urgencia', incup: 'Urgencia', fondo: '#ffd23f', tinta: '#1b1340', busca: 'La acción mínima, ahora (el reto base de la regla).', ejemplo: 'Coge la correa y acércate a la puerta. Hazlo ahora, antes de empezar otra cosa.', formula: '¡Ya! [Acción], antes de que te lo pienses.', entradilla: '¡Ya! [Acción], antes de que te lo pienses.' },
 ]
 
 const GRUPOS: { nombre: string; desde: number; hasta: number; ejemplo: string }[] = [
@@ -201,12 +201,12 @@ const html = `<!doctype html>
   <h2>3. Las 5 cartas INCUP: un reto distinto en cada una</h2>
   <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta usa uno y propone <strong>un reto diferente</strong> para la misma tarea, así la persona elige el que le encaje en ese momento.</p>
   <table>
-    <tr><th>Carta</th><th>Factor INCUP</th><th>Qué busca</th><th>Ejemplo con «Pasear al perro»</th></tr>
-    ${CARTAS.map((c) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${c.incup}</td><td>${esc(c.busca)}</td><td>${esc(c.ejemplo)}</td></tr>`).join('')}
+    <tr><th>Carta</th><th>Factor INCUP</th><th>Qué busca</th><th>Entradilla</th><th>Ejemplo con «Pasear al perro»</th></tr>
+    ${CARTAS.map((c) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${c.incup}</td><td>${esc(c.busca)}</td><td class="formula">${esc(c.entradilla)}</td><td>${esc(retosDe('Pasear al perro')[CARTAS.indexOf(c)].titulo)}</td></tr>`).join('')}
   </table>
   <p>Cada categoría tiene escritos sus 4 retos propios (Novedad, Desafío, Pasión e Interés) con su criterio de éxito, en <code>src/datos/variantes.ts</code>. La carta Urgencia usa el reto base de la regla. El catálogo completo está en el apartado 6.</p>
   <h3>Cuando la tarea no tiene regla</h3>
-  <p>Si la tarea cae en una plantilla genérica (apartado 5), no hay retos propios: las 5 cartas dicen la misma acción con una fórmula fija cada una.</p>
+  <p>Si la tarea cae en una plantilla genérica (apartado 5), no hay retos propios: las 5 cartas dicen la misma acción con la entradilla de cada una. La Novedad añade además el cambio concreto de sitio.</p>
   <table>
     <tr><th>Carta</th><th>Fórmula (solo para plantillas)</th></tr>
     ${CARTAS.map((c) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td class="formula">${esc(c.formula)}</td></tr>`).join('')}
@@ -217,7 +217,8 @@ const html = `<!doctype html>
   <ul>
     <li>Lenguaje claro y literal: sin metáforas, ironías ni frases hechas («cambia el chip», «tranqui»).</li>
     <li>La acción va siempre primero y entera.</li>
-    <li>Sin tiempos vagos («luego», «cuando puedas») ni preguntas que presionen («¿te atreves?»).</li>
+    <li>Sin tiempos vagos («luego», «cuando puedas»). Las preguntas son invitaciones («¿Te apuntas?»), nunca juicios («¿a que no puedes?»).</li>
+    <li><strong>Tono atrevido solo en la entradilla</strong> del titular de la carta («¡Plan nuevo!», «Reto rápido», «Modo disfrute», «Hazlo interesante», «¡Ya!»). La acción, los pasos y el «Está hecho cuando…» siguen siendo literales.</li>
     <li>Sin emojis y sin género gramatical para la persona («ya habrás empezado», no «estarás list@»).</li>
   </ul>
   <h3>Ejemplo</h3>

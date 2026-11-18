@@ -148,23 +148,32 @@ export const HECHO_GENERICO = 'has hecho una parte de la tarea, aunque sea peque
    - Sin tiempos vagos («luego», «cuando puedas») ni preguntas que presionen.
    - Misma estructura en todas las tareas: cada carta dice siempre lo mismo
      alrededor de la acción, para que sea predecible.
-   - Sin emojis y sin género gramatical para la persona. */
+   - Sin emojis y sin género gramatical para la persona.
+   - Tono atrevido SOLO en la entradilla del titular de la carta («¡Plan nuevo!», «Reto rápido»…):
+     da energía sin cambiar la acción, que sigue siendo literal. Los pasos y el criterio de
+     éxito del detalle no llevan entradilla. Si hay pregunta, es una invitación («¿Te apuntas?»),
+     nunca un juicio («¿a que no puedes?»). */
 
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 
+/* «Etiqueta: acción». Si la acción ya lleva dos puntos, se separa con punto para no encadenar «: … :» */
+const con = (etiqueta: string, A: string) => (A.includes(':') ? `${etiqueta}. ${A}` : `${etiqueta}: ${minuscula(A)}`)
+
+/* Entradilla atrevida de cada carta cuando el reto es propio de la categoría (variantes.ts) */
+const ENTRADILLA: Record<Gatillo, (accion: string) => string> = {
+  novedad: (A) => `¡Plan nuevo! ${A}.`,
+  desafio: (A) => `${con('Reto rápido', A)}. ¿Te apuntas?`,
+  motivacion: (A) => `${con('Modo disfrute', A)}.`,
+  directo: (A) => `${con('Hazlo interesante', A)}.`,
+  urgencia: (A) => `¡Ya! ${A}, antes de que te lo pienses.`,
+}
+
+/* Cuando no hay reto propio (plantillas), la Novedad añade el cambio concreto de sitio */
 const FRASES: Record<Gatillo, (accion: string) => string> = {
-  // Novedad: una forma distinta, dicha de forma concreta
-  novedad: (A) => `${A}. Puedes hacerlo en un sitio distinto al de siempre.`,
-  // Desafío: un objetivo claro
-  desafio: (A) => `Objetivo: ${minuscula(A)}.`,
-  // Pasión → Motivación: qué consigues, sin promesas vagas
-  motivacion: (A) => `${A}. Al hacerlo, ya habrás empezado la tarea.`,
-  // Interés → Directo: solo la acción
-  directo: (A) => `${A}.`,
-  // Urgencia: cuándo, en concreto
-  urgencia: (A) => `${A}. Hazlo ahora, antes de empezar otra cosa.`,
+  ...ENTRADILLA,
+  novedad: (A) => `¡Plan nuevo! ${A}, en un sitio distinto al de siempre.`,
 }
 
 /* Verbos con los que empieza un paso dentro de un reto base («Abre el correo y escribe…»). */
@@ -279,7 +288,8 @@ export function retosDe(tarea: string, esfuerzo?: 'ligero' | 'medio' | 'pesado')
       criterio = 'has hecho este paso'
     }
 
-    const titulo = propia ? `${mayuscula(sinPunto(accion))}.` : tono(accion, GATILLO_DE_CARTA[tipo])
+    const A = mayuscula(sinPunto(accion))
+    const titulo = propia ? ENTRADILLA[GATILLO_DE_CARTA[tipo]](A) : tono(accion, GATILLO_DE_CARTA[tipo])
     return { tipo, titulo, pasos, hecho: criterio }
   })
 }
