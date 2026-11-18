@@ -17,6 +17,7 @@ import tick from '../../assets/iconos/ui/tick.svg?raw'
 import tickGrande from '../../assets/iconos/ui/tick-grande.svg?raw'
 import estrella from '../../assets/iconos/ui/estrella.svg?raw'
 import reiniciar from '../../assets/iconos/ui/reiniciar.svg?raw'
+import altavoz from '../../assets/iconos/ui/altavoz.svg?raw'
 
 import ligero from '../../assets/iconos/esfuerzo/ligero.svg?raw'
 import medio from '../../assets/iconos/esfuerzo/medio.svg?raw'
@@ -79,6 +80,7 @@ export const ICONOS_UI = {
   'tick-grande': tickGrande,
   estrella,
   reiniciar,
+  altavoz,
 } as const
 
 export type Categoria = keyof typeof ICONOS_CATEGORIA

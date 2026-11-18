@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import ilustracion from '../../assets/img/ilustracion-enfoque.png'
 import { Boton } from '../../components/Boton/Boton'
 import { CartaDetalle, CartaV3 } from '../../components/Cartas/Cartas'
+import { ListaPasos } from '../../components/ListaPasos/ListaPasos'
 import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_UI } from '../../components/Icono/iconos'
 import { BotonVolver, Overlay, Pantalla } from '../../components/UI/UI'
@@ -143,10 +144,7 @@ export function Detalle() {
           reto={reto.titulo}
           numero={reto.numero}
         />
-        <div className="primer-paso">
-          <p className="primer-paso__etiqueta">PRIMER PASO</p>
-          <p className="primer-paso__nota">{reto.primerPaso}</p>
-        </div>
+        <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} />
         <BotonesReto onArchivar={() => setArchivar(true)} />
       </Panel>
 

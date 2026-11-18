@@ -22,7 +22,10 @@ export type Reto = {
   tipo: TipoReto
   numero: string
   titulo: string
-  primerPaso: string
+  /** Micropasos del reto (se marcan en el detalle). */
+  pasos: string[]
+  /** Criterio de éxito: «Está hecho cuando …». */
+  hecho: string
 }
 
 export type Mazo = {

@@ -1,0 +1,109 @@
+.lista-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--marca-tinta);
+  font-family: var(--fuente-texto);
+}
+
+.lista-pasos__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lista-pasos__etiqueta {
+  color: var(--texto-gris);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.lista-pasos__escuchar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+  cursor: pointer;
+}
+.lista-pasos__escuchar[aria-pressed="true"] {
+  background: var(--marca-lima);
+}
+
+.lista-pasos__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Cada paso es una casilla grande (todo el renglón se puede tocar) */
+.paso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 14px 10px 10px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--superficie-crema-clara);
+  color: var(--marca-tinta);
+  text-align: left;
+  font-family: var(--fuente-texto);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.paso[aria-checked="true"] .paso__texto {
+  color: var(--texto-secundario);
+}
+.paso:focus-visible,
+.lista-pasos__escuchar:focus-visible {
+  outline: 3px solid var(--marca-violeta);
+  outline-offset: 2px;
+}
+.paso__casilla {
+  flex-shrink: 0;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 2px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  align-items: center;
+  justify-content: center;
+}
+.paso__casilla[data-marcada] {
+  background: var(--marca-lima);
+}
+.paso__numero {
+  font-weight: 800;
+}
+
+/* Criterio de éxito */
+.lista-pasos__hecho {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px dashed var(--gris-carta);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.lista-pasos__hecho strong {
+  font-weight: 800;
+}
+
+.lista-pasos__aviso {
+  min-height: 0;
+  font-weight: 700;
+  font-size: 16px;
+}
+.lista-pasos__aviso:empty {
+  display: none;
+}

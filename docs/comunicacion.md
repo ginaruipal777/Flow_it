@@ -12,7 +12,7 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 ## 2. Instrucciones concretas
 
 - La acción va primero y entera: «Abre el correo y escribe solo el saludo».
-- Si una acción tiene varias partes, se dividen en pasos numerados (lo hace el «Primer paso» del detalle).
+- Si una acción tiene varias partes, se dividen en pasos numerados que se pueden marcar.
 - Una acción concreta y observable, nunca una actitud («concéntrate», «hazlo bien»).
 
 ## 3. Tiempos reales, nunca vagos
@@ -46,8 +46,19 @@ Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES`
 | Pasión | Abre el correo y escribe solo el saludo. Al hacerlo, ya habrás empezado la tarea. |
 | Interés | Abre el correo y escribe solo el saludo. |
 | Urgencia | Abre el correo y escribe solo el saludo. Hazlo ahora, antes de empezar otra cosa. |
-| Primer paso | 1. Abre el correo.<br>2. Escribe solo el saludo.<br>Con eso has terminado este reto. |
+| Pasos (detalle) | ☐ 1. Abre el correo.<br>☐ 2. Escribe solo el saludo.<br>**Está hecho cuando** el saludo está escrito en el correo. |
 
-## Pendiente (más allá de los textos)
+## Diseño de las tareas
 
-Las pautas también piden ofrecer otros canales además del texto y respetar el ritmo de cada persona. En la app ya hay dictado por voz para escribir la tarea y ningún paso tiene límite de tiempo. Ideas para más adelante: leer los retos en voz alta y una opción para reducir animaciones (ya se respeta el ajuste «reducir movimiento» del sistema).
+| Principio | Cómo está en la app |
+|---|---|
+| Micropasos | Cada reto se divide en pasos cortos y en orden; en el detalle se marcan uno a uno. |
+| Criterio de éxito explícito | Cada reto dice «Está hecho cuando…» con algo que se puede ver o comprobar («el saludo está escrito en el correo»). Está en el campo `hecho` de cada regla. |
+| Apoyo visual y escrito | Lista de verificación en el detalle, libreta de «Tus tareas» y contador de retos con mini cartas. |
+| Lectura en voz alta | Botón «Escuchar» en el detalle: lee el reto, los pasos y el criterio de éxito (voz del sistema). |
+| Control de tiempos | El cronómetro del modo enfoque es opcional; ningún reto tiene límite de tiempo. |
+| Integración de intereses | Pendiente: la app aún no sabe qué le interesa a cada persona. |
+
+## Pendiente
+
+Las pautas también piden ofrecer otros canales además del texto y respetar el ritmo de cada persona. Ideas para más adelante: preguntar los intereses en el onboarding y usarlos en los retos, pausas programadas en el modo enfoque y una opción para reducir animaciones dentro de la app (ya se respeta el ajuste «reducir movimiento» del sistema).

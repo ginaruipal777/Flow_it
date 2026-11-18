@@ -1,17 +1,19 @@
 import type { Categoria } from '../components/Icono/iconos'
 import { NOMBRE_CATEGORIA, ORDEN_TIPOS, type Reto, type Tarea } from './modelo'
-import { analizarTarea, GATILLO_DE_CARTA, tono } from './reglas'
+import { analizarTarea, GATILLO_DE_CARTA, pasosDe, tono } from './reglas'
 
 /* Los retos salen de las reglas del «Sistema de Retos V2» y del sistema de frases propio (ver reglas.ts):
-   regla o plantilla → reto base → un tono por carta. El «primer paso» es el tono Amable. */
+   regla o plantilla → reto base → un tono por carta, más sus micropasos y el criterio de éxito. */
 
 export function generarRetos(tarea: Pick<Tarea, 'texto'>): Reto[] {
-  const { base } = analizarTarea(tarea.texto)
+  const { base, hecho } = analizarTarea(tarea.texto)
+  const pasos = pasosDe(base)
   return ORDEN_TIPOS.map((tipo, i) => ({
     tipo,
     numero: String(i + 1).padStart(2, '0'),
     titulo: tono(base, GATILLO_DE_CARTA[tipo]),
-    primerPaso: tono(base, 'amable'),
+    pasos,
+    hecho,
   }))
 }
 
