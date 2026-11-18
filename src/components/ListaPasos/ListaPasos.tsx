@@ -19,9 +19,10 @@ export function ListaPasos({
   /** «Está hecho cuando …» (sin la parte inicial). */
   hecho: string
 }) {
-  const [marcados, setMarcados] = useState<boolean[]>(() => pasos.map(() => false))
+  // Un paso cada vez (Sanitas: dar las instrucciones de una en una): solo se ve el paso actual.
+  const [hechos, setHechos] = useState(0)
   const [leyendo, setLeyendo] = useState(false)
-  const todos = marcados.every(Boolean)
+  const todos = hechos >= pasos.length
 
   // Si se sale de la pantalla mientras lee, se para.
   useEffect(() => () => void (puedeHablar() && window.speechSynthesis.cancel()), [])
@@ -61,26 +62,42 @@ export function ListaPasos({
         )}
       </div>
 
-      <ol className="lista-pasos__lista">
-        {pasos.map((paso, i) => (
-          <li key={i}>
-            <button
-              type="button"
-              className="paso"
-              role="checkbox"
-              aria-checked={marcados[i]}
-              onClick={() => setMarcados((m) => m.map((v, j) => (j === i ? !v : v)))}
-            >
-              <span className="paso__casilla" data-marcada={marcados[i] || undefined}>
-                {marcados[i] && <Icono svg={ICONOS_UI['tick-grande']} tamano={28} />}
-              </span>
-              <span className="paso__texto">
-                {pasos.length > 1 && <span className="paso__numero">{i + 1}.</span>} {paso}.
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
+      {hechos > 0 && (
+        <ol className="lista-pasos__hechos" aria-label="Pasos hechos">
+          {pasos.slice(0, hechos).map((paso, i) => (
+            <li key={i}>
+              <button
+                type="button"
+                className="paso paso--hecho"
+                role="checkbox"
+                aria-checked="true"
+                aria-label={`Paso ${i + 1} hecho: ${paso}. Tocar para desmarcar`}
+                onClick={() => setHechos(i)}
+              >
+                <span className="paso__casilla" data-marcada>
+                  <Icono svg={ICONOS_UI['tick-grande']} tamano={28} />
+                </span>
+                <span className="paso__texto">{paso}.</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {!todos && (
+        <div className="paso-actual" aria-live="polite">
+          {pasos.length > 1 && (
+            <p className="paso-actual__contador">
+              Paso {hechos + 1} de {pasos.length}
+            </p>
+          )}
+          <p className="paso-actual__texto">{pasos[hechos]}.</p>
+          <button type="button" className="paso-actual__boton t-texto-control" onClick={() => setHechos((h) => h + 1)}>
+            <span className="paso__casilla" />
+            {hechos + 1 < pasos.length ? 'Hecho. Ver el siguiente paso' : 'Hecho'}
+          </button>
+        </div>
+      )}
 
       <p className="lista-pasos__hecho">
         <strong>Está hecho cuando</strong> {hecho}.

@@ -52,11 +52,11 @@ Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES`
 
 | Principio | Cómo está en la app |
 |---|---|
-| Micropasos | Cada reto se divide en pasos cortos y en orden; en el detalle se marcan uno a uno. |
+| Micropasos, de uno en uno | Cada reto se divide en pasos cortos; el detalle muestra solo el paso actual, en grande, y al marcarlo aparece el siguiente. |
 | Criterio de éxito explícito | Cada reto dice «Está hecho cuando…» con algo que se puede ver o comprobar («el saludo está escrito en el correo»). Está en el campo `hecho` de cada regla. |
 | Apoyo visual y escrito | Lista de verificación en el detalle, libreta de «Tus tareas» y contador de retos con mini cartas. |
 | Lectura en voz alta | Botón «Escuchar» en el detalle: lee el reto, los pasos y el criterio de éxito (voz del sistema). |
-| Control de tiempos | El cronómetro del modo enfoque es opcional; ningún reto tiene límite de tiempo. |
+| Control de tiempos y descansos | El modo enfoque ofrece «Sin límite», «10 min + 3 de descanso» o «25 min + 5 de descanso», con barra visual y aviso al cambiar de fase. Ningún reto tiene límite obligatorio. |
 | Integración de intereses | Pendiente: la app aún no sabe qué le interesa a cada persona. |
 | Recompensa (método RAN) | En el detalle se puede elegir un premio; «Reto conseguido» lo recuerda. |
 | Menos esfuerzo para arrancar | Si en Inicio se marca «Pesado», el reto se reduce al primer paso. |
@@ -64,9 +64,11 @@ Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES`
 
 ## Pendiente
 
-Las pautas también piden ofrecer otros canales además del texto y respetar el ritmo de cada persona. Ideas para más adelante: preguntar los intereses en el onboarding y usarlos en los retos, pausas programadas en el modo enfoque y una opción para reducir animaciones dentro de la app (ya se respeta el ajuste «reducir movimiento» del sistema).
+Las pautas también piden ofrecer otros canales además del texto y respetar el ritmo de cada persona. Ideas para más adelante: preguntar los intereses en el onboarding y usarlos en los retos, una opción para reducir animaciones dentro de la app (ya se respeta el ajuste «reducir movimiento» del sistema).
 
 ## Fuentes
 
 - GAM Medical, «Cómo motivarte con la parálisis TDAH» (revisión clínica de Aintzane García). Factores INCUP (Interés, Novedad, Competencia, Urgencia, Pasión): son las 5 cartas de la app, y «Competencia» es la carta Desafío. Método RAN (Recompensa, Responsabilidad, Novedad), micropasos, seguimiento del progreso y reducir distracciones.
 - Isaac V., López V., Escobar M. J. (2024). «Arousal dysregulation and executive dysfunction in ADHD». *Frontiers in Psychiatry*, 14:1336040. https://pmc.ncbi.nlm.nih.gov/articles/PMC10827919/ — El rendimiento en TDAH varía mucho de un momento a otro y mejora cuando la tarea pide menos esfuerzo y cuando hay recompensa. Por eso los retos son mínimos, se reducen más si la tarea pesa y se puede elegir un premio.
+- Sanitas, «Ocho pasos para lograr que los niños con TDAH hagan los deberes»: instrucciones de una en una, tareas divididas y descansos entre ellas.
+- Carepatron, «Lista de tareas para el TDAH»: time-boxing y descansos programados.

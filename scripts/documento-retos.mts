@@ -227,7 +227,7 @@ const html = `<!doctype html>
 <section class="salto">
   <h2>4. Pasos, criterio de éxito, esfuerzo y premio</h2>
   <h3>Micropasos</h3>
-  <p>El reto base se divide en pasos cuando tiene una «y» seguida de un verbo de acción («Abre el correo <strong>y escribe</strong> solo el saludo» → 2 pasos). Si la «y» no va seguida de un verbo («papel <strong>y</strong> lápiz»), se queda en el mismo paso. En el detalle, cada paso es una casilla grande que se marca al tocarla; al marcarlas todas aparece «Ya has hecho todos los pasos. Pulsa «Reto conseguido»».</p>
+  <p>El reto base se divide en pasos cuando tiene una «y» seguida de un verbo de acción («Abre el correo <strong>y escribe</strong> solo el saludo» → 2 pasos). Si la «y» no va seguida de un verbo («papel <strong>y</strong> lápiz»), se queda en el mismo paso. En el detalle se muestra <strong>un paso cada vez</strong>, en grande, con el contador «Paso 1 de 2» y el botón «Hecho. Ver el siguiente paso». Los pasos hechos quedan arriba, tachados, y se pueden desmarcar. Al terminar el último aparece «Ya has hecho todos los pasos. Pulsa «Reto conseguido»».</p>
   <h3>Criterio de éxito</h3>
   <p>Cada regla tiene un «Está hecho cuando…» con algo que se puede <strong>ver o comprobar</strong>: «el saludo está escrito en el correo», «hay 3 cosas menos encima de la mesa», «el vaso de agua está vacío». Así no hay que adivinar cuándo se ha terminado.</p>
   <h3>Esfuerzo («¿Cuánto te pesa?»)</h3>
@@ -237,6 +237,8 @@ const html = `<!doctype html>
     <tr><td>Medio</td><td>Retos completos.</td><td>Igual que Ligero.</td></tr>
     <tr><td>Pesado</td><td>El reto base (carta Urgencia y plantillas) se queda solo en su primer paso, con el criterio «has hecho este paso». Los retos propios de las otras cartas ya son pequeños y no cambian.</td><td>${esc(pasosDe(analizarTarea('Estudiar para el examen').base)[0])}.</td></tr>
   </table>
+  <h3>Modo enfoque: bloques con descanso</h3>
+  <p>El temporizador del modo enfoque tiene 3 opciones: «Sin límite» (cronómetro), «10 min + 3 de descanso» y «25 min + 5 de descanso». En los bloques se ve el tiempo que queda y una barra que se llena. Al acabar cada fase el temporizador se para, suena un aviso corto y dice qué viene después («Bloque terminado. Pulsa el botón de iniciar para empezar el descanso de 3 minutos.»).</p>
   <h3>Escuchar</h3>
   <p>El botón «Escuchar» lee en voz alta, con la voz del dispositivo: el texto de la carta, «Paso 1: …», «Paso 2: …» y «Está hecho cuando …».</p>
   <h3>Premio (método RAN)</h3>
@@ -270,6 +272,8 @@ const html = `<!doctype html>
     <li><strong>Guía y Reglas Completas del Sistema de Retos Anti-Procrastinación (V2)</strong>: las 49 reglas, las plantillas genéricas, los gatillos motivacionales y el protocolo de expansión.</li>
     <li><strong>GAM Medical</strong>, «Cómo motivarte con la parálisis TDAH»: factores INCUP, método RAN (Recompensa, Responsabilidad, Novedad), micropasos y reducir distracciones.</li>
     <li><strong>Isaac, López y Escobar (2024)</strong>, «Arousal dysregulation and executive dysfunction in ADHD», <em>Frontiers in Psychiatry</em> 14:1336040: el rendimiento mejora cuando la tarea pide menos esfuerzo y cuando hay recompensa.</li>
+    <li><strong>Sanitas</strong>, «Ocho pasos para lograr que los niños con TDAH hagan los deberes»: dar las instrucciones de una en una, dividir las tareas e introducir descansos.</li>
+    <li><strong>Carepatron</strong>, «Lista de tareas para el TDAH»: time-boxing (bloques de tiempo fijos) y descansos programados.</li>
     <li>Pautas de comunicación accesible para personas neurodivergentes y de diseño de tareas (micropasos, criterios de éxito explícitos, apoyo visual y escrito): <code>docs/comunicacion.md</code>.</li>
   </ul>
 </section>

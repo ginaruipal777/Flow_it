@@ -159,21 +159,87 @@ export function Detalle() {
 /* ── 09 · Enfoque ──────────────────────────────────── */
 const formato = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
+/* Bloques de trabajo con descanso programado (time-boxing; Carepatron y Sanitas).
+   Al acabar cada fase, el temporizador se para, suena un aviso corto y dice qué viene después. */
+type Modo = { id: string; nombre: string; trabajo?: number; descanso?: number }
+const MODOS: Modo[] = [
+  { id: 'libre', nombre: 'Sin límite' },
+  { id: 'corto', nombre: '10 min + 3 de descanso', trabajo: 10 * 60, descanso: 3 * 60 },
+  { id: 'largo', nombre: '25 min + 5 de descanso', trabajo: 25 * 60, descanso: 5 * 60 },
+]
+
+function avisar() {
+  try {
+    navigator.vibrate?.(200)
+    const ctx = new AudioContext()
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.frequency.value = 660
+    g.gain.value = 0.08
+    o.connect(g).connect(ctx.destination)
+    o.start()
+    o.stop(ctx.currentTime + 0.25)
+  } catch {
+    /* sin sonido: el texto en pantalla ya avisa */
+  }
+}
+
+type Reloj = { fase: 'trabajo' | 'descanso'; bloque: number; segundos: number; enMarcha: boolean; aviso: string }
+const RELOJ_INICIAL: Reloj = { fase: 'trabajo', bloque: 1, segundos: 0, enMarcha: false, aviso: '' }
+
+function avanzar(r: Reloj, modo: Modo): Reloj {
+  const segundos = r.segundos + 1
+  if (!modo.trabajo) return { ...r, segundos }
+  const limite = r.fase === 'trabajo' ? modo.trabajo : modo.descanso!
+  if (segundos < limite) return { ...r, segundos }
+  return r.fase === 'trabajo'
+    ? {
+        ...r,
+        fase: 'descanso',
+        segundos: 0,
+        enMarcha: false,
+        aviso: `Bloque terminado. Pulsa el botón de iniciar para empezar el descanso de ${Math.round(modo.descanso! / 60)} minutos.`,
+      }
+    : {
+        ...r,
+        fase: 'trabajo',
+        bloque: r.bloque + 1,
+        segundos: 0,
+        enMarcha: false,
+        aviso: 'Descanso terminado. Pulsa el botón de iniciar para empezar el siguiente bloque.',
+      }
+}
+
 export function Enfoque() {
   const navegar = useNavigate()
   const datos = useRetoAceptado()
-  const [segundos, setSegundos] = useState(0)
-  const [enMarcha, setEnMarcha] = useState(false)
+  const [modo, setModo] = useState<Modo>(MODOS[0])
+  const [reloj, setReloj] = useState(RELOJ_INICIAL)
   const [archivar, setArchivar] = useState(false)
+  const { fase, bloque, segundos, enMarcha, aviso } = reloj
 
+  const limite = modo.trabajo ? (fase === 'trabajo' ? modo.trabajo : modo.descanso!) : undefined
+
+  // Cada segundo avanza el reloj; al acabar una fase se para, cambia a la siguiente y explica qué hacer
   useEffect(() => {
     if (!enMarcha) return
-    const t = window.setInterval(() => setSegundos((s) => s + 1), 1000)
+    const t = window.setInterval(() => setReloj((r) => avanzar(r, modo)), 1000)
     return () => window.clearInterval(t)
-  }, [enMarcha])
+  }, [enMarcha, modo])
+
+  // Aviso con sonido y vibración al cambiar de fase (sistema externo, no estado)
+  const faseAnterior = useRef(fase)
+  useEffect(() => {
+    if (faseAnterior.current !== fase) avisar()
+    faseAnterior.current = fase
+  }, [fase])
 
   if (!datos) return <Navigate to="/inicio" replace />
   const verReto = () => navegar('/reto/detalle', { replace: true })
+  const reiniciar = () => setReloj(RELOJ_INICIAL)
+  const setEnMarcha = (f: (v: boolean) => boolean) => setReloj((r) => ({ ...r, enMarcha: f(r.enMarcha) }))
+  const setAviso = (aviso: string) => setReloj((r) => ({ ...r, aviso }))
+  const mostrado = limite ? limite - segundos : segundos
 
   return (
     <Pantalla fondo="violeta-liso" className="enfoque">
@@ -182,19 +248,48 @@ export function Enfoque() {
       <p className="enfoque__consejo">Antes de empezar: silencia las notificaciones del móvil y cierra lo que no vayas a usar.</p>
       <img src={ilustracion} alt="" className="enfoque__ilustracion" data-activa={enMarcha || undefined} />
 
-      <p className="enfoque__crono" aria-live="polite" aria-label={`Tiempo: ${formato(segundos)}`}>
-        {formato(segundos)}
+      <div className="enfoque__modos" role="radiogroup" aria-label="Tipo de temporizador">
+        {MODOS.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked={modo.id === m.id}
+            className="enfoque__modo t-texto-control"
+            disabled={enMarcha}
+            onClick={() => {
+              setModo(m)
+              reiniciar()
+            }}
+          >
+            {m.nombre}
+          </button>
+        ))}
+      </div>
+
+      {limite !== undefined && (
+        <p className="enfoque__fase" data-fase={fase}>
+          {fase === 'trabajo' ? `Trabajo · bloque ${bloque}` : 'Descanso: levántate, bebe agua o estírate'}
+        </p>
+      )}
+      <p className="enfoque__crono" aria-label={`${limite ? 'Quedan' : 'Tiempo'}: ${formato(mostrado)}`}>
+        {formato(mostrado)}
+      </p>
+      {limite !== undefined && (
+        <div className="enfoque__barra" aria-hidden="true">
+          <span style={{ width: `${(segundos / limite) * 100}%` }} data-fase={fase} />
+        </div>
+      )}
+      <p className="enfoque__aviso" aria-live="assertive">
+        {aviso}
       </p>
       <div className="enfoque__controles">
         <button
           type="button"
           className="enfoque__reiniciar"
           aria-label="Reiniciar"
-          disabled={segundos === 0}
-          onClick={() => {
-            setEnMarcha(false)
-            setSegundos(0)
-          }}
+          disabled={segundos === 0 && bloque === 1 && fase === 'trabajo'}
+          onClick={reiniciar}
         >
           <Icono svg={ICONOS_UI.reiniciar} tamano={24} />
         </button>
@@ -202,7 +297,10 @@ export function Enfoque() {
           type="button"
           className="enfoque__iniciar"
           aria-label={enMarcha ? 'Pausar' : 'Iniciar'}
-          onClick={() => setEnMarcha((v) => !v)}
+          onClick={() => {
+            setAviso('')
+            setEnMarcha((v) => !v)
+          }}
         >
           <Icono svg={enMarcha ? ICONOS_UI.pausa : ICONOS_UI.play} />
         </button>
