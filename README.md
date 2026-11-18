@@ -42,7 +42,7 @@ Los datos se guardan en el navegador (`localStorage`) y la app arranca con tarea
 
 ## Estado
 
-Flujo completo de «prot final», instalable como PWA y publicado en https://ginaruipal777.github.io/Flow_it/ (con `npm run publicar`). Aún sin cuentas ni base de datos: los datos se guardan en cada navegador.
+Flujo completo de «prot final», instalable como PWA y publicado en https://flow-it-jet.vercel.app/ (Vercel la despliega sola con cada push a `main`). Aún sin cuentas ni base de datos: los datos se guardan en cada navegador.
 
 ## Cómo se crean los retos
 

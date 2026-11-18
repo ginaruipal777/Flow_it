@@ -7,7 +7,7 @@ import { FlowEstado } from './estado/FlowEstado'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* basename: en GitHub Pages la app vive en /Flow_it/ */}
+    {/* basename: sigue la ruta base de Vite («/» en Vercel) */}
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <FlowEstado>
         <App />
