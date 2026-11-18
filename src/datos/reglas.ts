@@ -7,8 +7,8 @@ import type { TipoReto } from '../components/CartaReto/tipos'
 
    1. Se busca la tarea en las 49 REGLAS (palabras clave → reto base).
    2. Si no hay regla, se usa una PLANTILLA genérica según el verbo.
-   3. El reto base se dice con el tono de cada carta (FRASES, sistema propio:
-      la matriz de tonos del PDF se sustituyó porque sonaba forzada).
+   3. El reto base se dice con el tono de cada carta (FRASES, sistema propio con
+      pautas de comunicación accesible; ver docs/comunicacion.md).
 
    Las 5 cartas de la app (Figma) usan estos gatillos del PDF:
      Novedad → Novedad · Desafío → Desafío · Pasión → Motivación
@@ -133,64 +133,56 @@ const PLANTILLAS: Plantilla[] = [
 export const RETO_GENERICO = 'Haz la parte más pequeña de esta tarea'
 
 /* ── 4. Cómo se dice cada reto (sistema de comunicación propio) ──
-   Sustituye a la matriz de tonos del PDF, que sonaba forzada.
-   Reglas de estilo:
-   - Tuteo, frases cortas y lenguaje de todos los días.
-   - La acción (reto base) siempre se lee entera y clara.
-   - Sin emojis, sin «misiones» ni «niveles», sin presión ni culpa.
-   - Sin género gramatical para la persona («vas a notar», no «te sentirás ligero/a»).
-   Cada gatillo tiene varias frases; se elige una según la tarea para no repetir siempre la misma. */
+   Sustituye a la matriz de tonos del PDF. Sigue las pautas de comunicación
+   para personas neurodivergentes (ver docs/comunicacion.md):
+   - Lenguaje claro y literal: sin metáforas, ironías ni frases hechas.
+   - Instrucciones concretas: la acción va siempre primero y entera.
+   - El «Primer paso» se divide en pasos numerados.
+   - Sin tiempos vagos («luego», «cuando puedas») ni preguntas que presionen.
+   - Misma estructura en todas las tareas: cada carta dice siempre lo mismo
+     alrededor de la acción, para que sea predecible.
+   - Sin emojis y sin género gramatical para la persona. */
 
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 
-type Frase = (accion: string, Accion: string) => string
-
-const FRASES: Record<Gatillo, Frase[]> = {
-  // Pasión → Motivación: por qué merece la pena
-  motivacion: [
-    (_a, A) => `${A}. Luego vas a notar el alivio.`,
-    (_a, A) => `${A}. Lo más difícil es empezar, y ya lo tienes.`,
-    (_a, A) => `${A}. Con esto ya has arrancado.`,
-  ],
-  // Novedad: hacerlo distinto
-  novedad: [
-    (a) => `Hoy, a tu manera: ${a}.`,
-    (a) => `Hazlo distinto a lo normal: ${a}.`,
-    (a) => `Cambia el chip: ${a}, pero en otro sitio o de otra forma.`,
-  ],
-  // Urgencia: ahora, sin darle vueltas
-  urgencia: [
-    (a) => `Ya, sin pensarlo: ${a}.`,
-    (a) => `Antes de mirar el móvil: ${a}.`,
-    (a) => `Ahora, mientras lees esto: ${a}.`,
-  ],
-  // Desafío: un reto pequeño y con gracia
-  desafio: [
-    (a) => `Mini reto: ${a}. ¿Hecho?`,
-    (a) => `A ver si puedes: ${a}.`,
-    (a) => `Reto rápido: ${a}. ¿Te atreves?`,
-  ],
+const FRASES: Record<Exclude<Gatillo, 'amable'>, (accion: string) => string> = {
+  // Novedad: una forma distinta, dicha de forma concreta
+  novedad: (A) => `${A}. Puedes hacerlo en un sitio distinto al de siempre.`,
+  // Desafío: un objetivo claro
+  desafio: (A) => `Objetivo: ${minuscula(A)}.`,
+  // Pasión → Motivación: qué consigues, sin promesas vagas
+  motivacion: (A) => `${A}. Al hacerlo, ya habrás empezado la tarea.`,
   // Interés → Directo: solo la acción
-  directo: [(_a, A) => `${A}. Y listo.`, (_a, A) => `${A}. Ya está.`],
-  // Amable: el «Primer paso» del detalle
-  amable: [
-    (a) => `Tranqui: ${a}. Con eso ya vale.`,
-    (a) => `Sin presión: ${a}. Si te apetece seguir, genial.`,
-  ],
+  directo: (A) => `${A}.`,
+  // Urgencia: cuándo, en concreto
+  urgencia: (A) => `${A}. Hazlo ahora, antes de empezar otra cosa.`,
 }
 
-/** Número estable a partir del texto de la tarea, para elegir siempre la misma frase para la misma tarea. */
-function semillaDe(texto: string) {
-  let h = 0
-  for (const c of texto) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  return h
+/* Verbos con los que empieza un paso dentro de un reto base («Abre el correo y escribe…»). */
+const VERBOS_PASO =
+  /^(abre|escribe|lee|busca|tenlo|tenla|recoge|saca|coge|ll[eé]vala|ll[eé]valo|pon|ponte|mira|elige|haz|sal|extiende|prepara|ve|confirma|prop[oó]n|m[aá]ndale|responde|toca|riega|retira|si[eé]ntate|respira|apaga|aplica|bebe|llama|dale|mu[eé]vete|empieza|ac[eé]rcate|t[oó]mate|prep[aá]rate)\b/i
+
+/** «Abre el correo y escribe solo el saludo» → ["Abre el correo", "Escribe solo el saludo"]. */
+export function pasosDe(base: string): string[] {
+  const partes = sinPunto(base).split(/\s+y\s+/)
+  const pasos: string[] = []
+  for (const parte of partes) {
+    if (pasos.length && VERBOS_PASO.test(parte)) pasos.push(mayuscula(parte))
+    else if (pasos.length) pasos[pasos.length - 1] += ` y ${parte}`
+    else pasos.push(mayuscula(parte))
+  }
+  return pasos
 }
 
-export function tono(base: string, gatillo: Gatillo, tarea = '') {
-  const A = sinPunto(base)
-  const opciones = FRASES[gatillo]
-  return opciones[semillaDe(tarea + gatillo) % opciones.length](minuscula(A), A)
+export function tono(base: string, gatillo: Gatillo) {
+  const A = mayuscula(sinPunto(base))
+  if (gatillo !== 'amable') return FRASES[gatillo](A)
+  // «Primer paso»: pasos numerados, uno por línea
+  const pasos = pasosDe(base)
+  const lista = pasos.length > 1 ? pasos.map((p, i) => `${i + 1}. ${p}.`).join('\n') : `${A}.`
+  return `${lista}\nCon eso has terminado este reto.`
 }
 
 /* ── 5. Lógica de ejecución ─────────────────────────────────── */
@@ -213,15 +205,32 @@ export type Resultado = {
   base: string
 }
 
-/** Busca la regla cuya palabra clave coincide con más letras (la más específica). */
+/* Palabras que salen en más de una regla («escuchar», «dibujar», «leer»…): cuentan la mitad,
+   porque por sí solas no dicen de qué tarea se trata. */
+const COMPARTIDAS = (() => {
+  const reglasPorPalabra = new Map<string, Set<number>>()
+  REGLAS.forEach((regla, i) =>
+    regla.palabras.forEach((p) =>
+      normalizar(p)
+        .split(' ')
+        .forEach((palabra) => reglasPorPalabra.set(palabra, (reglasPorPalabra.get(palabra) ?? new Set()).add(i))),
+    ),
+  )
+  return new Set([...reglasPorPalabra].filter(([, reglas]) => reglas.size > 1).map(([palabra]) => palabra))
+})()
+
+/** Busca la regla más específica: la que suma más letras de palabras clave encontradas
+    («dibujar un boceto» → Dibujo, porque coincide con «dibujar» y «boceto»).
+    Si empatan, gana la que va antes en la lista. */
 export function analizarTarea(tarea: string): Resultado {
   const texto = normalizar(tarea)
   let mejor: { regla: Regla; largo: number } | null = null
   for (const regla of REGLAS) {
-    for (const p of regla.palabras) {
-      const clave = normalizar(p)
-      if (clave && contiene(texto, clave) && (!mejor || clave.length > mejor.largo)) mejor = { regla, largo: clave.length }
-    }
+    const largo = regla.palabras
+      .map(normalizar)
+      .filter((clave) => clave && contiene(texto, clave))
+      .reduce((suma, clave) => suma + (COMPARTIDAS.has(clave) ? clave.length / 2 : clave.length), 0)
+    if (largo > 0 && (!mejor || largo > mejor.largo)) mejor = { regla, largo }
   }
   if (mejor) return { regla: mejor.regla, categoria: mejor.regla.categoria, icono: mejor.regla.icono, base: mejor.regla.base }
 

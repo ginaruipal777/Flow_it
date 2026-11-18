@@ -10,8 +10,8 @@ export function generarRetos(tarea: Pick<Tarea, 'texto'>): Reto[] {
   return ORDEN_TIPOS.map((tipo, i) => ({
     tipo,
     numero: String(i + 1).padStart(2, '0'),
-    titulo: tono(base, GATILLO_DE_CARTA[tipo], tarea.texto),
-    primerPaso: tono(base, 'amable', tarea.texto),
+    titulo: tono(base, GATILLO_DE_CARTA[tipo]),
+    primerPaso: tono(base, 'amable'),
   }))
 }
 
