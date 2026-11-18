@@ -46,12 +46,13 @@ Flujo completo de «prot final», instalable como PWA y publicado en https://flo
 
 ## Cómo se crean los retos
 
-Siguen la «Guía y Reglas Completas del Sistema de Retos V2» y están en [src/datos/reglas.ts](src/datos/reglas.ts):
+Siguen la «Regla de oro: la ley del esfuerzo inverso» y la «Matriz de combinación» ([src/datos/reglas.ts](src/datos/reglas.ts) y [src/datos/banco.ts](src/datos/banco.ts)):
 
-1. La tarea se busca en las **48 reglas del PDF + 1 de la app** (palabras clave → categoría → reto base, la mínima acción viable).
-2. Si no hay regla, se usa una **plantilla genérica** según el verbo («Buscar piso» → «Busca piso y tenlo delante»).
-3. El reto base se adapta a cada **gatillo motivacional**. Cada carta usa uno:
-   Novedad → Novedad · Desafío → Desafío · Pasión → Motivación · Interés → Directo · Urgencia → Urgencia.
-   El gatillo **Amable** es el «Primer paso» del detalle.
+1. La tarea se busca en las **51 categorías** (palabras clave del «Sistema de Retos V2» + ampliaciones de la app).
+2. El **nivel de esfuerzo** elige una de las 3 acciones del banco de esa categoría: Ligero (1–3 min), Medio (30–60 s) o Pesado (5–10 s, empieza por «Solo…»).
+3. Cada **carta INCUP** añade su modificador («con la mano que no usas», «sin mirar el móvil», «antes de que se enfríe tu café»…) y su entradilla.
+4. Si no hay categoría, se usa un respaldo con el texto de la tarea.
 
-Para ampliar el sistema (protocolo 5.2), añade una línea `r('palabras, clave', 'Categoría', 'icono', 'Reto base')` a `REGLAS`.
+Cada acción empieza por un verbo físico, es una sola (sin «y» ni «o»), sin tiempos y sin la palabra «tarea». Compruébalo con `npm run validar`. El PDF explicativo se genera con `npm run documento` (docs/sistema-de-retos.pdf).
+
+Para ampliar el sistema, añade una regla a `REGLAS` y sus 3 acciones por nivel a `BANCO`.

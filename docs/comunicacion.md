@@ -11,60 +11,75 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 
 ## 2. Instrucciones concretas
 
-- La acción va primero y entera: «Abre el correo y escribe solo el saludo».
-- Si una acción tiene varias partes, se dividen en pasos numerados que se pueden marcar.
+- La acción va primero y empieza por un verbo físico: «Abre la aplicación de correo».
+- Una sola acción por reto: sin «y», «luego», «después», ni opciones con «o».
+- Cero carga cognitiva: el reto no pide pensar, decidir, organizar ni planificar.
 - Una acción concreta y observable, nunca una actitud («concéntrate», «hazlo bien»).
+- En los retos no se usa la palabra «tarea»: se dice «reto» o «paso».
 
 ## 3. Tiempos reales, nunca vagos
 
-- Nada de «luego», «cuando puedas» o «más tarde». Si hay un momento, se dice: «ahora, antes de empezar otra cosa».
+- Nada de «luego», «cuando puedas» o «más tarde».
+- Los retos no llevan tiempos ni prisas («en 2 minutos», «rápido», «tómate 5 minutos»). La urgencia se da con un micro-límite sin reloj: «antes de que se enfríe tu café», «mientras suena una canción».
 - Sin cronómetros obligatorios ni cuentas atrás que presionen.
 
 ## 4. Sin presión
 
 - Sin preguntas que juzgan («¿a que no…?»). Una pregunta solo puede ser una invitación («¿Te apuntas?»).
+- Sin imperativos agresivos («¡Hazlo ya!»): tono neutral y amable.
+- Decide la persona: el reto está hecho cuando pulsa «Reto conseguido».
 - Sin rachas, castigos ni lenguaje de culpa.
 - Dejar algo a medias es una opción normal y se dice así («Lo dejo aquí por hoy»).
 
 ## 5. Tono atrevido, pero solo en la entradilla
 
-- El titular de cada carta empieza con una entradilla con energía, siempre la misma por tipo: Novedad «¡Plan nuevo!», Desafío «Reto rápido: … ¿Te apuntas?», Pasión «Modo disfrute:», Interés «Hazlo interesante:», Urgencia «¡Ya! …, antes de que te lo pienses».
+- El titular de cada carta empieza con una entradilla con energía, siempre la misma por tipo: Novedad «¡Plan nuevo!», Desafío «Mini reto: … ¿Te apuntas?», Pasión «Modo disfrute:», Interés «Hazlo interesante:», Urgencia «Ahora:».
 - La acción sigue siendo literal y entera. Los pasos y el «Está hecho cuando…» del detalle no llevan entradilla.
 
-## 6. Predecible
+## 6. Ley del esfuerzo inverso
+
+Cuanto más pesa la tarea, más pequeña es la acción (nivel elegido en «¿Cuánto te pesa?»):
+
+| Nivel | Duración | Cómo es la acción | Ejemplo |
+|---|---|---|---|
+| Ligero | 1–3 min | Puede tener algo de sustancia. | Escribe la primera frase de la respuesta |
+| Medio | 30–60 s | Física, mecánica y acotada. | Pulsa «Responder» en ese correo |
+| Pesado | 5–10 s | Casi ridícula, empieza por «Solo…». Prueba: ¿se podría hacer tumbado en la cama? | Solo abre la aplicación de correo |
+
+## 7. Predecible
 
 - Cada tipo de carta usa siempre la misma estructura alrededor de la acción. Lo que cambia es la acción, no la forma de decirla.
 - Los botones dicen lo que pasa al pulsarlos («Reto conseguido», «Archivar reto»).
 
-## 7. Sin género para la persona
+## 8. Sin género para la persona
 
 - Frases que valen para cualquiera: «ya habrás empezado», no «estarás list@».
 
 ## Cómo se aplica a los retos
 
-Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES` y `tono`). Para «Responder el email de Carlos»:
+Los retos salen de una matriz de combinación: **acción del banco** ([src/datos/banco.ts](../src/datos/banco.ts), 3 por nivel y categoría) + **modificador INCUP** de cada carta + entradilla ([src/datos/reglas.ts](../src/datos/reglas.ts)). `npm run validar` comprueba que todos cumplen las pautas. Para «Responder el email de Carlos» con nivel Pesado:
 
 | Carta | Titular de la carta | Está hecho cuando |
 |---|---|---|
-| Novedad | ¡Plan nuevo! Escribe el saludo del correo desde el móvil en vez del ordenador. | el saludo está escrito |
-| Desafío | Reto rápido: escribe la respuesta en 3 frases como máximo. ¿Te apuntas? | el correo tiene 3 frases o menos |
-| Pasión | Modo disfrute: pon una canción que te guste y escribe el saludo mientras suena. | el saludo está escrito |
-| Interés | Hazlo interesante: escribe en una línea qué te pide esa persona. | tienes lo que te pide escrito en una línea |
-| Urgencia | ¡Ya! Abre el correo y escribe solo el saludo, antes de que te lo pienses. | el saludo está escrito en el correo |
+| Novedad | ¡Plan nuevo! Solo abre la aplicación de correo, en silencio. | lo has hecho una vez. Con eso basta |
+| Desafío | Mini reto: solo pon las manos sobre el teclado, sin mirar el móvil. ¿Te apuntas? | lo has hecho una vez. Con eso basta |
+| Pasión | Modo disfrute: solo mira el asunto del correo que tienes que responder, con tu música favorita de fondo. | lo has hecho una vez. Con eso basta |
+| Interés | Hazlo interesante: solo abre la aplicación de correo, fijándote en un detalle que no habías visto. | lo has hecho una vez. Con eso basta |
+| Urgencia | Ahora: solo pon las manos sobre el teclado, antes de mirar el móvil. | lo has hecho una vez. Con eso basta |
 
 ## Diseño de las tareas
 
 | Principio | Cómo está en la app |
 |---|---|
-| Micropasos, de uno en uno | Cada reto se divide en pasos cortos; el detalle muestra solo el paso actual, en grande, y al marcarlo aparece el siguiente. |
-| Criterio de éxito explícito | Cada reto dice «Está hecho cuando…» con algo que se puede ver o comprobar («el saludo está escrito en el correo»). Está en el campo `hecho` de cada regla. |
+| Micropasos, de uno en uno | Cada reto es una sola acción física; el detalle la muestra en grande. |
+| Criterio de éxito explícito | Cada reto dice «Está hecho cuando…»: en Pesado y Medio «lo has hecho una vez. Con eso basta»; en Ligero, cuando tú lo des por hecho. |
 | Apoyo visual y escrito | Lista de verificación en el detalle, libreta de «Tus tareas» y contador de retos con mini cartas. |
 | Lectura en voz alta | Botón «Escuchar» en el detalle: lee el reto, los pasos y el criterio de éxito (voz del sistema). |
 | Control de tiempos y descansos | El modo enfoque ofrece «Sin límite», «10 min + 3 de descanso» o «25 min + 5 de descanso», con barra visual y aviso al cambiar de fase. Ningún reto tiene límite obligatorio. |
 | Integración de intereses | Pendiente: la app aún no sabe qué le interesa a cada persona. |
 | Recompensa (método RAN) | En el detalle se puede elegir un premio; «Reto conseguido» lo recuerda. |
-| Más retos si no encaja ninguno | Al rechazar las 5 cartas llega un mazo nuevo con 5 retos distintos de la misma tarea (3 mazos, 15 retos). |
-| Menos esfuerzo para arrancar | Si en Inicio se marca «Pesado», el reto se reduce al primer paso. |
+| Más retos si no encaja ninguno | Al rechazar las 5 cartas llega un mazo nuevo con 5 retos distintos de la misma tarea (6 mazos, 30 retos), sin repetir ninguna combinación de acción y modificador. |
+| Menos esfuerzo para arrancar | El nivel de esfuerzo elige el tamaño de la acción: Ligero 1–3 min, Medio 30–60 s, Pesado 5–10 s. |
 | Menos distracciones | El modo enfoque recuerda silenciar notificaciones y cerrar lo que no se use. |
 
 ## Pendiente
@@ -73,6 +88,7 @@ Las pautas también piden ofrecer otros canales además del texto y respetar el 
 
 ## Fuentes
 
+- «Regla de oro: la ley del esfuerzo inverso» y «Matriz de combinación»: tamaño de la acción por nivel, reglas de redacción y modificadores INCUP.
 - GAM Medical, «Cómo motivarte con la parálisis TDAH» (revisión clínica de Aintzane García). Factores INCUP (Interés, Novedad, Competencia, Urgencia, Pasión): son las 5 cartas de la app, y «Competencia» es la carta Desafío. Método RAN (Recompensa, Responsabilidad, Novedad), micropasos, seguimiento del progreso y reducir distracciones.
 - Isaac V., López V., Escobar M. J. (2024). «Arousal dysregulation and executive dysfunction in ADHD». *Frontiers in Psychiatry*, 14:1336040. https://pmc.ncbi.nlm.nih.gov/articles/PMC10827919/ — El rendimiento en TDAH varía mucho de un momento a otro y mejora cuando la tarea pide menos esfuerzo y cuando hay recompensa. Por eso los retos son mínimos, se reducen más si la tarea pesa y se puede elegir un premio.
 - Sanitas, «Ocho pasos para lograr que los niños con TDAH hagan los deberes»: instrucciones de una en una, tareas divididas y descansos entre ellas.

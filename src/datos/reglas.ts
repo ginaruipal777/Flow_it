@@ -1,24 +1,20 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
-import { VARIANTES } from './variantes.ts'
+import { BANCO, HECHO_POR_NIVEL, MODIFICADORES, type Acciones, type Nivel } from './banco.ts'
 
 /* ─────────────────────────────────────────────────────────────
-   Sistema de Retos Anti-Procrastinación (V2)
-   Fuente: «Guía y Reglas Completas del Sistema de Retos V2» (PDF).
+   Sistema de Retos Anti-Procrastinación
+   Fuentes: «Guía y Reglas Completas del Sistema de Retos V2» (PDF) +
+   «Regla de oro: la ley del esfuerzo inverso» + «Matriz de combinación».
 
-   1. Se busca la tarea en las REGLAS (48 del PDF + 1 de la app) (palabras clave → reto base).
-   2. Si no hay regla, se usa una PLANTILLA genérica según el verbo.
-   3. El reto base se dice con el tono de cada carta (FRASES, sistema propio con
-      pautas de comunicación accesible; ver docs/comunicacion.md).
+   1. Se busca la tarea en las REGLAS (palabras clave → categoría).
+   2. El nivel de esfuerzo elige la acción del BANCO de esa categoría (banco.ts):
+      cuanto más pesa la tarea, más pequeña es la acción.
+   3. Cada carta INCUP añade su modificador (MODIFICADORES) y su entradilla.
+   4. Si no hay regla, se usa el RESPALDO con el texto de la tarea.
 
-   Las 5 cartas de la app (Figma) usan estos gatillos del PDF:
-     Novedad → Novedad · Desafío → Desafío · Pasión → Motivación
-     Interés → Directo · Urgencia → Urgencia
-   El gatillo «Amable» se sustituye por los pasos numerados y el criterio de éxito («Está hecho cuando…»).
-
-   Protocolo de expansión (5.2 del PDF): para una tarea que cae en la
-   plantilla genérica, añade aquí una regla con sus palabras clave,
-   una categoría breve y la menor acción posible (sin tiempos).
+   Protocolo de expansión: para una tarea que cae en el respaldo, añade aquí una
+   regla con sus palabras clave y en banco.ts sus 3 acciones por nivel.
    ───────────────────────────────────────────────────────────── */
 
 export type Gatillo = 'motivacion' | 'novedad' | 'urgencia' | 'desafio' | 'directo'
@@ -121,79 +117,34 @@ export const REGLAS: Regla[] = [
   r('gato, mascota, cuidar a mi mascota', 'Mascotas', 'mascotas', 'Llena el cuenco de agua de tu mascota', 'el cuenco de agua está lleno'),
 ]
 
-/* ── 3. Plantillas de acción genéricas (respaldo) ───────────── */
+/* ── 3. Respaldo: tareas sin regla ──────────────────────────────
+   Si ninguna palabra clave encaja, los retos usan el texto de la tarea entre comillas.
+   Mismas reglas que el banco: verbo físico primero, una sola acción, sin tiempos. */
 
-export type Plantilla = { verbos: string[]; base: (objeto: string) => string; hecho: (objeto: string) => string }
+export const RESPALDO = (t: string): Acciones => ({
+  pesado: [`Escribe «${t}» en un papel`, `Lee en voz alta «${t}»`, `Toca lo primero que vas a usar para «${t}»`],
+  medio: [`Pon en la mesa lo que vas a usar para «${t}»`, `Abre lo que vas a usar para «${t}»`, `Haz el primer movimiento de «${t}»`],
+  ligero: [`Haz la primera parte de «${t}»`, `Avanza un poco en «${t}»`, `Haz la parte más pequeña de «${t}»`],
+})
 
-export const PLANTILLAS: Plantilla[] = [
-  { verbos: ['abrir'], base: (o) => `Abre ${o} y mira lo primero que veas`, hecho: (o) => `has abierto ${o}` },
-  { verbos: ['escribir', 'redactar'], base: (o) => `Escribe solo la primera frase de ${o}`, hecho: () => 'la primera frase está escrita' },
-  { verbos: ['buscar', 'encontrar'], base: (o) => `Busca ${o} y tenlo delante`, hecho: (o) => `has encontrado ${o}` },
-  { verbos: ['elegir', 'decidir', 'escoger'], base: (o) => `Escribe 2 opciones de ${o}`, hecho: () => 'tienes 2 opciones escritas' },
-  { verbos: ['preparar', 'organizar', 'planificar'], base: (o) => `Prepara lo mínimo para ${o}`, hecho: () => 'tienes lo mínimo preparado' },
-  { verbos: ['mover', 'llevar', 'colocar', 'cambiar'], base: (o) => `Mueve una cosa relacionada con ${o}`, hecho: () => 'has movido una cosa' },
-  { verbos: ['llamar', 'telefonear'], base: () => 'Busca el número y prepárate para llamar', hecho: () => 'tienes el número en la pantalla, listo para llamar' },
-  { verbos: ['leer', 'revisar', 'repasar'], base: (o) => `Lee solo el primer párrafo de ${o}`, hecho: () => 'has leído el primer párrafo' },
-]
-
-export const RETO_GENERICO = 'Haz la parte más pequeña de esta tarea'
-export const HECHO_GENERICO = 'has hecho una parte de la tarea, aunque sea pequeña'
-
-/* ── 4. Cómo se dice cada reto (sistema de comunicación propio) ──
-   Sustituye a la matriz de tonos del PDF. Sigue las pautas de comunicación
-   para personas neurodivergentes (ver docs/comunicacion.md):
-   - Lenguaje claro y literal: sin metáforas, ironías ni frases hechas.
-   - Instrucciones concretas: la acción va siempre primero y entera.
-   - El «Primer paso» se divide en pasos numerados.
-   - Sin tiempos vagos («luego», «cuando puedas») ni preguntas que presionen.
-   - Misma estructura en todas las tareas: cada carta dice siempre lo mismo
-     alrededor de la acción, para que sea predecible.
-   - Sin emojis y sin género gramatical para la persona.
-   - Tono atrevido SOLO en la entradilla del titular de la carta («¡Plan nuevo!», «Reto rápido»…):
-     da energía sin cambiar la acción, que sigue siendo literal. Los pasos y el criterio de
-     éxito del detalle no llevan entradilla. Si hay pregunta, es una invitación («¿Te apuntas?»),
-     nunca un juicio («¿a que no puedes?»). */
+/* ── 4. Cómo se dice cada reto ───────────────────────────────────
+   Pautas para personas neurodivergentes (docs/comunicacion.md) + «Ley del esfuerzo inverso»:
+   - La acción va primero, empieza por un verbo físico y es UNA sola (sin «y», «o», «luego»).
+   - Sin tiempos ni prisas, sin la palabra «tarea», sin imperativos agresivos.
+   - El tono atrevido va SOLO en la entradilla de la carta («¡Plan nuevo!», «Mini reto»…).
+   - Si hay pregunta, es una invitación («¿Te apuntas?»), nunca un juicio.
+   - Nivel Pesado: la acción empieza por «Solo…». */
 
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 
-/* «Etiqueta: acción». Si la acción ya lleva dos puntos, se separa con punto para no encadenar «: … :» */
-const con = (etiqueta: string, A: string) => (A.includes(':') ? `${etiqueta}. ${A}` : `${etiqueta}: ${minuscula(A)}`)
-
-/* Entradilla atrevida de cada carta cuando el reto es propio de la categoría (variantes.ts) */
-const ENTRADILLA: Record<Gatillo, (accion: string) => string> = {
+export const ENTRADILLA: Record<TipoReto, (accion: string) => string> = {
   novedad: (A) => `¡Plan nuevo! ${A}.`,
-  desafio: (A) => `${con('Reto rápido', A)}. ¿Te apuntas?`,
-  motivacion: (A) => `${con('Modo disfrute', A)}.`,
-  directo: (A) => `${con('Hazlo interesante', A)}.`,
-  urgencia: (A) => `¡Ya! ${A}, antes de que te lo pienses.`,
-}
-
-/* Cuando no hay reto propio (plantillas), la Novedad añade el cambio concreto de sitio */
-const FRASES: Record<Gatillo, (accion: string) => string> = {
-  ...ENTRADILLA,
-  novedad: (A) => `¡Plan nuevo! ${A}, en un sitio distinto al de siempre.`,
-}
-
-/* Verbos con los que empieza un paso dentro de un reto base («Abre el correo y escribe…»). */
-const VERBOS_PASO =
-  /^(abre|escribe|lee|busca|tenlo|tenla|recoge|saca|coge|ll[eé]vala|ll[eé]valo|pon|ponte|mira|elige|haz|sal|extiende|prepara|ve|confirma|prop[oó]n|m[aá]ndale|responde|toca|riega|retira|si[eé]ntate|respira|apaga|aplica|bebe|llama|dale|mu[eé]vete|empieza|ac[eé]rcate|t[oó]mate|prep[aá]rate)\b/i
-
-/** «Abre el correo y escribe solo el saludo» → ["Abre el correo", "Escribe solo el saludo"]. */
-export function pasosDe(base: string): string[] {
-  const partes = sinPunto(base).split(/\s+y\s+/)
-  const pasos: string[] = []
-  for (const parte of partes) {
-    if (pasos.length && VERBOS_PASO.test(parte)) pasos.push(mayuscula(parte))
-    else if (pasos.length) pasos[pasos.length - 1] += ` y ${parte}`
-    else pasos.push(mayuscula(parte))
-  }
-  return pasos
-}
-
-export function tono(base: string, gatillo: Gatillo) {
-  return FRASES[gatillo](mayuscula(sinPunto(base)))
+  desafio: (A) => `Mini reto: ${minuscula(A)}. ¿Te apuntas?`,
+  pasion: (A) => `Modo disfrute: ${minuscula(A)}.`,
+  interes: (A) => `Hazlo interesante: ${minuscula(A)}.`,
+  urgencia: (A) => `Ahora: ${minuscula(A)}.`,
 }
 
 /* ── 5. Lógica de ejecución ─────────────────────────────────── */
@@ -213,9 +164,8 @@ export type Resultado = {
   regla: Regla | null
   categoria: string
   icono: Categoria | null
-  base: string
-  /** Criterio de éxito: «Está hecho cuando …» */
-  hecho: string
+  /** Acciones de la categoría por nivel (o el respaldo con el texto de la tarea) */
+  acciones: Acciones
 }
 
 /* Palabras que salen en más de una regla («escuchar», «dibujar», «leer»…): cuentan la mitad,
@@ -245,82 +195,59 @@ export function analizarTarea(tarea: string): Resultado {
       .reduce((suma, clave) => suma + (COMPARTIDAS.has(clave) ? clave.length / 2 : clave.length), 0)
     if (largo > 0 && (!mejor || largo > mejor.largo)) mejor = { regla, largo }
   }
-  if (mejor) return { regla: mejor.regla, categoria: mejor.regla.categoria, icono: mejor.regla.icono, base: mejor.regla.base, hecho: mejor.regla.hecho }
-
-  // Sin regla: plantilla genérica según el verbo inicial («buscar piso» → «Busca piso y tenlo delante»)
-  const [verbo, ...resto] = tarea.trim().split(/\s+/)
-  const objeto = minuscula(resto.join(' ').replace(/\.$/, '')) || 'la tarea'
-  const plantilla = PLANTILLAS.find((p) => p.verbos.includes(normalizar(verbo ?? '')))
-  return {
-    regla: null,
-    categoria: 'Tarea',
-    icono: null,
-    base: plantilla ? plantilla.base(objeto) : RETO_GENERICO,
-    hecho: plantilla ? plantilla.hecho(objeto) : HECHO_GENERICO,
+  if (mejor) {
+    const { regla } = mejor
+    return { regla, categoria: regla.categoria, icono: regla.icono, acciones: BANCO[regla.categoria] }
   }
+  return { regla: null, categoria: 'Tarea', icono: null, acciones: RESPALDO(minuscula(sinPunto(tarea)) || 'esto') }
 }
 
-/* ── 6. Los 5 retos de una tarea ───────────────────────────────
-   - Si la regla tiene retos propios por carta (variantes.ts), cada carta es un reto distinto:
-     Novedad, Desafío, Pasión e Interés usan su variante; Urgencia usa el reto base + «Hazlo ahora…».
-   - Si no (plantillas genéricas), las 5 cartas dicen el reto base con su fórmula (FRASES).
-   - Si la tarea pesa mucho, cada reto se reduce a su primer paso: con menos esfuerzo cuesta
-     menos arrancar (teoría de regulación del estado, Isaac et al., 2024). */
+/* ── 6. Matriz de combinación ──────────────────────────────────
+   Reto = acción del banco (según el nivel de esfuerzo) + modificador INCUP de la carta.
+   - El NIVEL decide la acción: Ligero (1–3 min), Medio (30–60 s), Pesado (5–10 s, «Solo…»).
+   - La CARTA decide el modificador: Novedad cambia el método, Desafío pone un reto sin reloj,
+     Pasión añade algo que gusta, Interés añade a alguien o un detalle, Urgencia un micro-límite.
+   - Cada mazo rota acciones y modificadores, así ninguna combinación se repite en la misma tarea.
+   - Si el modificador repite una palabra de la acción («Coge el móvil, sin mirar el móvil»),
+     se salta al siguiente. */
 
 export type RetoCarta = { tipo: TipoReto; titulo: string; pasos: string[]; hecho: string }
 
-const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
+export const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
-/* ── 7. Mazos nuevos para la misma tarea ───────────────────────
-   Cuando se rechazan las 5 cartas, la app reparte otro mazo con 5 retos distintos de la
-   MISMA tarea. Mazo 1: retos de la categoría (variantes.ts). Mazos 2 y 3: estrategias que
-   sirven para cualquier tarea (cambiar de sitio, temporizador corto, empezar por lo fácil,
-   avisar a alguien, preparar lo necesario…). Cada carta mantiene su factor INCUP. */
+/** Mazos de 5 cartas que se pueden repartir para la misma tarea sin repetir combinación */
+export const NUM_MAZOS = 6
 
-export const NUM_MAZOS = 3
+const raices = (s: string) =>
+  new Set(
+    normalizar(s)
+      .split(' ')
+      .filter((p) => p.length > 4),
+  )
 
-type Mazo = Record<TipoReto, [reto: string, hecho: string]>
-
-function mazoExtra(mazo: number, tarea: string, base: string): Mazo {
-  const t = minuscula(sinPunto(tarea))
-  const b = minuscula(sinPunto(base))
-  return mazo === 1
-    ? {
-        novedad: [`Cambia de sitio: ve a otra habitación y ${b}`, 'estás en otro sitio y has empezado'],
-        desafio: [`Pon un temporizador de 5 minutos y avanza en «${t}» hasta que suene`, 'ha sonado el temporizador'],
-        pasion: [`Elige la parte de «${t}» que menos te cuesta y empieza por ahí`, 'has empezado por esa parte'],
-        interes: [`Escribe a alguien este mensaje: «Voy a ${t} ahora»`, 'has enviado el mensaje'],
-        urgencia: [`Pon en la mesa lo que necesitas para «${t}»`, 'lo que necesitas está en la mesa'],
-      }
-    : {
-        novedad: [`Hazlo de pie o en otra postura: ${b}`, 'has empezado en otra postura'],
-        desafio: [`Trabaja en «${t}» durante 2 minutos y para cuando pasen`, 'han pasado los 2 minutos'],
-        pasion: [`Pon tu canción favorita y ${b} mientras suena`, 'la canción ha terminado'],
-        interes: [`Pide a alguien que esté contigo, en persona o en videollamada, mientras empiezas «${t}»`, 'has empezado con alguien cerca'],
-        urgencia: [`Escribe en un papel el primer paso de «${t}» y déjalo a la vista`, 'el papel está a la vista'],
-      }
+/** Modificador de la carta para este mazo, saltando los que chocan con la acción */
+export function modificadorDe(tipo: TipoReto, mazo: number, accion: string, nivel: Nivel): string {
+  const enAccion = raices(accion)
+  const todos = MODIFICADORES[nivel === 'pesado' ? 'pesado' : 'normal'][tipo]
+  const validos = todos.filter((mod) => ![...raices(mod)].some((p) => enAccion.has(p)))
+  const lista = validos.length > 1 ? validos : todos
+  // Cada 3 mazos la acción vuelve a salir: el modificador avanza uno más para no repetir pareja
+  return lista[((mazo % 3) + Math.floor(mazo / 3)) % lista.length]
 }
 
-export function retosDe(tarea: string, esfuerzo?: 'ligero' | 'medio' | 'pesado', mazo = 0): RetoCarta[] {
-  const { regla, base, hecho } = analizarTarea(tarea)
-  const extra = mazo > 0 ? mazoExtra(mazo % NUM_MAZOS || 1, tarea, base) : undefined
-  const variantes = regla ? VARIANTES[regla.categoria] : undefined
+/** Frase completa de la acción con su modificador: «Solo abre el correo, en silencio» */
+export function accionConModificador(accion: string, mod: string, nivel: Nivel) {
+  const A = sinPunto(accion)
+  return `${nivel === 'pesado' ? `Solo ${minuscula(A)}` : mayuscula(A)}, ${mod}`
+}
 
-  return ORDEN.map((tipo) => {
-    const propia = extra ? extra[tipo] : tipo !== 'urgencia' ? variantes?.[tipo] : undefined
-    let accion = propia ? propia[0] : base
-    let criterio = propia ? propia[1] : hecho
-    let pasos = pasosDe(accion)
-
-    // Los retos propios ya son pequeños: con «Pesado» solo se recorta el reto base
-    if (esfuerzo === 'pesado' && !propia && pasos.length > 1) {
-      accion = pasos[0]
-      pasos = [pasos[0]]
-      criterio = 'has hecho este paso'
-    }
-
-    const A = mayuscula(sinPunto(accion))
-    const titulo = propia ? ENTRADILLA[GATILLO_DE_CARTA[tipo]](A) : tono(accion, GATILLO_DE_CARTA[tipo])
-    return { tipo, titulo, pasos, hecho: criterio }
+export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0): RetoCarta[] {
+  const { acciones } = analizarTarea(tarea)
+  const lista = acciones[esfuerzo]
+  return ORDEN.map((tipo, k) => {
+    const accion = lista[(mazo + k) % lista.length]
+    const mod = modificadorDe(tipo, mazo, accion, esfuerzo)
+    const frase = accionConModificador(accion, mod, esfuerzo)
+    return { tipo, titulo: ENTRADILLA[tipo](frase), pasos: [frase], hecho: HECHO_POR_NIVEL[esfuerzo] }
   })
 }
