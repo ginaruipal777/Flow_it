@@ -3,12 +3,13 @@ import { copyFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 
-/* GitHub Pages sirve la app en https://ginaruipal777.github.io/Flow_it/,
-   así que al compilar todas las rutas cuelgan de /Flow_it/. */
-const BASE_PAGES = '/Flow_it/'
+/* Ruta base:
+   - Vercel (y `npm run build`): la app vive en la raíz «/».
+   - GitHub Pages: vive en /Flow_it/; el script `npm run publicar` compila con --base /Flow_it/. */
 
 /* GitHub Pages no sabe de rutas de React: si recargas /Flow_it/inicio busca un archivo
-   que no existe y muestra 404.html. Copiando index.html como 404.html la app arranca igual. */
+   que no existe y muestra 404.html. Copiando index.html como 404.html la app arranca igual.
+   (En Vercel lo resuelve vercel.json.) */
 function paginaDe404(): Plugin {
   return {
     name: 'flowit-404',
@@ -19,7 +20,6 @@ function paginaDe404(): Plugin {
   }
 }
 
-export default defineConfig(({ command, isPreview }) => ({
-  base: command === 'build' || isPreview ? BASE_PAGES : '/',
+export default defineConfig({
   plugins: [react(), paginaDe404()],
-}))
+})

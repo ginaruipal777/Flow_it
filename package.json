@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "iconos": "node scripts/iconos.mjs",
-    "publicar": "npm run build && gh-pages -d dist --nojekyll"
+    "publicar": "tsc -b && vite build --base /Flow_it/ && gh-pages -d dist --nojekyll"
   },
   "dependencies": {
     "react": "^19.3.1",
