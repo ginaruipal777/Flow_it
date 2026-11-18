@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "iconos": "node scripts/iconos.mjs"
+    "iconos": "node scripts/iconos.mjs",
+    "documento": "node scripts/documento-retos.mts && \"C:/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf=docs/sistema-de-retos.pdf docs/sistema-de-retos.html"
   },
   "dependencies": {
     "react": "^19.3.1",

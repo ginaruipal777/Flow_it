@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Flow it! · Sistema de creación de retos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Fustat:wght@500;600;700;800&family=Pacifico&display=swap">
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm; }
+  @page :first { margin: 0; }
+  :root { --tinta:#1b1340; --violeta:#5b3fe0; --lima:#d4ff3a; --crema:#efe6d8; --lienzo:#faf8f5; --gris:#6b6580; --borde:#ddd9e8; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Fustat, system-ui, sans-serif; font-size: 10.5pt; line-height: 1.45; color: var(--tinta); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  h1, h2, h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; margin: 0; line-height: 1.05; }
+  h2 { font-size: 20pt; margin: 0 0 4mm; padding-top: 2mm; }
+  h3 { font-size: 13pt; margin: 6mm 0 2mm; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  .salto { break-before: page; }
+  .portada { height: 297mm; display: flex; flex-direction: column; justify-content: space-between; background: var(--violeta); color: var(--crema); padding: 26mm 22mm; }
+  .portada .logo { font-family: Pacifico, cursive; font-size: 40pt; }
+  .portada h1 { font-size: 46pt; color: #fff; }
+  .portada h1 span { color: var(--lima); }
+  .portada .sub { font-size: 13pt; max-width: 140mm; }
+  .portada .pie { font-size: 10pt; opacity: .85; }
+  .flujo { display: grid; gap: 2.5mm; margin: 4mm 0; }
+  .paso { display: grid; grid-template-columns: 9mm 1fr; gap: 3mm; align-items: start; padding: 3mm 4mm; border-radius: 4mm; background: var(--lienzo); border: 1px solid var(--borde); break-inside: avoid; }
+  .paso b.n { display:flex; align-items:center; justify-content:center; width: 8mm; height: 8mm; border-radius: 50%; background: var(--tinta); color: var(--lima); font-family: 'Bricolage Grotesque'; }
+  .paso h4 { margin: 0 0 1mm; font-size: 11pt; font-family: 'Bricolage Grotesque'; }
+  .paso p { margin: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; }
+  th { text-align: left; background: var(--tinta); color: #fff; font-weight: 700; padding: 2mm; }
+  td { padding: 2mm; border-bottom: 1px solid var(--borde); vertical-align: top; }
+  tr { break-inside: avoid; }
+  td ol { margin: 0; padding-left: 4mm; }
+  .peq { font-size: 8pt; color: var(--gris); }
+  .formula { font-family: 'Bricolage Grotesque'; font-weight: 700; }
+  .chip { display:inline-block; padding: .5mm 2.5mm; border-radius: 99px; font-weight: 800; font-size: 8.5pt; }
+  .nota { padding: 3mm 4mm; border-radius: 3mm; background: var(--lima); margin: 3mm 0; break-inside: avoid; }
+  .ejemplo { border: 1px solid var(--borde); border-radius: 4mm; padding: 4mm; margin: 0 0 4mm; break-inside: avoid; background: #fff; }
+  .ejemplo__tarea { font-size: 11pt; margin-bottom: 1mm; }
+  .ejemplo__meta { font-size: 9pt; color: var(--gris); }
+  .minis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2mm; margin: 3mm 0; }
+  .mini { border-radius: 3mm; padding: 2.5mm; min-height: 30mm; font-size: 8.3pt; line-height: 1.3; }
+  .mini__tipo { display:block; font-weight: 800; font-size: 7pt; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 1.5mm; opacity: .9; }
+  .mini p { margin: 0; font-weight: 600; }
+  .ejemplo__detalle { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; font-size: 9pt; }
+  .ejemplo__detalle ol { margin: 0; padding-left: 4.5mm; }
+  .etq { display:block; font-weight: 800; font-size: 7.5pt; letter-spacing: .1em; text-transform: uppercase; color: var(--gris); margin-bottom: 1mm; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 8.5pt; background: var(--lienzo); padding: 0 1mm; border-radius: 1mm; }
+  ul { margin: 0 0 3mm; padding-left: 5mm; }
+</style></head><body>
+
+<section class="portada">
+  <div class="logo">flow it!</div>
+  <div>
+    <h1>Sistema de<br>creación de <span>retos</span></h1>
+    <p class="sub" style="margin-top:8mm">Cómo convierte la app cualquier tarea en 5 retos: qué regla elige, cómo se escribe cada carta INCUP, cómo se dividen los pasos y cuándo un reto está hecho.</p>
+  </div>
+  <p class="pie">Documento generado desde el código de la app (<code style="background:transparent;color:inherit">src/datos/reglas.ts</code>) · 18 de noviembre de 2026</p>
+</section>
+
+<section class="salto">
+  <h2>1. Cómo funciona, de principio a fin</h2>
+  <p>La persona escribe una tarea («Responder el email de Carlos») y elige cuánto le pesa. La app hace esto:</p>
+  <div class="flujo">
+    <div class="paso"><b class="n">1</b><div><h4>Limpia el texto</h4><p>Pasa la tarea a minúsculas y quita tildes y signos, para comparar sin errores («Declaración» = «declaracion»).</p></div></div>
+    <div class="paso"><b class="n">2</b><div><h4>Busca la regla que mejor encaja</h4><p>Compara la tarea con las 49 reglas (48 de las tablas del «Sistema de Retos V2» + 1 de la app). Cada regla tiene palabras clave, una categoría, un icono, un <strong>reto base</strong> (la mínima acción posible) y un <strong>criterio de éxito</strong>. Cómo se puntúa: apartado 2.</p></div></div>
+    <div class="paso"><b class="n">3</b><div><h4>Si no hay regla, usa una plantilla</h4><p>Mira el verbo con el que empieza la tarea («Buscar piso» → «Busca piso y tenlo delante»). Si tampoco hay plantilla para ese verbo: «Haz la parte más pequeña de esta tarea». Apartado 5.</p></div></div>
+    <div class="paso"><b class="n">4</b><div><h4>Ajusta al esfuerzo</h4><p>Si la tarea se marcó como <strong>Pesado</strong> y el reto base tiene varios pasos, el reto se reduce al primer paso y el criterio pasa a ser «has hecho este paso». Con menos esfuerzo cuesta menos arrancar.</p></div></div>
+    <div class="paso"><b class="n">5</b><div><h4>Escribe las 5 cartas INCUP</h4><p>La misma acción se dice de 5 formas, una por factor de motivación (Interés, Novedad, Competencia, Urgencia, Pasión). Cada carta tiene una fórmula fija. Apartado 3.</p></div></div>
+    <div class="paso"><b class="n">6</b><div><h4>Muestra el mazo</h4><p>La persona desliza: derecha para aceptar, izquierda para ver la siguiente. Si rechaza las 5, la app le propone escribir otra tarea.</p></div></div>
+    <div class="paso"><b class="n">7</b><div><h4>Detalle del reto aceptado</h4><p>Muestra los <strong>micropasos</strong> con casillas para marcar, el criterio <strong>«Está hecho cuando…»</strong>, un botón para <strong>escucharlo</strong> en voz alta y un <strong>premio</strong> opcional para cuando lo consiga. Apartado 4.</p></div></div>
+  </div>
+</section>
+
+<section class="salto">
+  <h2>2. Cómo se elige la regla</h2>
+  <p>Cada regla suma puntos por cada palabra clave que aparece en la tarea: tantos puntos como letras tiene la palabra clave. Gana la regla con más puntos; si empatan, la que va antes en la lista.</p>
+  <p>Las palabras que salen en <strong>varias reglas</strong> («leer», «escribir», «dibujar», «escuchar», «llamar»…) solo cuentan <strong>la mitad</strong>, porque por sí solas no dicen de qué va la tarea. Así gana la palabra más concreta:</p>
+  <table>
+    <tr><th>Tarea</th><th>Regla elegida</th><th>Por qué</th></tr>
+    <tr><td>Responder el email de Carlos</td><td><strong>Comunicación</strong></td><td>«email» y «responder» solo están en Comunicación.</td></tr><tr><td>Dibujar un boceto</td><td><strong>Dibujo</strong></td><td>«dibujar» está en Creativo y en Dibujo (cuenta la mitad); «boceto» solo en Dibujo.</td></tr><tr><td>Escuchar un podcast</td><td><strong>Podcast</strong></td><td>«escuchar» está en Música y Podcast (cuenta la mitad); «podcast» solo en Podcast.</td></tr><tr><td>Llamar a un amigo</td><td><strong>Llamada social</strong></td><td>La frase entera «llamar a un amigo» es una palabra clave de Llamada social.</td></tr><tr><td>Llamar al dentista</td><td><strong>Llamadas</strong></td><td>«dentista» solo está en Llamadas.</td></tr><tr><td>Leer un libro</td><td><strong>Lectura</strong></td><td>«leer» está en Académico y Lectura (la mitad); «libro» solo en Lectura.</td></tr>
+  </table>
+  <div class="nota"><strong>La categoría se puede cambiar.</strong> En la pantalla de selección, el botón con el lápiz deja elegir otra categoría si la detectada no es la correcta. Eso cambia el icono de las cartas.</div>
+</section>
+
+<section class="salto">
+  <h2>3. Las 5 cartas INCUP y su fórmula</h2>
+  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta usa uno. El reto base del «Sistema de Retos V2» es la <strong>[acción]</strong>, y la fórmula de cada carta la envuelve siempre igual, para que sea predecible.</p>
+  <table>
+    <tr><th>Carta</th><th>Factor INCUP</th><th>Gatillo del PDF V2</th><th>Fórmula</th><th>Por qué así</th></tr>
+    <tr><td><span class="chip" style="background:#5b3fe0;color:#ffffff">Novedad</span></td><td>Novedad</td><td>Novedad</td><td class="formula">[Acción]. Puedes hacerlo en un sitio distinto al de siempre.</td><td>La novedad activa la atención. Se propone un cambio concreto (el sitio), no «hazlo de forma creativa».</td></tr><tr><td><span class="chip" style="background:#ee6b47;color:#1b1340">Desafío</span></td><td>Competencia (Challenge)</td><td>Desafío</td><td class="formula">Objetivo: [acción].</td><td>Un objetivo claro y alcanzable. Sin preguntas que presionen («¿te atreves?»).</td></tr><tr><td><span class="chip" style="background:#f7a3e0;color:#1b1340">Pasión</span></td><td>Pasión</td><td>Motivación</td><td class="formula">[Acción]. Al hacerlo, ya habrás empezado la tarea.</td><td>Dice qué se consigue, de forma literal y verdadera, sin promesas vagas.</td></tr><tr><td><span class="chip" style="background:#2fa4f0;color:#1b1340">Interés</span></td><td>Interés</td><td>Directo</td><td class="formula">[Acción].</td><td>Solo la acción, sin nada alrededor, para quien prefiere ir al grano.</td></tr><tr><td><span class="chip" style="background:#ffd23f;color:#1b1340">Urgencia</span></td><td>Urgencia</td><td>Urgencia</td><td class="formula">[Acción]. Hazlo ahora, antes de empezar otra cosa.</td><td>Un momento concreto («ahora, antes de…»), nunca «luego» ni «cuando puedas».</td></tr>
+  </table>
+  <p class="peq">El PDF V2 tiene un sexto gatillo, «Amable». En la app no tiene carta propia: su papel lo cumplen los pasos marcables y el criterio de éxito del detalle.</p>
+
+  <h3>Reglas de escritura (comunicación accesible)</h3>
+  <ul>
+    <li>Lenguaje claro y literal: sin metáforas, ironías ni frases hechas («cambia el chip», «tranqui»).</li>
+    <li>La acción va siempre primero y entera.</li>
+    <li>Sin tiempos vagos («luego», «cuando puedas») ni preguntas que presionen («¿te atreves?»).</li>
+    <li>Sin emojis y sin género gramatical para la persona («ya habrás empezado», no «estarás list@»).</li>
+  </ul>
+  <h3>Ejemplo</h3>
+  
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Responder el email de Carlos»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Comunicación</strong> · icono Trabajo · reto base: «Abre el correo y escribe solo el saludo»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Abre el correo y escribe solo el saludo. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: abre el correo y escribe solo el saludo.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Abre el correo y escribe solo el saludo. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Abre el correo y escribe solo el saludo.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Abre el correo y escribe solo el saludo. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span><ol><li>Abre el correo.</li><li>Escribe solo el saludo.</li></ol></div>
+      <div><span class="etq">Está hecho cuando</span>el saludo está escrito en el correo.</div>
+    </div>
+  </div>
+</section>
+
+<section class="salto">
+  <h2>4. Pasos, criterio de éxito, esfuerzo y premio</h2>
+  <h3>Micropasos</h3>
+  <p>El reto base se divide en pasos cuando tiene una «y» seguida de un verbo de acción («Abre el correo <strong>y escribe</strong> solo el saludo» → 2 pasos). Si la «y» no va seguida de un verbo («papel <strong>y</strong> lápiz»), se queda en el mismo paso. En el detalle, cada paso es una casilla grande que se marca al tocarla; al marcarlas todas aparece «Ya has hecho todos los pasos. Pulsa «Reto conseguido»».</p>
+  <h3>Criterio de éxito</h3>
+  <p>Cada regla tiene un «Está hecho cuando…» con algo que se puede <strong>ver o comprobar</strong>: «el saludo está escrito en el correo», «hay 3 cosas menos encima de la mesa», «el vaso de agua está vacío». Así no hay que adivinar cuándo se ha terminado.</p>
+  <h3>Esfuerzo («¿Cuánto te pesa?»)</h3>
+  <table>
+    <tr><th>Elección</th><th>Qué pasa con el reto</th><th>Ejemplo con «Estudiar para el examen»</th></tr>
+    <tr><td>Ligero</td><td>Reto base completo.</td><td><ol><li>Abre el libro o apunte.</li><li>Lee solo el primer párrafo.</li></ol></td></tr>
+    <tr><td>Medio</td><td>Reto base completo.</td><td>Igual que Ligero.</td></tr>
+    <tr><td>Pesado</td><td>Solo el primer paso. Criterio: «has hecho este paso».</td><td>Abre el libro o apunte.</td></tr>
+  </table>
+  <h3>Escuchar</h3>
+  <p>El botón «Escuchar» lee en voz alta, con la voz del dispositivo: el texto de la carta, «Paso 1: …», «Paso 2: …» y «Está hecho cuando …».</p>
+  <h3>Premio (método RAN)</h3>
+  <p>En el detalle se puede elegir un premio opcional: «Un café o un té», «Un capítulo de tu serie», «10 minutos de descanso», «Una canción que te guste» u otro escrito a mano. Al pulsar «Reto conseguido» la app lo recuerda: «Tu premio: … Puedes tomarlo ahora.».</p>
+</section>
+
+<section class="salto">
+  <h2>5. Plantillas genéricas (cuando no hay regla)</h2>
+  <p>Se mira el primer verbo de la tarea. <strong>[objeto]</strong> es el resto del texto («Buscar <em>piso</em>» → objeto = «piso»).</p>
+  <table>
+    <tr><th>Verbos</th><th>Reto base</th><th>Está hecho cuando</th></tr>
+    <tr><td>abrir</td><td>Abre [objeto] y mira lo primero que veas</td><td>has abierto [objeto]</td></tr><tr><td>escribir, redactar</td><td>Escribe solo la primera frase de [objeto]</td><td>la primera frase está escrita</td></tr><tr><td>buscar, encontrar</td><td>Busca [objeto] y tenlo delante</td><td>has encontrado [objeto]</td></tr><tr><td>elegir, decidir, escoger</td><td>Escribe 2 opciones de [objeto]</td><td>tienes 2 opciones escritas</td></tr><tr><td>preparar, organizar, planificar</td><td>Prepara lo mínimo para [objeto]</td><td>tienes lo mínimo preparado</td></tr><tr><td>mover, llevar, colocar, cambiar</td><td>Mueve una cosa relacionada con [objeto]</td><td>has movido una cosa</td></tr><tr><td>llamar, telefonear</td><td>Busca el número y prepárate para llamar</td><td>tienes el número en la pantalla, listo para llamar</td></tr><tr><td>leer, revisar, repasar</td><td>Lee solo el primer párrafo de [objeto]</td><td>has leído el primer párrafo</td></tr>
+    <tr><td><em>Cualquier otro</em></td><td>Haz la parte más pequeña de esta tarea</td><td>has hecho una parte de la tarea, aunque sea pequeña</td></tr>
+  </table>
+  <div class="nota"><strong>Cómo ampliar el sistema</strong> (protocolo 5.2 del PDF V2): cuando una tarea cae en una plantilla, se añade una regla nueva en <code>src/datos/reglas.ts</code> con sus palabras clave, una categoría breve, el icono, la mínima acción posible y su criterio de éxito.</div>
+</section>
+
+<section class="salto">
+  <h2>6. Catálogo completo de reglas por categoría</h2>
+  <p>Para cada regla: palabras clave que la activan, reto base (la acción de todas las cartas), cómo se divide en pasos y cuándo está hecho. Al final de cada grupo, un ejemplo con las 5 cartas.</p>
+  
+    <h3>Trabajo, administración y estudio</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Comunicación</strong><br><span class="peq">Trabajo</span></td>
+    <td class="peq">email, correo, responder, escribir a</td>
+    <td>Abre el correo y escribe solo el saludo</td>
+    <td><ol><li>Abre el correo.</li><li>Escribe solo el saludo.</li></ol></td>
+    <td>el saludo está escrito en el correo</td>
+  </tr>
+  <tr>
+    <td><strong>Administrativo</strong><br><span class="peq">Trabajo</span></td>
+    <td class="peq">declaración, impuestos, hacienda, papeleo</td>
+    <td>Abre la web o el documento y mira la primera casilla</td>
+    <td><ol><li>Abre la web o el documento.</li><li>Mira la primera casilla.</li></ol></td>
+    <td>tienes el documento abierto y has leído la primera casilla</td>
+  </tr>
+  <tr>
+    <td><strong>Académico</strong><br><span class="peq">Estudios</span></td>
+    <td class="peq">estudiar, leer, apuntes, examen</td>
+    <td>Abre el libro o apunte y lee solo el primer párrafo</td>
+    <td><ol><li>Abre el libro o apunte.</li><li>Lee solo el primer párrafo.</li></ol></td>
+    <td>has leído el primer párrafo</td>
+  </tr>
+  <tr>
+    <td><strong>Llamadas</strong><br><span class="peq">Llamadas</span></td>
+    <td class="peq">llamar, teléfono, cita, dentista</td>
+    <td>Busca el número y tenlo listo para marcar</td>
+    <td><ol><li>Busca el número.</li><li>Tenlo listo para marcar.</li></ol></td>
+    <td>tienes el número en la pantalla, listo para llamar</td>
+  </tr>
+  <tr>
+    <td><strong>Decisión</strong><br><span class="peq">Trabajo</span></td>
+    <td class="peq">decidir, elegir, escoger</td>
+    <td>Escribe las 2 opciones en un papel</td>
+    <td>Escribe las 2 opciones en un papel.</td>
+    <td>las 2 opciones están escritas en el papel</td>
+  </tr>
+  <tr>
+    <td><strong>Creativo</strong><br><span class="peq">Estudios</span></td>
+    <td class="peq">creativo, escribir, diseñar, dibujar</td>
+    <td>Abre el documento y escribe una frase</td>
+    <td><ol><li>Abre el documento.</li><li>Escribe una frase.</li></ol></td>
+    <td>hay una frase escrita en el documento</td>
+  </tr>
+  <tr>
+    <td><strong>Digital</strong><br><span class="peq">Trabajo</span></td>
+    <td class="peq">ordenador, portátil, archivo, carpeta</td>
+    <td>Abre la carpeta y mira el primer archivo</td>
+    <td><ol><li>Abre la carpeta.</li><li>Mira el primer archivo.</li></ol></td>
+    <td>has abierto el primer archivo de la carpeta</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Responder el email de Carlos»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Comunicación</strong> · icono Trabajo · reto base: «Abre el correo y escribe solo el saludo»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Abre el correo y escribe solo el saludo. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: abre el correo y escribe solo el saludo.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Abre el correo y escribe solo el saludo. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Abre el correo y escribe solo el saludo.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Abre el correo y escribe solo el saludo. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span><ol><li>Abre el correo.</li><li>Escribe solo el saludo.</li></ol></div>
+      <div><span class="etq">Está hecho cuando</span>el saludo está escrito en el correo.</div>
+    </div>
+  </div>
+    <h3>Hogar y vida cotidiana</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Doméstico</strong><br><span class="peq">Limpieza</span></td>
+    <td class="peq">limpiar, ordenar, recoger, fregar</td>
+    <td>Recoge solo 3 cosas de la mesa</td>
+    <td>Recoge solo 3 cosas de la mesa.</td>
+    <td>hay 3 cosas menos encima de la mesa</td>
+  </tr>
+  <tr>
+    <td><strong>Compra</strong><br><span class="peq">Alimentación</span></td>
+    <td class="peq">comprar, tienda, supermercado, compra</td>
+    <td>Escribe la lista de 3 cosas que necesitas</td>
+    <td>Escribe la lista de 3 cosas que necesitas.</td>
+    <td>la lista tiene 3 cosas apuntadas</td>
+  </tr>
+  <tr>
+    <td><strong>Cocina</strong><br><span class="peq">Alimentación</span></td>
+    <td class="peq">cocinar, comida, cena, receta</td>
+    <td>Abre la nevera y saca un ingrediente</td>
+    <td><ol><li>Abre la nevera.</li><li>Saca un ingrediente.</li></ol></td>
+    <td>hay un ingrediente fuera de la nevera</td>
+  </tr>
+  <tr>
+    <td><strong>Ropa</strong><br><span class="peq">Casa</span></td>
+    <td class="peq">ropa, lavar, tender, planchar</td>
+    <td>Coge una prenda y llévala al sitio</td>
+    <td><ol><li>Coge una prenda.</li><li>Llévala al sitio.</li></ol></td>
+    <td>una prenda está en su sitio</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Ordenar el escritorio»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Doméstico</strong> · icono Limpieza · reto base: «Recoge solo 3 cosas de la mesa»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Recoge solo 3 cosas de la mesa. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: recoge solo 3 cosas de la mesa.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Recoge solo 3 cosas de la mesa. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Recoge solo 3 cosas de la mesa.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Recoge solo 3 cosas de la mesa. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span>Recoge solo 3 cosas de la mesa.</div>
+      <div><span class="etq">Está hecho cuando</span>hay 3 cosas menos encima de la mesa.</div>
+    </div>
+  </div>
+    <h3>Ocio y entretenimiento</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Ver serie</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">serie, ver serie, netflix, capítulo, temporada</td>
+    <td>Pon el capítulo y mira solo la intro</td>
+    <td><ol><li>Pon el capítulo.</li><li>Mira solo la intro.</li></ol></td>
+    <td>has visto la intro del capítulo</td>
+  </tr>
+  <tr>
+    <td><strong>Ver película</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">película, cine, ver peli, film</td>
+    <td>Abre la plataforma y elige una peli</td>
+    <td><ol><li>Abre la plataforma.</li><li>Elige una peli.</li></ol></td>
+    <td>has elegido una película</td>
+  </tr>
+  <tr>
+    <td><strong>Lectura</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">leer, libro, novela, kindle</td>
+    <td>Abre el libro y lee solo una página</td>
+    <td><ol><li>Abre el libro.</li><li>Lee solo una página.</li></ol></td>
+    <td>has leído una página</td>
+  </tr>
+  <tr>
+    <td><strong>Videojuego</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">jugar, videojuego, consola, partida</td>
+    <td>Abre el juego y haz solo una partida corta</td>
+    <td><ol><li>Abre el juego.</li><li>Haz solo una partida corta.</li></ol></td>
+    <td>has jugado una partida corta</td>
+  </tr>
+  <tr>
+    <td><strong>Música</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">música, escuchar, playlist, disco</td>
+    <td>Pon una canción que te guste</td>
+    <td>Pon una canción que te guste.</td>
+    <td>está sonando una canción que te gusta</td>
+  </tr>
+  <tr>
+    <td><strong>Podcast</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">podcast, escuchar podcast</td>
+    <td>Pon el podcast y escucha un poco</td>
+    <td>Pon el podcast y escucha un poco.</td>
+    <td>el podcast está sonando</td>
+  </tr>
+  <tr>
+    <td><strong>Vídeo</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">youtube, vídeo, tutorial</td>
+    <td>Busca el vídeo y dale al play</td>
+    <td><ol><li>Busca el vídeo.</li><li>Dale al play.</li></ol></td>
+    <td>el vídeo se está reproduciendo</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Ver la nueva temporada de la serie»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Ver serie</strong> · icono Autocuidado · reto base: «Pon el capítulo y mira solo la intro»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Pon el capítulo y mira solo la intro. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: pon el capítulo y mira solo la intro.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Pon el capítulo y mira solo la intro. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Pon el capítulo y mira solo la intro.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Pon el capítulo y mira solo la intro. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span><ol><li>Pon el capítulo.</li><li>Mira solo la intro.</li></ol></div>
+      <div><span class="etq">Está hecho cuando</span>has visto la intro del capítulo.</div>
+    </div>
+  </div>
+    <h3>Deporte y movimiento</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Gimnasio</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">ejercicio, entrenar, gimnasio, pesas</td>
+    <td>Ponte la ropa de deporte</td>
+    <td>Ponte la ropa de deporte.</td>
+    <td>llevas puesta la ropa de deporte</td>
+  </tr>
+  <tr>
+    <td><strong>Correr</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">correr, running, salir a correr</td>
+    <td>Ponte las zapatillas y sal a la puerta</td>
+    <td><ol><li>Ponte las zapatillas.</li><li>Sal a la puerta.</li></ol></td>
+    <td>llevas las zapatillas puestas y estás en la puerta</td>
+  </tr>
+  <tr>
+    <td><strong>Caminar</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">caminar, andar, paseo</td>
+    <td>Ponte los zapatos y sal a la calle</td>
+    <td><ol><li>Ponte los zapatos.</li><li>Sal a la calle.</li></ol></td>
+    <td>llevas los zapatos puestos y estás en la calle</td>
+  </tr>
+  <tr>
+    <td><strong>Yoga</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">yoga, estiramientos, flexibilidad</td>
+    <td>Extiende la esterilla y haz una postura</td>
+    <td><ol><li>Extiende la esterilla.</li><li>Haz una postura.</li></ol></td>
+    <td>la esterilla está extendida y has hecho una postura</td>
+  </tr>
+  <tr>
+    <td><strong>Bici</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">bici, bicicleta, ciclismo</td>
+    <td>Saca la bici y pon el casco</td>
+    <td><ol><li>Saca la bici.</li><li>Pon el casco.</li></ol></td>
+    <td>la bici está fuera y llevas el casco puesto</td>
+  </tr>
+  <tr>
+    <td><strong>Natación</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">nadar, piscina, natación</td>
+    <td>Prepara el bañador y la toalla</td>
+    <td>Prepara el bañador y la toalla.</td>
+    <td>el bañador y la toalla están en la bolsa</td>
+  </tr>
+  <tr>
+    <td><strong>Baile</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">bailar, baile, coreografía</td>
+    <td>Pon una canción y muévete</td>
+    <td><ol><li>Pon una canción.</li><li>Muévete.</li></ol></td>
+    <td>has bailado una canción</td>
+  </tr>
+  <tr>
+    <td><strong>Escalada</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">escalada, boulder, rocódromo</td>
+    <td>Prepara el material y ve al rocódromo</td>
+    <td><ol><li>Prepara el material.</li><li>Ve al rocódromo.</li></ol></td>
+    <td>el material está en la bolsa y sales hacia el rocódromo</td>
+  </tr>
+  <tr>
+    <td><strong>Deporte en equipo</strong><br><span class="peq">Deporte</span></td>
+    <td class="peq">fútbol, baloncesto, deporte de equipo</td>
+    <td>Coge la equipación y confirma la hora</td>
+    <td><ol><li>Coge la equipación.</li><li>Confirma la hora.</li></ol></td>
+    <td>la equipación está preparada y sabes a qué hora es</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Salir a correr»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Correr</strong> · icono Deporte · reto base: «Ponte las zapatillas y sal a la puerta»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Ponte las zapatillas y sal a la puerta. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: ponte las zapatillas y sal a la puerta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Ponte las zapatillas y sal a la puerta. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Ponte las zapatillas y sal a la puerta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ponte las zapatillas y sal a la puerta. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span><ol><li>Ponte las zapatillas.</li><li>Sal a la puerta.</li></ol></div>
+      <div><span class="etq">Está hecho cuando</span>llevas las zapatillas puestas y estás en la puerta.</div>
+    </div>
+  </div>
+    <h3>Vida social</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Quedar con amigos</strong><br><span class="peq">Social</span></td>
+    <td class="peq">quedar, quedar con amigos, plan, salir</td>
+    <td>Escribe un mensaje y propón un día</td>
+    <td><ol><li>Escribe un mensaje.</li><li>Propón un día.</li></ol></td>
+    <td>has enviado un mensaje con un día propuesto</td>
+  </tr>
+  <tr>
+    <td><strong>Llamada social</strong><br><span class="peq">Social</span></td>
+    <td class="peq">llamar a un amigo, hablar con, llamada</td>
+    <td>Busca el contacto y mándale un mensaje</td>
+    <td><ol><li>Busca el contacto.</li><li>Mándale un mensaje.</li></ol></td>
+    <td>has enviado un mensaje a esa persona</td>
+  </tr>
+  <tr>
+    <td><strong>Cumpleaños</strong><br><span class="peq">Social</span></td>
+    <td class="peq">cumpleaños, felicitar, regalo</td>
+    <td>Escribe el mensaje de felicitación</td>
+    <td>Escribe el mensaje de felicitación.</td>
+    <td>el mensaje de felicitación está enviado</td>
+  </tr>
+  <tr>
+    <td><strong>Fiesta</strong><br><span class="peq">Social</span></td>
+    <td class="peq">fiesta, celebración, evento social</td>
+    <td>Confirma asistencia o prepara lo que llevar</td>
+    <td>Confirma asistencia o prepara lo que llevar.</td>
+    <td>has confirmado que vas o tienes preparado lo que vas a llevar</td>
+  </tr>
+  <tr>
+    <td><strong>Familia</strong><br><span class="peq">Social</span></td>
+    <td class="peq">familia, visita, comida familiar</td>
+    <td>Llama o escribe para confirmar el plan</td>
+    <td>Llama o escribe para confirmar el plan.</td>
+    <td>has llamado o escrito para confirmar el plan</td>
+  </tr>
+  <tr>
+    <td><strong>Cita</strong><br><span class="peq">Social</span></td>
+    <td class="peq">cita, quedar con alguien, plan romántico</td>
+    <td>Escribe un mensaje y propón hora y sitio</td>
+    <td><ol><li>Escribe un mensaje.</li><li>Propón hora y sitio.</li></ol></td>
+    <td>has enviado un mensaje con hora y sitio</td>
+  </tr>
+  <tr>
+    <td><strong>Chat de grupo</strong><br><span class="peq">Social</span></td>
+    <td class="peq">grupo, chat, whatsapp de amigos</td>
+    <td>Lee los últimos mensajes y responde uno</td>
+    <td><ol><li>Lee los últimos mensajes.</li><li>Responde uno.</li></ol></td>
+    <td>has respondido a un mensaje del grupo</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Felicitar a Lucía por su cumpleaños»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Cumpleaños</strong> · icono Social · reto base: «Escribe el mensaje de felicitación»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Escribe el mensaje de felicitación. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: escribe el mensaje de felicitación.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Escribe el mensaje de felicitación. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Escribe el mensaje de felicitación.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Escribe el mensaje de felicitación. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span>Escribe el mensaje de felicitación.</div>
+      <div><span class="etq">Está hecho cuando</span>el mensaje de felicitación está enviado.</div>
+    </div>
+  </div>
+    <h3>Hobbies y creatividad</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Dibujo</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">dibujar, pintar, ilustrar, boceto</td>
+    <td>Coge papel y lápiz y haz una línea</td>
+    <td><ol><li>Coge papel y lápiz.</li><li>Haz una línea.</li></ol></td>
+    <td>hay una línea dibujada en el papel</td>
+  </tr>
+  <tr>
+    <td><strong>Escritura</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">escribir, escribir algo, relato, diario</td>
+    <td>Abre el documento y escribe una frase</td>
+    <td><ol><li>Abre el documento.</li><li>Escribe una frase.</li></ol></td>
+    <td>hay una frase escrita en el documento</td>
+  </tr>
+  <tr>
+    <td><strong>Fotografía</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">fotografía, foto, cámara, editar fotos</td>
+    <td>Coge la cámara o el móvil y haz una foto</td>
+    <td><ol><li>Coge la cámara o el móvil.</li><li>Haz una foto.</li></ol></td>
+    <td>has hecho una foto</td>
+  </tr>
+  <tr>
+    <td><strong>Cocina creativa</strong><br><span class="peq">Alimentación</span></td>
+    <td class="peq">cocinar, receta nueva, postre</td>
+    <td>Saca los ingredientes y prepara uno</td>
+    <td><ol><li>Saca los ingredientes.</li><li>Prepara uno.</li></ol></td>
+    <td>un ingrediente está lavado, cortado o medido</td>
+  </tr>
+  <tr>
+    <td><strong>Manualidades</strong><br><span class="peq">Casa</span></td>
+    <td class="peq">manualidades, coser, tejer, bricolaje</td>
+    <td>Prepara el material y empieza una pieza</td>
+    <td><ol><li>Prepara el material.</li><li>Empieza una pieza.</li></ol></td>
+    <td>el material está en la mesa y has empezado una pieza</td>
+  </tr>
+  <tr>
+    <td><strong>Instrumento</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">tocar instrumento, guitarra, piano, practicar</td>
+    <td>Coge el instrumento y toca una escala</td>
+    <td><ol><li>Coge el instrumento.</li><li>Toca una escala.</li></ol></td>
+    <td>has tocado una escala</td>
+  </tr>
+  <tr>
+    <td><strong>Jardín</strong><br><span class="peq">Casa</span></td>
+    <td class="peq">jardín, plantas, huerto, regar</td>
+    <td>Riega una planta o retira una hoja seca</td>
+    <td>Riega una planta o retira una hoja seca.</td>
+    <td>has regado una planta o quitado una hoja seca</td>
+  </tr>
+  <tr>
+    <td><strong>Meditación</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">meditar, mindfulness, respirar</td>
+    <td>Siéntate y respira</td>
+    <td><ol><li>Siéntate.</li><li>Respira.</li></ol></td>
+    <td>has hecho 3 respiraciones lentas</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Dibujar un boceto»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Dibujo</strong> · icono Autocuidado · reto base: «Coge papel y lápiz y haz una línea»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Coge papel y lápiz y haz una línea. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: coge papel y lápiz y haz una línea.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Coge papel y lápiz y haz una línea. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Coge papel y lápiz y haz una línea.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Coge papel y lápiz y haz una línea. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span><ol><li>Coge papel y lápiz.</li><li>Haz una línea.</li></ol></div>
+      <div><span class="etq">Está hecho cuando</span>hay una línea dibujada en el papel.</div>
+    </div>
+  </div>
+    <h3>Descanso y autocuidado</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Descanso</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">dormir, siesta, descansar, acostarme</td>
+    <td>Prepara la cama y apaga pantallas</td>
+    <td><ol><li>Prepara la cama.</li><li>Apaga pantallas.</li></ol></td>
+    <td>la cama está abierta y las pantallas apagadas</td>
+  </tr>
+  <tr>
+    <td><strong>Aseo</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">ducha, baño, aseo</td>
+    <td>Ve al baño y abre el grifo</td>
+    <td><ol><li>Ve al baño.</li><li>Abre el grifo.</li></ol></td>
+    <td>estás en el baño con el grifo abierto</td>
+  </tr>
+  <tr>
+    <td><strong>Skincare</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">skincare, crema, rutina facial</td>
+    <td>Aplica un solo producto</td>
+    <td>Aplica un solo producto.</td>
+    <td>te has puesto un producto</td>
+  </tr>
+  <tr>
+    <td><strong>Comida</strong><br><span class="peq">Alimentación</span></td>
+    <td class="peq">desayuno, comer, cena, alimentarme</td>
+    <td>Prepara algo simple y siéntate a comer</td>
+    <td><ol><li>Prepara algo simple.</li><li>Siéntate a comer.</li></ol></td>
+    <td>tienes algo de comer en la mesa y has empezado</td>
+  </tr>
+  <tr>
+    <td><strong>Hidratación</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">agua, beber, hidratarme</td>
+    <td>Bebe un vaso de agua</td>
+    <td>Bebe un vaso de agua.</td>
+    <td>el vaso de agua está vacío</td>
+  </tr>
+  <tr>
+    <td><strong>Desconexión</strong><br><span class="peq">Autocuidado</span></td>
+    <td class="peq">desconectar, parar, no hacer nada</td>
+    <td>Siéntate y tómate un momento</td>
+    <td><ol><li>Siéntate.</li><li>Tómate un momento.</li></ol></td>
+    <td>has pasado un momento sin pantallas ni tareas</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Beber más agua»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Hidratación</strong> · icono Autocuidado · reto base: «Bebe un vaso de agua»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Bebe un vaso de agua. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: bebe un vaso de agua.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Bebe un vaso de agua. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Bebe un vaso de agua.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Bebe un vaso de agua. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span>Bebe un vaso de agua.</div>
+      <div><span class="etq">Está hecho cuando</span>el vaso de agua está vacío.</div>
+    </div>
+  </div>
+    <h3>Ampliación de la app</h3>
+    <table>
+      <tr><th style="width:17%">Categoría · icono</th><th style="width:20%">Palabras clave</th><th style="width:21%">Reto base</th><th style="width:21%">Pasos</th><th>Está hecho cuando</th></tr>
+      
+  <tr>
+    <td><strong>Mascotas</strong><br><span class="peq">Mascotas</span></td>
+    <td class="peq">perro, gato, mascota, veterinario, pasear al perro, sacar al perro</td>
+    <td>Coge la correa y acércate a la puerta</td>
+    <td><ol><li>Coge la correa.</li><li>Acércate a la puerta.</li></ol></td>
+    <td>tienes la correa en la mano y estás en la puerta</td>
+  </tr>
+    </table>
+    
+  <div class="ejemplo">
+    <p class="ejemplo__tarea">Tarea escrita: <strong>«Sacar al perro»</strong></p>
+    <p class="ejemplo__meta">Regla: <strong>Mascotas</strong> · icono Mascotas · reto base: «Coge la correa y acércate a la puerta»</p>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>Coge la correa y acércate a la puerta. Puedes hacerlo en un sitio distinto al de siempre.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Objetivo: coge la correa y acércate a la puerta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Coge la correa y acércate a la puerta. Al hacerlo, ya habrás empezado la tarea.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Coge la correa y acércate a la puerta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Coge la correa y acércate a la puerta. Hazlo ahora, antes de empezar otra cosa.</p></div></div>
+    <div class="ejemplo__detalle">
+      <div><span class="etq">Pasos (detalle)</span><ol><li>Coge la correa.</li><li>Acércate a la puerta.</li></ol></div>
+      <div><span class="etq">Está hecho cuando</span>tienes la correa en la mano y estás en la puerta.</div>
+    </div>
+  </div>
+</section>
+
+<section class="salto">
+  <h2>7. Fuentes</h2>
+  <ul>
+    <li><strong>Guía y Reglas Completas del Sistema de Retos Anti-Procrastinación (V2)</strong>: las 49 reglas, las plantillas genéricas, los gatillos motivacionales y el protocolo de expansión.</li>
+    <li><strong>GAM Medical</strong>, «Cómo motivarte con la parálisis TDAH»: factores INCUP, método RAN (Recompensa, Responsabilidad, Novedad), micropasos y reducir distracciones.</li>
+    <li><strong>Isaac, López y Escobar (2024)</strong>, «Arousal dysregulation and executive dysfunction in ADHD», <em>Frontiers in Psychiatry</em> 14:1336040: el rendimiento mejora cuando la tarea pide menos esfuerzo y cuando hay recompensa.</li>
+    <li>Pautas de comunicación accesible para personas neurodivergentes y de diseño de tareas (micropasos, criterios de éxito explícitos, apoyo visual y escrito): <code>docs/comunicacion.md</code>.</li>
+  </ul>
+</section>
+</body></html>

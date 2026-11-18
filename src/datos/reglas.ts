@@ -5,7 +5,7 @@ import type { TipoReto } from '../components/CartaReto/tipos'
    Sistema de Retos Anti-Procrastinación (V2)
    Fuente: «Guía y Reglas Completas del Sistema de Retos V2» (PDF).
 
-   1. Se busca la tarea en las 49 REGLAS (palabras clave → reto base).
+   1. Se busca la tarea en las REGLAS (48 del PDF + 1 de la app) (palabras clave → reto base).
    2. Si no hay regla, se usa una PLANTILLA genérica según el verbo.
    3. El reto base se dice con el tono de cada carta (FRASES, sistema propio con
       pautas de comunicación accesible; ver docs/comunicacion.md).
@@ -120,9 +120,9 @@ export const REGLAS: Regla[] = [
 
 /* ── 3. Plantillas de acción genéricas (respaldo) ───────────── */
 
-type Plantilla = { verbos: string[]; base: (objeto: string) => string; hecho: (objeto: string) => string }
+export type Plantilla = { verbos: string[]; base: (objeto: string) => string; hecho: (objeto: string) => string }
 
-const PLANTILLAS: Plantilla[] = [
+export const PLANTILLAS: Plantilla[] = [
   { verbos: ['abrir'], base: (o) => `Abre ${o} y mira lo primero que veas`, hecho: (o) => `has abierto ${o}` },
   { verbos: ['escribir', 'redactar'], base: (o) => `Escribe solo la primera frase de ${o}`, hecho: () => 'la primera frase está escrita' },
   { verbos: ['buscar', 'encontrar'], base: (o) => `Busca ${o} y tenlo delante`, hecho: (o) => `has encontrado ${o}` },
@@ -134,7 +134,7 @@ const PLANTILLAS: Plantilla[] = [
 ]
 
 export const RETO_GENERICO = 'Haz la parte más pequeña de esta tarea'
-const HECHO_GENERICO = 'has hecho una parte de la tarea, aunque sea pequeña'
+export const HECHO_GENERICO = 'has hecho una parte de la tarea, aunque sea pequeña'
 
 /* ── 4. Cómo se dice cada reto (sistema de comunicación propio) ──
    Sustituye a la matriz de tonos del PDF. Sigue las pautas de comunicación

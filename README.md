@@ -48,7 +48,7 @@ Flujo completo de «prot final», instalable como PWA y publicado en https://flo
 
 Siguen la «Guía y Reglas Completas del Sistema de Retos V2» y están en [src/datos/reglas.ts](src/datos/reglas.ts):
 
-1. La tarea se busca en las **49 reglas** (palabras clave → categoría → reto base, la mínima acción viable).
+1. La tarea se busca en las **48 reglas del PDF + 1 de la app** (palabras clave → categoría → reto base, la mínima acción viable).
 2. Si no hay regla, se usa una **plantilla genérica** según el verbo («Buscar piso» → «Busca piso y tenlo delante»).
 3. El reto base se adapta a cada **gatillo motivacional**. Cada carta usa uno:
    Novedad → Novedad · Desafío → Desafío · Pasión → Motivación · Interés → Directo · Urgencia → Urgencia.
