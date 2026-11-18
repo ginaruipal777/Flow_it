@@ -103,3 +103,10 @@
     transform: scale(0.3) rotate(-20deg);
   }
 }
+
+/* Sin tareas todavía (app recién instalada) */
+.libreta__vacia {
+  margin: 24px 4px 0;
+  text-align: center;
+  opacity: 0.7;
+}

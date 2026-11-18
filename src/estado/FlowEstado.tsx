@@ -41,43 +41,19 @@ type Accion =
   | { tipo: 'nuevo-mazo'; categoria: Categoria; nombre: string }
   | { tipo: 'premio'; premio: string | undefined }
 
-const hora = (h: number) => Date.now() - h * 3600_000
-
-const tarea = (
-  id: string,
-  texto: string,
-  categoria: Categoria,
-  retos: number,
-  estado: Tarea['estado'],
-  ultimoTipo: TipoReto,
-  horas: number,
-): Tarea => ({ id, texto, categoria, esfuerzo: 'ligero', retos, estado, ultimoTipo, actualizada: hora(horas) })
-
-/* Datos de ejemplo para que la app no arranque vacía (los del prototipo de Figma). */
+/* Versión de fábrica: la app arranca vacía, como recién descargada.
+   Las reglas y el banco de retos están en src/datos; aquí solo se guarda lo que hace cada persona. */
 const INICIAL: Estado = {
   onboardingVisto: false,
-  nombre: 'Nak',
+  nombre: '',
   esfuerzo: 'ligero',
-  tareas: [
-    tarea('e1', 'Ordenar el escritorio', 'limpieza', 3, 'completada', 'desafio', 30),
-    tarea('e2', 'Terminar el informe', 'trabajo', 2, 'completada', 'interes', 48),
-    tarea('e3', 'Llamar al dentista', 'llamadas', 1, 'completada', 'urgencia', 72),
-    tarea('m1', 'Hacer la compra', 'alimentacion', 2, 'a-medias', 'pasion', 2),
-    tarea('m2', 'Sacar al perro', 'mascotas', 1, 'a-medias', 'interes', 24),
-    tarea('m3', 'Lavar la ropa', 'casa', 3, 'a-medias', 'urgencia', 72),
-  ],
+  tareas: [],
   tareaActual: null,
   indiceReto: 0,
   mazo: 0,
   retoAceptado: null,
   recienCompletada: null,
-  mazos: [
-    { categoria: 'trabajo', nombre: 'Trabajo', cartas: ['novedad', 'desafio', 'pasion'] },
-    { categoria: 'estudios', nombre: 'Estudios', cartas: ['desafio', 'pasion', 'interes', 'urgencia', 'novedad'] },
-    { categoria: 'deporte', nombre: 'Deporte', cartas: ['pasion', 'interes'] },
-    { categoria: 'alimentacion', nombre: 'Alimentación', cartas: ['interes', 'urgencia', 'novedad', 'desafio'] },
-    { categoria: 'autocuidado', nombre: 'Autocuidado', cartas: ['urgencia'] },
-  ],
+  mazos: [],
 }
 
 function cambiarTarea(e: Estado, cambio: (t: Tarea) => Tarea): Estado {
@@ -152,10 +128,13 @@ function reductor(e: Estado, a: Accion): Estado {
   }
 }
 
-const CLAVE = 'flowit:estado:v1'
+/* v2: versión de fábrica. Se borran los datos de ejemplo que guardaba la v1. */
+const CLAVE = 'flowit:estado:v2'
+const CLAVES_VIEJAS = ['flowit:estado:v1']
 
 function cargar(): Estado {
   try {
+    CLAVES_VIEJAS.forEach((k) => localStorage.removeItem(k))
     const guardado = localStorage.getItem(CLAVE)
     if (guardado) return { ...INICIAL, ...JSON.parse(guardado) }
   } catch {

@@ -32,6 +32,9 @@ export function Libreta({
         </span>
       </div>
       <hr className="libreta__separador" />
+      {filas.length === 0 && (
+        <p className="t-texto-cuerpo libreta__vacia">Aún no hay tareas terminadas. Cuando completes una, aparecerá aquí.</p>
+      )}
       <ul className="libreta__filas">
         {filas.map((f) => (
           <li key={f.id} className="libreta__fila" data-nueva={f.id === resaltada || undefined}>

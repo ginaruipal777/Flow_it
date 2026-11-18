@@ -24,9 +24,9 @@ function Cabecera({ claro }: { claro?: boolean }) {
     <header className="perfil__cabecera">
       <BotonVolver a="/inicio" className="perfil__volver" />
       <span className="perfil__avatar t-titular-l" data-claro={claro || undefined}>
-        {estado.nombre.charAt(0)}
+        {estado.nombre ? estado.nombre.charAt(0) : <Icono svg={ICONOS_UI.usuario} tamano={40} />}
       </span>
-      <h1 className="t-titular-l perfil__nombre">{estado.nombre}</h1>
+      <h1 className="t-titular-l perfil__nombre">{estado.nombre || 'Tu perfil'}</h1>
       <div className="perfil__nivel">
         <p>
           Nivel {nivel}
