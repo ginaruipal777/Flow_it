@@ -62,7 +62,7 @@
     <h1>Sistema de<br>creación de <span>retos</span></h1>
     <p class="sub" style="margin-top:8mm">Cómo convierte la app cualquier tarea en retos: la ley del esfuerzo inverso, el banco de acciones por categoría y la matriz de combinación con las 5 cartas INCUP.</p>
   </div>
-  <p class="pie">Documento generado desde el código de la app (<code style="background:transparent;color:inherit">src/datos/reglas.ts</code> y <code style="background:transparent;color:inherit">banco.ts</code>) · 18 de noviembre de 2026</p>
+  <p class="pie">Documento generado desde el código de la app (<code style="background:transparent;color:inherit">src/datos/reglas.ts</code> y <code style="background:transparent;color:inherit">banco.ts</code>) · 19 de noviembre de 2026</p>
 </section>
 
 <section class="salto">
@@ -70,13 +70,13 @@
   <p>La persona escribe una tarea («Responder el email de Carlos») y elige cuánto le pesa. La app hace esto:</p>
   <div class="flujo">
     <div class="paso"><b class="n">1</b><div><h4>Limpia el texto</h4><p>Pasa la tarea a minúsculas y quita tildes y signos, para comparar sin errores («Declaración» = «declaracion»).</p></div></div>
-    <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las 51 categorías. Apartado 2.</p></div></div>
+    <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las 52 categorías. Apartado 2.</p></div></div>
     <div class="paso"><b class="n">3</b><div><h4>El esfuerzo elige la acción (ley del esfuerzo inverso)</h4><p>Cada categoría tiene 3 acciones por nivel en un banco. <strong>Cuanto más pesa la tarea, más pequeña es la acción</strong>: Ligero 1–3 minutos, Medio 30–60 segundos, Pesado 5–10 segundos. Apartado 3.</p></div></div>
-    <div class="paso"><b class="n">4</b><div><h4>Cada carta INCUP añade su modificador</h4><p>La misma acción cambia de sabor según la carta: «con la mano que no usas» (Novedad), «sin mirar el móvil» (Desafío), «con tu música favorita de fondo» (Pasión)… Apartado 4.</p></div></div>
+    <div class="paso"><b class="n">4</b><div><h4>Cada carta INCUP añade su modificador</h4><p>La misma acción cambia de sabor según la carta: «empezando por la última línea» (Novedad, si es leer), «a la primera» (Desafío), «con tu música favorita de fondo» (Pasión)… Apartado 4.</p></div></div>
     <div class="paso"><b class="n">5</b><div><h4>Reparte el mazo</h4><p>5 cartas, una por factor INCUP. La persona desliza: derecha para aceptar, izquierda para ver la siguiente. Si rechaza las 5, llega otro mazo con combinaciones distintas (hasta 6 mazos, 30 retos por tarea). Apartado 5.</p></div></div>
     <div class="paso"><b class="n">6</b><div><h4>Detalle del reto aceptado</h4><p>Una sola acción, el criterio «Está hecho cuando…», un botón para escucharlo y un premio opcional. Decide la persona: pulsa «Reto conseguido» cuando lo da por hecho.</p></div></div>
   </div>
-  <div class="nota"><strong>3916 retos distintos</strong> salen de combinar 51 categorías × 3 niveles × 3 acciones × los modificadores de las 5 cartas. Un script (<code>npm run validar</code>) comprueba que todos cumplen las reglas de oro.</div>
+  <div class="nota"><strong>4034 retos distintos</strong> salen de combinar 52 categorías × 3 niveles × 3 acciones × los modificadores de las 5 cartas. Un script (<code>npm run validar</code>) comprueba que todos cumplen las reglas de oro.</div>
 </section>
 
 <section class="salto">
@@ -91,7 +91,7 @@
   <p>Se usa el respaldo con el texto de la tarea entre comillas. Ejemplo con «arreglar la persiana»:</p>
   <table>
     <tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Escribe «arreglar la persiana» en un papel</li><li>Lee en voz alta «arreglar la persiana»</li><li>Toca lo primero que vas a usar para «arreglar la persiana»</li></ol></td><td><ol><li>Pon en la mesa lo que vas a usar para «arreglar la persiana»</li><li>Abre lo que vas a usar para «arreglar la persiana»</li><li>Haz el primer movimiento de «arreglar la persiana»</li></ol></td><td><ol><li>Haz la primera parte de «arreglar la persiana»</li><li>Avanza un poco en «arreglar la persiana»</li><li>Haz la parte más pequeña de «arreglar la persiana»</li></ol></td></tr>
+    <tr><td><ol><li>Escribe «arreglar la persiana» en tu libreta</li><li>Coge el móvil para buscar «arreglar la persiana»</li><li>Abre en el móvil la nota de «arreglar la persiana»</li></ol></td><td><ol><li>Pon sobre la mesa el material de «arreglar la persiana»</li><li>Busca en el móvil la página de «arreglar la persiana»</li><li>Lee en voz alta la nota de «arreglar la persiana»</li></ol></td><td><ol><li>Completa la primera página de «arreglar la persiana»</li><li>Escribe en tu libreta 3 pasos de «arreglar la persiana»</li><li>Lee en el móvil la información de «arreglar la persiana»</li></ol></td></tr>
   </table>
   <div class="nota"><strong>La categoría se puede cambiar.</strong> En la pantalla de selección, el botón con el lápiz deja elegir otra categoría si la detectada no es la correcta. Eso cambia el icono de las cartas.</div>
 </section>
@@ -117,13 +117,22 @@
 
 <section class="salto">
   <h2>4. Matriz de combinación: las 5 cartas INCUP</h2>
-  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta toma una acción del banco y le añade <strong>su modificador</strong>. El modificador da sabor sin añadir otra acción ni tiempos.</p>
+  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta toma una acción del banco y le añade <strong>su modificador</strong>.</p>
   <p class="formula">Reto = entradilla de la carta + acción del banco (según nivel) + modificador INCUP</p>
+  <div class="nota"><strong>El INCUP no altera la mecánica, altera el enfoque.</strong> No añade fricción artificial (nada de «con la mano que no usas»). Si la tarea es leer, la Novedad es «empezando por la última línea» o «usando una regla para no perderte»; si es salir a andar, «por una calle distinta». Por eso los modificadores dependen de la <strong>familia</strong> de la categoría.</div>
   <table>
-    <tr><th>Carta</th><th>Factor</th><th>Qué hace</th><th>Entradilla</th><th>Modificadores</th></tr>
-    <tr><td><span class="chip" style="background:#5b3fe0;color:#ffffff">Novedad</span></td><td>Novedad</td><td>Cambia el método o el sitio.</td><td class="formula">¡Plan nuevo! [Acción], [modificador].</td><td>con la mano que no usas · en silencio · en un sitio distinto al de siempre · de una forma distinta a la de siempre<br><span class="peq">Pesado: en silencio · con la mano que no usas · de una forma distinta a la de siempre</span></td></tr><tr><td><span class="chip" style="background:#ee6b47;color:#1b1340">Desafío</span></td><td>Competencia (reto)</td><td>Un reto pequeño, sin reloj.</td><td class="formula">Mini reto: [acción], [modificador]. ¿Te apuntas?</td><td>sin mirar el móvil · a la primera · sin hacer nada más a la vez<br><span class="peq">Pesado: sin mirar el móvil · a la primera · sin hacer nada más a la vez</span></td></tr><tr><td><span class="chip" style="background:#f7a3e0;color:#1b1340">Pasión</span></td><td>Pasión</td><td>Añade algo que te gusta.</td><td class="formula">Modo disfrute: [acción], [modificador].</td><td>con tu música favorita de fondo · con tu bebida favorita al lado · con algo que te guste cerca<br><span class="peq">Pesado: con tu música favorita de fondo · con algo que te guste cerca · con tu bebida favorita al lado</span></td></tr><tr><td><span class="chip" style="background:#2fa4f0;color:#1b1340">Interés</span></td><td>Interés</td><td>Con alguien o fijándote en algo nuevo.</td><td class="formula">Hazlo interesante: [acción], [modificador].</td><td>con alguien cerca · con una persona en videollamada · fijándote en un detalle que no habías visto<br><span class="peq">Pesado: fijándote en un detalle que no habías visto · con alguien cerca</span></td></tr><tr><td><span class="chip" style="background:#ffd23f;color:#1b1340">Urgencia</span></td><td>Urgencia</td><td>Un micro-límite sin cronómetro.</td><td class="formula">Ahora: [acción], [modificador].</td><td>antes de mirar el móvil · antes de que se enfríe tu café · antes de cambiar de pestaña · mientras suena una canción<br><span class="peq">Pesado: antes de mirar el móvil · mientras suena una canción · antes de que se enfríe tu café</span></td></tr>
+    <tr><th>Carta</th><th>Factor</th><th>Qué hace</th><th>Entradilla</th></tr>
+    <tr><td><span class="chip" style="background:#5b3fe0;color:#ffffff">Novedad</span></td><td>Novedad</td><td>Cambia el enfoque: otro orden, otra herramienta u otro sitio.</td><td class="formula">¡Plan nuevo! [Acción], [modificador].</td></tr><tr><td><span class="chip" style="background:#ee6b47;color:#1b1340">Desafío</span></td><td>Competencia (reto)</td><td>Un reto pequeño, sin reloj.</td><td class="formula">Mini reto: [acción], [modificador]. ¿Te apuntas?</td></tr><tr><td><span class="chip" style="background:#f7a3e0;color:#1b1340">Pasión</span></td><td>Pasión</td><td>Añade algo que te gusta.</td><td class="formula">Modo disfrute: [acción], [modificador].</td></tr><tr><td><span class="chip" style="background:#2fa4f0;color:#1b1340">Interés</span></td><td>Interés</td><td>Con alguien o fijándote en algo nuevo.</td><td class="formula">Ponle interés: [acción], [modificador].</td></tr><tr><td><span class="chip" style="background:#ffd23f;color:#1b1340">Urgencia</span></td><td>Urgencia</td><td>Un micro-límite sin cronómetro.</td><td class="formula">Ahora: [acción], [modificador].</td></tr>
   </table>
+  <h3>Modificadores por familia de actividad</h3>
+  <table>
+    <tr><th>Familia</th><th>Categorías</th><th>Novedad</th><th>Desafío</th></tr>
+    <tr><td><strong>general</strong></td><td class="peq">Tareas sin categoría</td><td>en un sitio de la casa distinto al de siempre · con otra luz en la habitación · con la libreta abierta delante</td><td>a la primera · sin mirar las notificaciones · sin parar a mitad</td></tr><tr><td><strong>pantalla</strong></td><td class="peq">Comunicación, Administrativo, Llamadas, Digital, Test, Ver serie, Ver película, Videojuego, Podcast, Vídeo, Veterinario</td><td>desde el ordenador en vez del móvil · con la pantalla en modo oscuro · en un sitio de la casa distinto al de siempre</td><td>a la primera · sin mirar las notificaciones · sin parar a mitad</td></tr><tr><td><strong>mensajes</strong></td><td class="peq">Quedar con amigos, Llamada social, Cumpleaños, Fiesta, Familia, Cita, Chat de grupo</td><td>con un audio en vez de texto · con una foto en vez de texto · con un emoji al final</td><td>en una sola frase · a la primera · sin borrar nada</td></tr><tr><td><strong>lectura</strong></td><td class="peq">Académico, Lectura</td><td>empezando por la última línea · usando una regla para no perderte · señalando cada línea con el dedo</td><td>contando las palabras que no conoces · sin pasar de página · buscando 2 palabras clave</td></tr><tr><td><strong>escritura</strong></td><td class="peq">Decisión, Creativo, Escritura</td><td>con un boli de otro color · en una hoja suelta · en mayúsculas</td><td>en una sola línea · sin borrar nada · con 10 palabras como máximo</td></tr><tr><td><strong>creativo</strong></td><td class="peq">Dibujo, Fotografía, Manualidades</td><td>con un material que no sueles usar · empezando por el borde de la hoja · desde un ángulo distinto al de siempre</td><td>sin borrar nada · a la primera · con 3 colores como máximo</td></tr><tr><td><strong>ritmo</strong></td><td class="peq">Música, Baile, Instrumento</td><td>más despacio que de costumbre · con una canción que no conoces · empezando por el final</td><td>a la primera · sin mirar las notificaciones · sin parar a mitad</td></tr><tr><td><strong>casa</strong></td><td class="peq">Doméstico, Compra, Cocina, Ropa, Cocina creativa, Jardín, Comida, Hidratación, Mascotas</td><td>empezando por el lado contrario · en un orden distinto al de siempre · con una lista de reproducción nueva</td><td>contando cada cosa en voz alta · a la primera · sin parar a mitad</td></tr><tr><td><strong>movimiento</strong></td><td class="peq">Gimnasio, Correr, Caminar, Yoga, Bici, Natación, Escalada, Deporte en equipo, Pasear al perro</td><td>por una calle distinta · con una canción nueva en los auriculares · en un orden distinto al de siempre</td><td>contando los pasos · a la primera · sin parar a mitad</td></tr><tr><td><strong>calma</strong></td><td class="peq">Meditación, Descanso, Aseo, Skincare, Desconexión</td><td>con una luz más suave · en un sitio de la casa distinto al de siempre · con una música tranquila nueva</td><td>a la primera · sin mirar las notificaciones · sin parar a mitad</td></tr>
+  </table>
+  <p class="peq">Pasión, Interés y Urgencia son casi iguales en todas las familias: con tu música favorita de fondo · con tu bebida favorita al lado · con una manta encima / fijándote en un detalle que no habías visto · con alguien cerca · como si se lo enseñaras a alguien / antes de mirar las notificaciones · antes de que se enfríe tu café · mientras suena una canción.</p>
   <ul>
+    <li><strong>Objeto concreto obligatorio</strong>: cada reto nombra un objeto físico o digital (la app, el libro, la libreta, el boli). Nunca «la primera parte».</li>
+    <li><strong>Sin el verbo «hacer»</strong>: «Hacer el test» es abstracto; se reformula con un verbo físico («Abre la app del test»).</li>
     <li>En <strong>Pesado</strong> solo se usan modificadores que se pueden cumplir sin levantarse ni organizar nada, y la acción empieza por «Solo…».</li>
     <li>Si el modificador repite una palabra de la acción («Coge el móvil, sin mirar el móvil»), se usa otro.</li>
     <li>El tono atrevido va <strong>solo en la entradilla</strong>. Si hay pregunta, es una invitación («¿Te apuntas?»), nunca un juicio.</li>
@@ -133,19 +142,19 @@
   <div class="ejemplo">
     <p class="ejemplo__tarea">«Responder el email de Carlos» · <strong>Pesado</strong></p>
     <p class="ejemplo__meta">Regla: <strong>Comunicación</strong> · icono Trabajo</p>
-    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Solo abre la aplicación de correo, en silencio.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: solo pon las manos sobre el teclado, sin mirar el móvil. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: solo mira el asunto del correo que tienes que responder, con tu música favorita de fondo.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Hazlo interesante: solo abre la aplicación de correo, fijándote en un detalle que no habías visto.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: solo pon las manos sobre el teclado, antes de mirar el móvil.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Solo abre la aplicación de correo, con la pantalla en modo oscuro.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: solo pon las manos sobre el teclado, a la primera. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: solo mira el asunto del correo que tienes que responder, con tu música favorita de fondo.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Ponle interés: solo abre la aplicación de correo, fijándote en un detalle que no habías visto.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: solo pon las manos sobre el teclado, antes de mirar las notificaciones.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
   </div>
   
   <div class="ejemplo">
     <p class="ejemplo__tarea">«Pasear al perro» · <strong>Medio</strong></p>
     <p class="ejemplo__meta">Regla: <strong>Pasear al perro</strong> · icono Mascotas</p>
-    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Ponle la correa al perro, con la mano que no usas.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: ponte los zapatos, sin mirar el móvil. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: sal al portal con el perro, con tu música favorita de fondo.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Hazlo interesante: ponle la correa al perro, con alguien cerca.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: ponte los zapatos, antes de mirar el móvil.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Ponle la correa al perro, por una calle distinta.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: ponte los zapatos, contando los pasos. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: sal al portal con el perro, con tu música favorita en los auriculares.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Ponle interés: ponle la correa al perro, con alguien que te acompañe.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: ponte los zapatos, antes de mirar las notificaciones.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
   </div>
   
   <div class="ejemplo">
     <p class="ejemplo__tarea">«Estudiar para el examen» · <strong>Ligero</strong></p>
     <p class="ejemplo__meta">Regla: <strong>Académico</strong> · icono Estudios</p>
-    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Lee el primer párrafo en voz alta, con la mano que no usas.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: copia la primera definición del tema en una hoja, sin mirar el móvil. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: escribe 3 palabras clave del primer párrafo, con tu música favorita de fondo.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Hazlo interesante: lee el primer párrafo en voz alta, con alguien cerca.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: copia la primera definición del tema en una hoja, antes de mirar el móvil.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div></div>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Lee el primer párrafo en voz alta, empezando por la última línea.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: copia la primera definición del tema en una hoja, contando las palabras que no conoces. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: escribe 3 palabras clave del primer párrafo, con tu música favorita de fondo.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Ponle interés: lee el primer párrafo en voz alta, fijándote en un detalle que no habías visto.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: copia la primera definición del tema en una hoja, antes de mirar las notificaciones.</p><p class="mini__hecho"><b>Hecho cuando</b> tú lo des por hecho.</p></div></div>
   </div>
 </section>
 
@@ -157,13 +166,13 @@
   <div class="ejemplo">
     <p class="ejemplo__tarea">«Responder el email de Carlos» · <strong>Pesado</strong> · mazo 2</p>
     <p class="ejemplo__meta">Regla: <strong>Comunicación</strong> · icono Trabajo</p>
-    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Solo pon las manos sobre el teclado, con la mano que no usas.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: solo mira el asunto del correo que tienes que responder, a la primera. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: solo abre la aplicación de correo, con algo que te guste cerca.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Hazlo interesante: solo pon las manos sobre el teclado, con alguien cerca.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: solo mira el asunto del correo que tienes que responder, mientras suena una canción.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Solo pon las manos sobre el teclado, con el brillo de la pantalla bajo.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: solo mira el asunto del correo que tienes que responder, sin mirar las notificaciones. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: solo abre la aplicación de correo, con tu bebida favorita al lado.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Ponle interés: solo pon las manos sobre el teclado, con alguien cerca.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: solo mira el asunto del correo que tienes que responder, antes de que se enfríe tu café.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
   </div>
   
   <div class="ejemplo">
     <p class="ejemplo__tarea">«Responder el email de Carlos» · <strong>Pesado</strong> · mazo 3</p>
     <p class="ejemplo__meta">Regla: <strong>Comunicación</strong> · icono Trabajo</p>
-    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Solo mira el asunto del correo que tienes que responder, de una forma distinta a la de siempre.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: solo abre la aplicación de correo, sin hacer nada más a la vez. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: solo pon las manos sobre el teclado, con tu bebida favorita al lado.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Hazlo interesante: solo mira el asunto del correo que tienes que responder, fijándote en un detalle que no habías visto.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: solo abre la aplicación de correo, antes de que se enfríe tu café.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
+    <div class="minis"><div class="mini" style="background:#5b3fe0;color:#ffffff"><span class="mini__tipo">Novedad</span><p>¡Plan nuevo! Solo mira el asunto del correo que tienes que responder, con el móvil en horizontal.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ee6b47;color:#1b1340"><span class="mini__tipo">Desafío</span><p>Mini reto: solo abre la aplicación de correo, sin parar a mitad. ¿Te apuntas?</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#f7a3e0;color:#1b1340"><span class="mini__tipo">Pasión</span><p>Modo disfrute: solo pon las manos sobre el teclado, con una manta encima.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#2fa4f0;color:#1b1340"><span class="mini__tipo">Interés</span><p>Ponle interés: solo mira el asunto del correo que tienes que responder, como si se lo enseñaras a alguien.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div><div class="mini" style="background:#ffd23f;color:#1b1340"><span class="mini__tipo">Urgencia</span><p>Ahora: solo abre la aplicación de correo, mientras suena una canción.</p><p class="mini__hecho"><b>Hecho cuando</b> lo has hecho una vez. Con eso basta.</p></div></div>
   </div>
   <div class="nota">Tras los 30 retos aparece «Has visto los 30 retos», con tres opciones: escribir la tarea de otra forma (más pequeña o más concreta), volver al primer mazo o ver otro mazo.</div>
 
@@ -190,12 +199,12 @@
   <div class="regla">
     <p class="regla__cab"><strong>Académico</strong> <span class="peq">· icono Estudios · palabras clave: estudiar, leer, apuntes, examen</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre el libro por la página del tema</li><li>Coge el subrayador</li><li>Mira el título del tema</li></ol></td><td><ol><li>Lee la primera línea del tema</li><li>Subraya una palabra del primer párrafo</li><li>Escribe el título del tema en una hoja</li></ol></td><td><ol><li>Lee el primer párrafo en voz alta</li><li>Copia la primera definición del tema en una hoja</li><li>Escribe 3 palabras clave del primer párrafo</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre el libro por la página del tema</li><li>Lee el título del tema</li><li>Mira el índice del libro</li></ol></td><td><ol><li>Lee la primera línea del tema</li><li>Subraya una palabra del primer párrafo</li><li>Escribe el título del tema en una hoja</li></ol></td><td><ol><li>Lee el primer párrafo en voz alta</li><li>Copia la primera definición del tema en una hoja</li><li>Escribe 3 palabras clave del primer párrafo</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Llamadas</strong> <span class="peq">· icono Llamadas · palabras clave: llamar, teléfono, cita, dentista</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge el móvil con la mano</li><li>Abre la agenda del móvil</li><li>Busca el número en la agenda</li></ol></td><td><ol><li>Marca el número sin pulsar llamar</li><li>Pon el móvil delante de ti con el número en pantalla</li><li>Abre la web de citas de ese sitio</li></ol></td><td><ol><li>Pulsa llamar</li><li>Pide la cita en la web</li><li>Envía un mensaje para pedir la cita</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge el móvil con la mano</li><li>Abre la agenda del móvil</li><li>Busca el número en la agenda</li></ol></td><td><ol><li>Marca el número sin pulsar llamar</li><li>Pon el móvil delante de ti con el número en pantalla</li><li>Abre la web de citas de ese sitio</li></ol></td><td><ol><li>Pulsa el botón de llamar</li><li>Pide la cita en la web</li><li>Envía un mensaje para pedir la cita</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Decisión</strong> <span class="peq">· icono Trabajo · palabras clave: decidir, elegir, escoger</span></p>
@@ -205,7 +214,7 @@
   <div class="regla">
     <p class="regla__cab"><strong>Creativo</strong> <span class="peq">· icono Estudios · palabras clave: creativo, escribir, diseñar, dibujar</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre el documento del proyecto</li><li>Coge el lápiz</li><li>Mira la última página que hiciste</li></ol></td><td><ol><li>Escribe el título del proyecto</li><li>Escribe una palabra en el documento</li><li>Dibuja un garabato en una esquina de la hoja</li></ol></td><td><ol><li>Escribe una frase en el documento</li><li>Haz un boceto de una idea</li><li>Escribe 3 ideas en una lista</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre el documento del proyecto</li><li>Coge el lápiz</li><li>Mira la última página que hiciste</li></ol></td><td><ol><li>Escribe el título del proyecto</li><li>Escribe una palabra en el documento</li><li>Dibuja un garabato en una esquina de la hoja</li></ol></td><td><ol><li>Escribe una frase en el documento</li><li>Dibuja en el cuaderno un boceto de tu idea</li><li>Escribe 3 ideas en una lista</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Digital</strong> <span class="peq">· icono Trabajo · palabras clave: ordenador, portátil, archivo, carpeta</span></p>
@@ -222,7 +231,7 @@
   <div class="regla">
     <p class="regla__cab"><strong>Compra</strong> <span class="peq">· icono Alimentación · palabras clave: comprar, tienda, supermercado, compra</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre la aplicación de notas</li><li>Coge un papel</li><li>Mira la puerta de la nevera</li></ol></td><td><ol><li>Escribe en la lista lo primero que falta</li><li>Abre la nevera</li><li>Coge las bolsas de la compra</li></ol></td><td><ol><li>Escribe la lista con 5 cosas</li><li>Haz el pedido en la web del súper</li><li>Sal a la tienda con la lista</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre la aplicación de notas</li><li>Coge un papel</li><li>Mira la puerta de la nevera</li></ol></td><td><ol><li>Escribe en la lista el producto que falta en la nevera</li><li>Abre la nevera</li><li>Coge las bolsas de la compra</li></ol></td><td><ol><li>Escribe la lista con 5 cosas</li><li>Pulsa «Pedir» en la web del súper</li><li>Sal a la tienda con la lista</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Cocina</strong> <span class="peq">· icono Alimentación · palabras clave: cocinar, comida, cena, receta</span></p>
@@ -239,17 +248,17 @@
   <div class="regla">
     <p class="regla__cab"><strong>Ver serie</strong> <span class="peq">· icono Autocuidado · palabras clave: serie, ver serie, netflix, capítulo, temporada</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge el mando</li><li>Abre la aplicación de la serie</li><li>Siéntate en el sofá</li></ol></td><td><ol><li>Pon el capítulo</li><li>Busca la serie en la aplicación</li><li>Prepara algo de picar</li></ol></td><td><ol><li>Mira un capítulo entero</li><li>Deja el móvil en otra habitación</li><li>Pon el siguiente capítulo</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge el mando</li><li>Abre la aplicación de la serie</li><li>Siéntate en el sofá</li></ol></td><td><ol><li>Pon el capítulo</li><li>Busca la serie en la aplicación</li><li>Pon un cuenco de picoteo junto al sofá</li></ol></td><td><ol><li>Mira un capítulo entero</li><li>Deja el móvil en otra habitación</li><li>Pon el siguiente capítulo</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Ver película</strong> <span class="peq">· icono Autocuidado · palabras clave: película, cine, ver peli, film</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge el mando</li><li>Abre la plataforma</li><li>Siéntate en el sofá</li></ol></td><td><ol><li>Busca una película en la plataforma</li><li>Mira el tráiler de una película</li><li>Pon la primera película de tu lista</li></ol></td><td><ol><li>Pon la película</li><li>Mira la película entera</li><li>Prepara palomitas</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge el mando</li><li>Abre la plataforma</li><li>Siéntate en el sofá</li></ol></td><td><ol><li>Busca una película en la plataforma</li><li>Mira el tráiler de una película</li><li>Pon la primera película de tu lista</li></ol></td><td><ol><li>Pon la película</li><li>Mira la película entera</li><li>Mete las palomitas en el microondas</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Lectura</strong> <span class="peq">· icono Autocuidado · palabras clave: leer, libro, novela, kindle</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge el libro</li><li>Abre el libro por el marcapáginas</li><li>Lee el título del capítulo</li></ol></td><td><ol><li>Lee una página</li><li>Lee el primer párrafo en voz alta</li><li>Subraya una frase que te guste</li></ol></td><td><ol><li>Lee 5 páginas</li><li>Lee hasta el final del capítulo</li><li>Lee una página entera en voz alta</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge el libro</li><li>Abre el libro por el marcapáginas</li><li>Lee el título del capítulo</li></ol></td><td><ol><li>Lee una página del libro</li><li>Lee el primer párrafo en voz alta</li><li>Subraya una frase que te guste</li></ol></td><td><ol><li>Lee 5 páginas</li><li>Lee hasta el final del capítulo</li><li>Lee una página entera en voz alta</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Videojuego</strong> <span class="peq">· icono Autocuidado · palabras clave: jugar, videojuego, consola, partida</span></p>
@@ -259,7 +268,7 @@
   <div class="regla">
     <p class="regla__cab"><strong>Música</strong> <span class="peq">· icono Autocuidado · palabras clave: música, escuchar, playlist, disco</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge los auriculares</li><li>Abre la aplicación de música</li><li>Pulsa play</li></ol></td><td><ol><li>Pon una canción que te guste</li><li>Busca un disco que te guste</li><li>Sube el volumen</li></ol></td><td><ol><li>Haz una lista con 5 canciones</li><li>Escucha un disco entero</li><li>Pon un artista que no conozcas</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge los auriculares</li><li>Abre la aplicación de música</li><li>Pulsa el botón de play</li></ol></td><td><ol><li>Pon una canción que te guste</li><li>Busca un disco que te guste</li><li>Sube el volumen</li></ol></td><td><ol><li>Guarda 5 canciones en una lista nueva</li><li>Escucha un disco entero</li><li>Pon un artista que no conozcas</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Podcast</strong> <span class="peq">· icono Autocuidado · palabras clave: podcast, escuchar podcast</span></p>
@@ -269,14 +278,14 @@
   <div class="regla">
     <p class="regla__cab"><strong>Vídeo</strong> <span class="peq">· icono Autocuidado · palabras clave: youtube, vídeo, tutorial</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre la aplicación de vídeos</li><li>Ponte los auriculares</li><li>Coge el móvil</li></ol></td><td><ol><li>Busca el vídeo</li><li>Pulsa play en el vídeo</li><li>Guarda el vídeo en tu lista</li></ol></td><td><ol><li>Mira el vídeo entero</li><li>Haz el primer paso que enseña el vídeo</li><li>Apunta una cosa que aprendas del vídeo</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre la aplicación de vídeos</li><li>Ponte los auriculares</li><li>Coge el móvil</li></ol></td><td><ol><li>Busca el vídeo</li><li>Pulsa play en el vídeo</li><li>Guarda el vídeo en tu lista</li></ol></td><td><ol><li>Mira el vídeo entero</li><li>Copia en tu libreta el primer paso que enseña el vídeo</li><li>Apunta una cosa que aprendas del vídeo</li></ol></td></tr></table>
   </div>
     <h3>Deporte y movimiento</h3>
     
   <div class="regla">
     <p class="regla__cab"><strong>Gimnasio</strong> <span class="peq">· icono Deporte · palabras clave: ejercicio, entrenar, gimnasio, pesas</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Estira los brazos hacia arriba</li><li>Mira la mochila del gimnasio</li><li>Ponte una zapatilla</li></ol></td><td><ol><li>Ponte la ropa de deporte</li><li>Haz 5 sentadillas</li><li>Llena la botella de agua</li></ol></td><td><ol><li>Haz una serie de tu ejercicio favorito</li><li>Sal hacia el gimnasio</li><li>Haz 3 ejercicios de tu rutina</li></ol></td></tr></table>
+    <tr><td><ol><li>Estira los brazos hacia arriba</li><li>Mira la mochila del gimnasio</li><li>Ponte una zapatilla</li></ol></td><td><ol><li>Ponte la ropa de deporte</li><li>Baja 5 veces en sentadilla junto a una silla</li><li>Llena la botella de agua</li></ol></td><td><ol><li>Coge las pesas para una serie de tu ejercicio favorito</li><li>Sal hacia el gimnasio</li><li>Completa 3 ejercicios de la tabla de tu rutina</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Correr</strong> <span class="peq">· icono Deporte · palabras clave: correr, running, salir a correr</span></p>
@@ -291,7 +300,7 @@
   <div class="regla">
     <p class="regla__cab"><strong>Yoga</strong> <span class="peq">· icono Deporte · palabras clave: yoga, estiramientos, flexibilidad</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Estira los brazos hacia arriba</li><li>Siéntate en el suelo</li><li>Coge la esterilla</li></ol></td><td><ol><li>Extiende la esterilla</li><li>Haz una postura</li><li>Pon un vídeo de yoga</li></ol></td><td><ol><li>Haz 3 posturas</li><li>Sigue una clase de yoga en vídeo</li><li>Haz tu rutina de estiramientos</li></ol></td></tr></table>
+    <tr><td><ol><li>Estira los brazos hacia arriba</li><li>Siéntate en el suelo</li><li>Coge la esterilla</li></ol></td><td><ol><li>Extiende la esterilla</li><li>Ponte en la esterilla en la postura del niño</li><li>Pon un vídeo de yoga</li></ol></td><td><ol><li>Sigue 3 posturas del vídeo de yoga</li><li>Sigue una clase de yoga en vídeo</li><li>Estira las piernas sobre la esterilla</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Bici</strong> <span class="peq">· icono Deporte · palabras clave: bici, bicicleta, ciclismo</span></p>
@@ -328,12 +337,12 @@
   <div class="regla">
     <p class="regla__cab"><strong>Llamada social</strong> <span class="peq">· icono Social · palabras clave: llamar a un amigo, hablar con, llamada</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Busca el contacto</li><li>Abre el chat de esa persona</li><li>Mira su foto de perfil</li></ol></td><td><ol><li>Envía «Hola»</li><li>Envía un audio corto</li><li>Envía un emoji</li></ol></td><td><ol><li>Llama a esa persona</li><li>Escribe un mensaje de dos líneas</li><li>Pregúntale qué tal está</li></ol></td></tr></table>
+    <tr><td><ol><li>Busca el contacto</li><li>Abre el chat de esa persona</li><li>Mira su foto de perfil</li></ol></td><td><ol><li>Envía «Hola» en su chat</li><li>Envía un audio corto</li><li>Envía un emoji</li></ol></td><td><ol><li>Llama a esa persona</li><li>Escribe un mensaje de dos líneas</li><li>Pregúntale qué tal está</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Cumpleaños</strong> <span class="peq">· icono Social · palabras clave: cumpleaños, felicitar, regalo</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre el chat de esa persona</li><li>Busca una foto en la que salgáis juntos</li><li>Escribe la palabra «Felicidades»</li></ol></td><td><ol><li>Envía «¡Felicidades!»</li><li>Envía una foto en la que salgáis juntos</li><li>Envía un audio cantando «Cumpleaños feliz»</li></ol></td><td><ol><li>Escribe una felicitación de tres frases</li><li>Llama para felicitar</li><li>Compra el regalo</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre el chat de esa persona</li><li>Busca una foto en la que salgáis juntos</li><li>Escribe la palabra «Felicidades»</li></ol></td><td><ol><li>Envía «¡Felicidades!» en su chat</li><li>Envía una foto en la que salgáis juntos</li><li>Envía un audio cantando «Cumpleaños feliz»</li></ol></td><td><ol><li>Escribe una felicitación de tres frases</li><li>Llama para felicitar</li><li>Compra el regalo</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Fiesta</strong> <span class="peq">· icono Social · palabras clave: fiesta, celebración, evento social</span></p>
@@ -353,24 +362,24 @@
   <div class="regla">
     <p class="regla__cab"><strong>Chat de grupo</strong> <span class="peq">· icono Social · palabras clave: grupo, chat, whatsapp de amigos</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre el chat del grupo</li><li>Lee el último mensaje</li><li>Mira las fotos del chat</li></ol></td><td><ol><li>Responde con un emoji</li><li>Responde a un mensaje</li><li>Envía una foto</li></ol></td><td><ol><li>Responde a 3 mensajes</li><li>Haz una pregunta al grupo</li><li>Envía un audio al grupo</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre el chat del grupo</li><li>Lee el último mensaje</li><li>Mira las fotos del chat</li></ol></td><td><ol><li>Responde con un emoji</li><li>Responde a un mensaje</li><li>Envía una foto</li></ol></td><td><ol><li>Responde a 3 mensajes</li><li>Escribe una pregunta en el chat del grupo</li><li>Envía un audio al grupo</li></ol></td></tr></table>
   </div>
     <h3>Hobbies y creatividad</h3>
     
   <div class="regla">
     <p class="regla__cab"><strong>Dibujo</strong> <span class="peq">· icono Autocuidado · palabras clave: dibujar, pintar, ilustrar, boceto</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge un lápiz</li><li>Pon un papel en la mesa</li><li>Abre el cuaderno</li></ol></td><td><ol><li>Dibuja un círculo</li><li>Dibuja una línea</li><li>Dibuja algo que tengas delante</li></ol></td><td><ol><li>Haz un boceto de algo que te guste</li><li>Dibuja con la mano que no usas</li><li>Llena una página de garabatos</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge un lápiz</li><li>Pon un papel en la mesa</li><li>Abre el cuaderno</li></ol></td><td><ol><li>Dibuja un círculo</li><li>Dibuja una línea</li><li>Dibuja la taza que tengas en la mesa</li></ol></td><td><ol><li>Dibuja en el cuaderno tu objeto favorito</li><li>Dibuja en el cuaderno la vista de tu ventana</li><li>Llena una página de garabatos</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Escritura</strong> <span class="peq">· icono Autocuidado · palabras clave: escribir, escribir algo, relato, diario</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Abre el cuaderno</li><li>Coge el bolígrafo</li><li>Abre el documento</li></ol></td><td><ol><li>Escribe la fecha</li><li>Escribe una palabra</li><li>Escribe el título</li></ol></td><td><ol><li>Escribe una frase</li><li>Escribe un párrafo</li><li>Escribe sobre algo que te ha pasado hoy</li></ol></td></tr></table>
+    <tr><td><ol><li>Abre el cuaderno</li><li>Coge el bolígrafo</li><li>Abre el documento</li></ol></td><td><ol><li>Escribe la fecha</li><li>Escribe una palabra</li><li>Escribe el título</li></ol></td><td><ol><li>Escribe una frase</li><li>Escribe un párrafo</li><li>Escribe en el cuaderno una cosa que te ha pasado hoy</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Fotografía</strong> <span class="peq">· icono Autocuidado · palabras clave: fotografía, foto, cámara, editar fotos</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge la cámara</li><li>Abre la cámara del móvil</li><li>Mira por la ventana</li></ol></td><td><ol><li>Haz una foto</li><li>Haz una foto de algo de un color</li><li>Limpia el objetivo</li></ol></td><td><ol><li>Haz 5 fotos</li><li>Edita una foto</li><li>Sal a hacer fotos a la calle</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge la cámara</li><li>Abre la cámara del móvil</li><li>Mira por la ventana</li></ol></td><td><ol><li>Pulsa el disparador de la cámara</li><li>Fotografía con el móvil un objeto rojo de tu casa</li><li>Limpia el objetivo</li></ol></td><td><ol><li>Saca 5 fotos con la cámara</li><li>Edita una foto</li><li>Sal a la calle con la cámara colgada</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Cocina creativa</strong> <span class="peq">· icono Alimentación · palabras clave: cocinar, receta nueva, postre</span></p>
@@ -380,7 +389,7 @@
   <div class="regla">
     <p class="regla__cab"><strong>Manualidades</strong> <span class="peq">· icono Casa · palabras clave: manualidades, coser, tejer, bricolaje</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge el material</li><li>Abre la caja de material</li><li>Toca el material</li></ol></td><td><ol><li>Pon el material sobre la mesa</li><li>Corta la primera pieza</li><li>Da la primera puntada</li></ol></td><td><ol><li>Termina una parte de la pieza</li><li>Sigue un tutorial</li><li>Empieza una pieza nueva</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge el material</li><li>Abre la caja de material</li><li>Toca el material</li></ol></td><td><ol><li>Pon el material sobre la mesa</li><li>Corta la primera pieza</li><li>Da la primera puntada</li></ol></td><td><ol><li>Termina una fila de la pieza</li><li>Sigue un tutorial</li><li>Empieza una pieza nueva</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Instrumento</strong> <span class="peq">· icono Autocuidado · palabras clave: tocar instrumento, guitarra, piano, practicar</span></p>
@@ -395,29 +404,29 @@
   <div class="regla">
     <p class="regla__cab"><strong>Meditación</strong> <span class="peq">· icono Autocuidado · palabras clave: meditar, mindfulness, respirar</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Cierra los ojos</li><li>Respira hondo una vez</li><li>Pon las manos sobre las rodillas</li></ol></td><td><ol><li>Respira hondo 3 veces</li><li>Pon una meditación guiada</li><li>Siéntate con la espalda recta</li></ol></td><td><ol><li>Haz una meditación guiada</li><li>Respira hondo 10 veces</li><li>Medita en un sitio tranquilo</li></ol></td></tr></table>
+    <tr><td><ol><li>Cierra los ojos</li><li>Respira hondo una vez</li><li>Pon las manos sobre las rodillas</li></ol></td><td><ol><li>Respira hondo 3 veces</li><li>Pon una meditación guiada</li><li>Siéntate con la espalda recta</li></ol></td><td><ol><li>Escucha una meditación guiada en el móvil</li><li>Respira hondo 10 veces</li><li>Siéntate en un cojín con los ojos cerrados</li></ol></td></tr></table>
   </div>
     <h3>Descanso y autocuidado</h3>
     
   <div class="regla">
     <p class="regla__cab"><strong>Descanso</strong> <span class="peq">· icono Autocuidado · palabras clave: dormir, siesta, descansar, acostarme</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Deja el móvil en la mesilla</li><li>Apaga la luz grande</li><li>Tápate con la manta</li></ol></td><td><ol><li>Pon el móvil a cargar lejos de la cama</li><li>Ponte el pijama</li><li>Lávate los dientes</li></ol></td><td><ol><li>Acuéstate</li><li>Lee una página en la cama</li><li>Apaga todas las pantallas</li></ol></td></tr></table>
+    <tr><td><ol><li>Deja el móvil en la mesilla</li><li>Apaga la luz grande</li><li>Tápate con la manta</li></ol></td><td><ol><li>Pon el móvil a cargar lejos de la cama</li><li>Ponte el pijama</li><li>Lávate los dientes</li></ol></td><td><ol><li>Métete en la cama</li><li>Lee una página en la cama</li><li>Apaga todas las pantallas</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Aseo</strong> <span class="peq">· icono Autocuidado · palabras clave: ducha, baño, aseo</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Mira la puerta del baño</li><li>Coge la toalla</li><li>Ponte las zapatillas de casa</li></ol></td><td><ol><li>Lávate la cara</li><li>Lávate los dientes</li><li>Abre la ducha</li></ol></td><td><ol><li>Dúchate</li><li>Lávate el pelo</li><li>Prepara la ropa limpia</li></ol></td></tr></table>
+    <tr><td><ol><li>Mira la puerta del baño</li><li>Coge la toalla</li><li>Ponte las zapatillas de casa</li></ol></td><td><ol><li>Lávate la cara</li><li>Lávate los dientes</li><li>Abre la ducha</li></ol></td><td><ol><li>Abre el grifo de la ducha</li><li>Lávate el pelo</li><li>Prepara la ropa limpia</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Skincare</strong> <span class="peq">· icono Autocuidado · palabras clave: skincare, crema, rutina facial</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Coge un producto</li><li>Abre el bote de crema</li><li>Mírate en el espejo</li></ol></td><td><ol><li>Lávate la cara</li><li>Ponte la crema hidratante</li><li>Ponte protector solar</li></ol></td><td><ol><li>Haz tu rutina completa</li><li>Ponte una mascarilla</li><li>Desmaquíllate</li></ol></td></tr></table>
+    <tr><td><ol><li>Coge un producto</li><li>Abre el bote de crema</li><li>Mírate en el espejo</li></ol></td><td><ol><li>Lávate la cara</li><li>Ponte la crema hidratante</li><li>Ponte protector solar</li></ol></td><td><ol><li>Ponte cada producto de tu rutina en la cara</li><li>Ponte una mascarilla</li><li>Pasa el desmaquillante por la cara</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Comida</strong> <span class="peq">· icono Alimentación · palabras clave: desayuno, comer, cena, alimentarme</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Mira hacia la cocina</li><li>Coge un plato</li><li>Abre la nevera</li></ol></td><td><ol><li>Saca algo de la nevera</li><li>Pon un plato en la mesa</li><li>Calienta la comida</li></ol></td><td><ol><li>Prepara algo sencillo</li><li>Siéntate a comer</li><li>Come sin mirar el móvil</li></ol></td></tr></table>
+    <tr><td><ol><li>Mira hacia la cocina</li><li>Coge un plato</li><li>Abre la nevera</li></ol></td><td><ol><li>Saca de la nevera un yogur</li><li>Pon un plato en la mesa</li><li>Calienta la comida</li></ol></td><td><ol><li>Prepara un bocadillo en un plato</li><li>Siéntate a comer</li><li>Come sin mirar el móvil</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Hidratación</strong> <span class="peq">· icono Autocuidado · palabras clave: agua, beber, hidratarme</span></p>
@@ -427,7 +436,7 @@
   <div class="regla">
     <p class="regla__cab"><strong>Desconexión</strong> <span class="peq">· icono Autocuidado · palabras clave: desconectar, parar, no hacer nada</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td><ol><li>Deja el móvil boca abajo</li><li>Cierra los ojos</li><li>Respira hondo una vez</li></ol></td><td><ol><li>Deja el móvil en otra habitación</li><li>Asómate a la ventana</li><li>Túmbate</li></ol></td><td><ol><li>Sal a dar un paseo sin móvil</li><li>Haz algo sin pantallas</li><li>Escucha una canción con los ojos cerrados</li></ol></td></tr></table>
+    <tr><td><ol><li>Deja el móvil boca abajo</li><li>Cierra los ojos</li><li>Respira hondo una vez</li></ol></td><td><ol><li>Deja el móvil en otra habitación</li><li>Asómate a la ventana</li><li>Túmbate en el sofá</li></ol></td><td><ol><li>Sal a dar un paseo sin móvil</li><li>Coge un libro de papel</li><li>Escucha una canción con los ojos cerrados</li></ol></td></tr></table>
   </div>
     <h3>Ampliación de la app</h3>
     
@@ -435,6 +444,11 @@
     <p class="regla__cab"><strong>Pasear al perro</strong> <span class="peq">· icono Mascotas · palabras clave: perro, pasear al perro, sacar al perro</span></p>
     <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
     <tr><td><ol><li>Coge la correa</li><li>Llama al perro</li><li>Ponte un zapato</li></ol></td><td><ol><li>Ponle la correa al perro</li><li>Ponte los zapatos</li><li>Sal al portal con el perro</li></ol></td><td><ol><li>Da una vuelta a la manzana con el perro</li><li>Pasea al perro por un sitio nuevo</li><li>Lleva al perro al parque</li></ol></td></tr></table>
+  </div>
+  <div class="regla">
+    <p class="regla__cab"><strong>Test</strong> <span class="peq">· icono Estudios · palabras clave: test, autoescuela, carnet de conducir, examen teórico, examen de conducir</span></p>
+    <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
+    <tr><td><ol><li>Abre la app del test</li><li>Coge el móvil con la app del test</li><li>Mira la primera pregunta del test</li></ol></td><td><ol><li>Lee la primera pregunta del test</li><li>Marca la respuesta de la primera pregunta</li><li>Pon el test en pantalla completa</li></ol></td><td><ol><li>Contesta 5 preguntas del test</li><li>Contesta un test completo en la app</li><li>Repasa en la app las preguntas falladas del último test</li></ol></td></tr></table>
   </div>
   <div class="regla">
     <p class="regla__cab"><strong>Veterinario</strong> <span class="peq">· icono Mascotas · palabras clave: veterinario, vacuna, revisión</span></p>

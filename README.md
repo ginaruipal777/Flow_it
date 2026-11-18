@@ -48,11 +48,11 @@ Flujo completo de «prot final», instalable como PWA y publicado en https://flo
 
 Siguen la «Regla de oro: la ley del esfuerzo inverso» y la «Matriz de combinación» ([src/datos/reglas.ts](src/datos/reglas.ts) y [src/datos/banco.ts](src/datos/banco.ts)):
 
-1. La tarea se busca en las **51 categorías** (palabras clave del «Sistema de Retos V2» + ampliaciones de la app).
+1. La tarea se busca en las **52 categorías** (palabras clave del «Sistema de Retos V2» + ampliaciones de la app).
 2. El **nivel de esfuerzo** elige una de las 3 acciones del banco de esa categoría: Ligero (1–3 min), Medio (30–60 s) o Pesado (5–10 s, empieza por «Solo…»).
 3. Cada **carta INCUP** añade su modificador («con la mano que no usas», «sin mirar el móvil», «antes de que se enfríe tu café»…) y su entradilla.
 4. Si no hay categoría, se usa un respaldo con el texto de la tarea.
 
-Cada acción empieza por un verbo físico, es una sola (sin «y» ni «o»), sin tiempos y sin la palabra «tarea». Compruébalo con `npm run validar`. El PDF explicativo se genera con `npm run documento` (docs/sistema-de-retos.pdf).
+Cada acción empieza por un verbo físico (nunca «hacer»), nombra un objeto concreto, es una sola (sin «y» ni «o»), sin tiempos y sin la palabra «tarea». Los modificadores INCUP cambian el enfoque según el tipo de actividad, sin fricción artificial. El prompt para un futuro generador con IA está en [docs/prompt-generador-ia.md](docs/prompt-generador-ia.md). Compruébalo con `npm run validar`. El PDF explicativo se genera con `npm run documento` (docs/sistema-de-retos.pdf).
 
 Para ampliar el sistema, añade una regla a `REGLAS` y sus 3 acciones por nivel a `BANCO`.

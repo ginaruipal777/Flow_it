@@ -2,7 +2,7 @@
 // de src/datos/reglas.ts y src/datos/banco.ts, para que el documento siempre coincida con la app.
 import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { BANCO, HECHO_POR_NIVEL, MODIFICADORES, type Nivel } from '../src/datos/banco.ts'
+import { BANCO, FAMILIA, HECHO_POR_NIVEL, MODIFICADORES, type Familia, type Nivel } from '../src/datos/banco.ts'
 import { analizarTarea, NUM_MAZOS, REGLAS, RESPALDO, retosDe, type Regla } from '../src/datos/reglas.ts'
 
 type Tipo = 'novedad' | 'desafio' | 'pasion' | 'interes' | 'urgencia'
@@ -10,10 +10,10 @@ type Tipo = 'novedad' | 'desafio' | 'pasion' | 'interes' | 'urgencia'
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 const CARTAS: { tipo: Tipo; nombre: string; incup: string; fondo: string; tinta: string; busca: string; entradilla: string }[] = [
-  { tipo: 'novedad', nombre: 'Novedad', incup: 'Novedad', fondo: '#5b3fe0', tinta: '#ffffff', busca: 'Cambia el método o el sitio.', entradilla: '¡Plan nuevo! [Acción], [modificador].' },
+  { tipo: 'novedad', nombre: 'Novedad', incup: 'Novedad', fondo: '#5b3fe0', tinta: '#ffffff', busca: 'Cambia el enfoque: otro orden, otra herramienta u otro sitio.', entradilla: '¡Plan nuevo! [Acción], [modificador].' },
   { tipo: 'desafio', nombre: 'Desafío', incup: 'Competencia (reto)', fondo: '#ee6b47', tinta: '#1b1340', busca: 'Un reto pequeño, sin reloj.', entradilla: 'Mini reto: [acción], [modificador]. ¿Te apuntas?' },
   { tipo: 'pasion', nombre: 'Pasión', incup: 'Pasión', fondo: '#f7a3e0', tinta: '#1b1340', busca: 'Añade algo que te gusta.', entradilla: 'Modo disfrute: [acción], [modificador].' },
-  { tipo: 'interes', nombre: 'Interés', incup: 'Interés', fondo: '#2fa4f0', tinta: '#1b1340', busca: 'Con alguien o fijándote en algo nuevo.', entradilla: 'Hazlo interesante: [acción], [modificador].' },
+  { tipo: 'interes', nombre: 'Interés', incup: 'Interés', fondo: '#2fa4f0', tinta: '#1b1340', busca: 'Con alguien o fijándote en algo nuevo.', entradilla: 'Ponle interés: [acción], [modificador].' },
   { tipo: 'urgencia', nombre: 'Urgencia', incup: 'Urgencia', fondo: '#ffd23f', tinta: '#1b1340', busca: 'Un micro-límite sin cronómetro.', entradilla: 'Ahora: [acción], [modificador].' },
 ]
 
@@ -160,7 +160,7 @@ const html = `<!doctype html>
     <div class="paso"><b class="n">1</b><div><h4>Limpia el texto</h4><p>Pasa la tarea a minúsculas y quita tildes y signos, para comparar sin errores («Declaración» = «declaracion»).</p></div></div>
     <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las ${REGLAS.length} categorías. Apartado 2.</p></div></div>
     <div class="paso"><b class="n">3</b><div><h4>El esfuerzo elige la acción (ley del esfuerzo inverso)</h4><p>Cada categoría tiene 3 acciones por nivel en un banco. <strong>Cuanto más pesa la tarea, más pequeña es la acción</strong>: Ligero 1–3 minutos, Medio 30–60 segundos, Pesado 5–10 segundos. Apartado 3.</p></div></div>
-    <div class="paso"><b class="n">4</b><div><h4>Cada carta INCUP añade su modificador</h4><p>La misma acción cambia de sabor según la carta: «con la mano que no usas» (Novedad), «sin mirar el móvil» (Desafío), «con tu música favorita de fondo» (Pasión)… Apartado 4.</p></div></div>
+    <div class="paso"><b class="n">4</b><div><h4>Cada carta INCUP añade su modificador</h4><p>La misma acción cambia de sabor según la carta: «empezando por la última línea» (Novedad, si es leer), «a la primera» (Desafío), «con tu música favorita de fondo» (Pasión)… Apartado 4.</p></div></div>
     <div class="paso"><b class="n">5</b><div><h4>Reparte el mazo</h4><p>5 cartas, una por factor INCUP. La persona desliza: derecha para aceptar, izquierda para ver la siguiente. Si rechaza las 5, llega otro mazo con combinaciones distintas (hasta ${NUM_MAZOS} mazos, ${NUM_MAZOS * 5} retos por tarea). Apartado 5.</p></div></div>
     <div class="paso"><b class="n">6</b><div><h4>Detalle del reto aceptado</h4><p>Una sola acción, el criterio «Está hecho cuando…», un botón para escucharlo y un premio opcional. Decide la persona: pulsa «Reto conseguido» cuando lo da por hecho.</p></div></div>
   </div>
@@ -218,13 +218,22 @@ const html = `<!doctype html>
 
 <section class="salto">
   <h2>4. Matriz de combinación: las 5 cartas INCUP</h2>
-  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta toma una acción del banco y le añade <strong>su modificador</strong>. El modificador da sabor sin añadir otra acción ni tiempos.</p>
+  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta toma una acción del banco y le añade <strong>su modificador</strong>.</p>
   <p class="formula">Reto = entradilla de la carta + acción del banco (según nivel) + modificador INCUP</p>
+  <div class="nota"><strong>El INCUP no altera la mecánica, altera el enfoque.</strong> No añade fricción artificial (nada de «con la mano que no usas»). Si la tarea es leer, la Novedad es «empezando por la última línea» o «usando una regla para no perderte»; si es salir a andar, «por una calle distinta». Por eso los modificadores dependen de la <strong>familia</strong> de la categoría.</div>
   <table>
-    <tr><th>Carta</th><th>Factor</th><th>Qué hace</th><th>Entradilla</th><th>Modificadores</th></tr>
-    ${CARTAS.map((c) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${c.incup}</td><td>${esc(c.busca)}</td><td class="formula">${esc(c.entradilla)}</td><td>${esc(MODIFICADORES.normal[c.tipo].join(' · '))}<br><span class="peq">Pesado: ${esc(MODIFICADORES.pesado[c.tipo].join(' · '))}</span></td></tr>`).join('')}
+    <tr><th>Carta</th><th>Factor</th><th>Qué hace</th><th>Entradilla</th></tr>
+    ${CARTAS.map((c) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${c.incup}</td><td>${esc(c.busca)}</td><td class="formula">${esc(c.entradilla)}</td></tr>`).join('')}
   </table>
+  <h3>Modificadores por familia de actividad</h3>
+  <table>
+    <tr><th>Familia</th><th>Categorías</th><th>Novedad</th><th>Desafío</th></tr>
+    ${(Object.keys(MODIFICADORES) as Familia[]).map((fam) => `<tr><td><strong>${fam}</strong></td><td class="peq">${esc(Object.keys(FAMILIA).filter((c) => FAMILIA[c] === fam).join(', ') || 'Tareas sin categoría')}</td><td>${esc(MODIFICADORES[fam].normal.novedad.join(' · '))}</td><td>${esc(MODIFICADORES[fam].normal.desafio.join(' · '))}</td></tr>`).join('')}
+  </table>
+  <p class="peq">Pasión, Interés y Urgencia son casi iguales en todas las familias: ${esc(MODIFICADORES.general.normal.pasion.join(' · '))} / ${esc(MODIFICADORES.general.normal.interes.join(' · '))} / ${esc(MODIFICADORES.general.normal.urgencia.join(' · '))}.</p>
   <ul>
+    <li><strong>Objeto concreto obligatorio</strong>: cada reto nombra un objeto físico o digital (la app, el libro, la libreta, el boli). Nunca «la primera parte».</li>
+    <li><strong>Sin el verbo «hacer»</strong>: «Hacer el test» es abstracto; se reformula con un verbo físico («Abre la app del test»).</li>
     <li>En <strong>Pesado</strong> solo se usan modificadores que se pueden cumplir sin levantarse ni organizar nada, y la acción empieza por «Solo…».</li>
     <li>Si el modificador repite una palabra de la acción («Coge el móvil, sin mirar el móvil»), se usa otro.</li>
     <li>El tono atrevido va <strong>solo en la entradilla</strong>. Si hay pregunta, es una invitación («¿Te apuntas?»), nunca un juicio.</li>

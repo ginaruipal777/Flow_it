@@ -1,6 +1,6 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
-import { BANCO, HECHO_POR_NIVEL, MODIFICADORES, type Acciones, type Nivel } from './banco.ts'
+import { BANCO, FAMILIA, HECHO_POR_NIVEL, MODIFICADORES, type Acciones, type Nivel } from './banco.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -113,6 +113,7 @@ export const REGLAS: Regla[] = [
 
   // Ampliación (protocolo 5.2): la app tiene categoría «Mascotas»
   r('perro, pasear al perro, sacar al perro', 'Pasear al perro', 'mascotas', 'Coge la correa y acércate a la puerta', 'tienes la correa en la mano y estás en la puerta'),
+  r('test, autoescuela, carnet de conducir, examen teórico, examen de conducir', 'Test', 'estudios', 'Abre la app del test', 'has abierto la app del test'),
   r('veterinario, vacuna, revisión', 'Veterinario', 'mascotas', 'Busca el teléfono del veterinario y tenlo listo', 'tienes el número en la pantalla, listo para llamar'),
   r('gato, mascota, cuidar a mi mascota', 'Mascotas', 'mascotas', 'Llena el cuenco de agua de tu mascota', 'el cuenco de agua está lleno'),
 ]
@@ -121,10 +122,16 @@ export const REGLAS: Regla[] = [
    Si ninguna palabra clave encaja, los retos usan el texto de la tarea entre comillas.
    Mismas reglas que el banco: verbo físico primero, una sola acción, sin tiempos. */
 
+/* Verbos abstractos al principio de la tarea («hacer», «tener que»…): se quitan para quedarse
+   con el objeto («Hacer el test de autoescuela» → «el test de autoescuela»). */
+const ABSTRACTOS = /^(tengo que |hay que |debo |quiero )?(hacer|realizar|terminar|acabar|empezar|completar|ponerme con|ponerse con)s+/i
+
+export const objetoDe = (tarea: string) => tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
+
 export const RESPALDO = (t: string): Acciones => ({
-  pesado: [`Escribe «${t}» en un papel`, `Lee en voz alta «${t}»`, `Toca lo primero que vas a usar para «${t}»`],
-  medio: [`Pon en la mesa lo que vas a usar para «${t}»`, `Abre lo que vas a usar para «${t}»`, `Haz el primer movimiento de «${t}»`],
-  ligero: [`Haz la primera parte de «${t}»`, `Avanza un poco en «${t}»`, `Haz la parte más pequeña de «${t}»`],
+  pesado: [`Escribe «${t}» en tu libreta`, `Coge el móvil para buscar «${t}»`, `Abre en el móvil la nota de «${t}»`],
+  medio: [`Pon sobre la mesa el material de «${t}»`, `Busca en el móvil la página de «${t}»`, `Lee en voz alta la nota de «${t}»`],
+  ligero: [`Completa la primera página de «${t}»`, `Escribe en tu libreta 3 pasos de «${t}»`, `Lee en el móvil la información de «${t}»`],
 })
 
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
@@ -143,7 +150,7 @@ export const ENTRADILLA: Record<TipoReto, (accion: string) => string> = {
   novedad: (A) => `¡Plan nuevo! ${A}.`,
   desafio: (A) => `Mini reto: ${minuscula(A)}. ¿Te apuntas?`,
   pasion: (A) => `Modo disfrute: ${minuscula(A)}.`,
-  interes: (A) => `Hazlo interesante: ${minuscula(A)}.`,
+  interes: (A) => `Ponle interés: ${minuscula(A)}.`,
   urgencia: (A) => `Ahora: ${minuscula(A)}.`,
 }
 
@@ -199,7 +206,7 @@ export function analizarTarea(tarea: string): Resultado {
     const { regla } = mejor
     return { regla, categoria: regla.categoria, icono: regla.icono, acciones: BANCO[regla.categoria] }
   }
-  return { regla: null, categoria: 'Tarea', icono: null, acciones: RESPALDO(minuscula(sinPunto(tarea)) || 'esto') }
+  return { regla: null, categoria: 'Tarea', icono: null, acciones: RESPALDO(minuscula(objetoDe(tarea)) || 'esto') }
 }
 
 /* ── 6. Matriz de combinación ──────────────────────────────────
@@ -226,9 +233,9 @@ const raices = (s: string) =>
   )
 
 /** Modificador de la carta para este mazo, saltando los que chocan con la acción */
-export function modificadorDe(tipo: TipoReto, mazo: number, accion: string, nivel: Nivel): string {
+export function modificadorDe(tipo: TipoReto, mazo: number, accion: string, nivel: Nivel, categoria = 'Tarea'): string {
   const enAccion = raices(accion)
-  const todos = MODIFICADORES[nivel === 'pesado' ? 'pesado' : 'normal'][tipo]
+  const todos = MODIFICADORES[FAMILIA[categoria] ?? 'general'][nivel === 'pesado' ? 'pesado' : 'normal'][tipo]
   const validos = todos.filter((mod) => ![...raices(mod)].some((p) => enAccion.has(p)))
   const lista = validos.length > 1 ? validos : todos
   // Cada 3 mazos la acción vuelve a salir: el modificador avanza uno más para no repetir pareja
@@ -242,11 +249,11 @@ export function accionConModificador(accion: string, mod: string, nivel: Nivel) 
 }
 
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0): RetoCarta[] {
-  const { acciones } = analizarTarea(tarea)
+  const { acciones, categoria } = analizarTarea(tarea)
   const lista = acciones[esfuerzo]
   return ORDEN.map((tipo, k) => {
     const accion = lista[(mazo + k) % lista.length]
-    const mod = modificadorDe(tipo, mazo, accion, esfuerzo)
+    const mod = modificadorDe(tipo, mazo, accion, esfuerzo, categoria)
     const frase = accionConModificador(accion, mod, esfuerzo)
     return { tipo, titulo: ENTRADILLA[tipo](frase), pasos: [frase], hecho: HECHO_POR_NIVEL[esfuerzo] }
   })

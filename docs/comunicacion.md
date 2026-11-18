@@ -16,6 +16,9 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 - Cero carga cognitiva: el reto no pide pensar, decidir, organizar ni planificar.
 - Una acción concreta y observable, nunca una actitud («concéntrate», «hazlo bien»).
 - En los retos no se usa la palabra «tarea»: se dice «reto» o «paso».
+- **Objeto concreto obligatorio**: el reto nombra un objeto físico o digital (la app, el libro, la pantalla, la libreta, el boli). Prohibido «la primera parte» o «lo primero».
+- **Sin el verbo «hacer»**: «Hacer un test» es abstracto. Se reformula con un verbo físico: «Abre la app del test», «Lee la primera pregunta», «Marca la respuesta».
+- **El INCUP cambia el enfoque, no la mecánica**: sin fricción artificial («con la mano que no usas»). Si es leer, la Novedad es «empezando por la última línea» o «usando una regla para no perderte»; el Desafío pone un número («contando las palabras que no conoces»).
 
 ## 3. Tiempos reales, nunca vagos
 
@@ -33,7 +36,7 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 
 ## 5. Tono atrevido, pero solo en la entradilla
 
-- El titular de cada carta empieza con una entradilla con energía, siempre la misma por tipo: Novedad «¡Plan nuevo!», Desafío «Mini reto: … ¿Te apuntas?», Pasión «Modo disfrute:», Interés «Hazlo interesante:», Urgencia «Ahora:».
+- El titular de cada carta empieza con una entradilla con energía, siempre la misma por tipo: Novedad «¡Plan nuevo!», Desafío «Mini reto: … ¿Te apuntas?», Pasión «Modo disfrute:», Interés «Ponle interés:», Urgencia «Ahora:».
 - La acción sigue siendo literal y entera. Los pasos y el «Está hecho cuando…» del detalle no llevan entradilla.
 
 ## 6. Ley del esfuerzo inverso
@@ -61,11 +64,13 @@ Los retos salen de una matriz de combinación: **acción del banco** ([src/datos
 
 | Carta | Titular de la carta | Está hecho cuando |
 |---|---|---|
-| Novedad | ¡Plan nuevo! Solo abre la aplicación de correo, en silencio. | lo has hecho una vez. Con eso basta |
-| Desafío | Mini reto: solo pon las manos sobre el teclado, sin mirar el móvil. ¿Te apuntas? | lo has hecho una vez. Con eso basta |
+| Novedad | ¡Plan nuevo! Solo abre la aplicación de correo, con la pantalla en modo oscuro. | lo has hecho una vez. Con eso basta |
+| Desafío | Mini reto: solo pon las manos sobre el teclado, a la primera. ¿Te apuntas? | lo has hecho una vez. Con eso basta |
 | Pasión | Modo disfrute: solo mira el asunto del correo que tienes que responder, con tu música favorita de fondo. | lo has hecho una vez. Con eso basta |
-| Interés | Hazlo interesante: solo abre la aplicación de correo, fijándote en un detalle que no habías visto. | lo has hecho una vez. Con eso basta |
-| Urgencia | Ahora: solo pon las manos sobre el teclado, antes de mirar el móvil. | lo has hecho una vez. Con eso basta |
+| Interés | Ponle interés: solo abre la aplicación de correo, fijándote en un detalle que no habías visto. | lo has hecho una vez. Con eso basta |
+| Urgencia | Ahora: solo pon las manos sobre el teclado, antes de mirar las notificaciones. | lo has hecho una vez. Con eso basta |
+
+Los modificadores de cada carta dependen de la familia de la actividad (pantalla, mensajes, lectura, escritura, creativo, ritmo, casa, movimiento, calma): están en `MODIFICADORES` y `FAMILIA` de [src/datos/banco.ts](../src/datos/banco.ts).
 
 ## Diseño de las tareas
 
