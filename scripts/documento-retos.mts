@@ -226,6 +226,18 @@ const html = `<!doctype html>
 </section>
 
 <section class="salto">
+  <h2>3b. Cuando se acaba el mazo: más retos de la misma tarea</h2>
+  <p>Si se rechazan las 5 cartas, la app reparte un <strong>mazo nuevo con 5 retos distintos para la misma tarea</strong> y avisa: «Mazo nuevo: 5 retos distintos para la misma tarea (2 de 3)». Hay <strong>3 mazos</strong> (15 retos) y la numeración sigue: 01–05, 06–10, 11–15. «Aún no, dame más retos» en «Reto conseguido» también pasa al mazo siguiente.</p>
+  <p>El mazo 1 usa los retos de la categoría. Los mazos 2 y 3 usan estrategias que sirven para cualquier tarea y meten el nombre de la tarea o su reto base:</p>
+  <table>
+    <tr><th>Carta</th><th>Mazo 2</th><th>Mazo 3</th></tr>
+    ${CARTAS.map((c, i) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${esc(retosDe('Responder el email de Carlos', 'ligero', 1)[i].titulo)}<br><span class="peq">Hecho cuando ${esc(retosDe('Responder el email de Carlos', 'ligero', 1)[i].hecho)}.</span></td><td>${esc(retosDe('Responder el email de Carlos', 'ligero', 2)[i].titulo)}<br><span class="peq">Hecho cuando ${esc(retosDe('Responder el email de Carlos', 'ligero', 2)[i].hecho)}.</span></td></tr>`).join('')}
+  </table>
+  <p class="peq">Ejemplo con «Responder el email de Carlos».</p>
+  <div class="nota">Tras los 15 retos aparece «Has visto los 15 retos», con tres opciones: escribir la tarea de otra forma (más pequeña o más concreta), volver al primer mazo o ver otro mazo.</div>
+</section>
+
+<section class="salto">
   <h2>4. Pasos, criterio de éxito, esfuerzo y premio</h2>
   <h3>Micropasos</h3>
   <p>El reto base se divide en pasos cuando tiene una «y» seguida de un verbo de acción («Abre el correo <strong>y escribe</strong> solo el saludo» → 2 pasos). Si la «y» no va seguida de un verbo («papel <strong>y</strong> lápiz»), se queda en el mismo paso. En el detalle se muestra <strong>un paso cada vez</strong>, en grande, con el contador «Paso 1 de 2» y el botón «Hecho. Ver el siguiente paso». Los pasos hechos quedan arriba, tachados, y se pueden desmarcar. Al terminar el último aparece «Ya has hecho todos los pasos. Pulsa «Reto conseguido»».</p>

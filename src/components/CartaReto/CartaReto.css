@@ -59,3 +59,9 @@
   font-size: 21px;
   line-height: 1.3;
 }
+/* Retos muy largos (mazos 2 y 3, con el nombre de la tarea dentro) */
+.carta-reto__reto[data-largo="2"] {
+  top: 190px;
+  font-size: 18px;
+  line-height: 1.3;
+}

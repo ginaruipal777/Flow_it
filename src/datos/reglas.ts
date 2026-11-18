@@ -271,12 +271,43 @@ export type RetoCarta = { tipo: TipoReto; titulo: string; pasos: string[]; hecho
 
 const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
-export function retosDe(tarea: string, esfuerzo?: 'ligero' | 'medio' | 'pesado'): RetoCarta[] {
+/* ── 7. Mazos nuevos para la misma tarea ───────────────────────
+   Cuando se rechazan las 5 cartas, la app reparte otro mazo con 5 retos distintos de la
+   MISMA tarea. Mazo 1: retos de la categoría (variantes.ts). Mazos 2 y 3: estrategias que
+   sirven para cualquier tarea (cambiar de sitio, temporizador corto, empezar por lo fácil,
+   avisar a alguien, preparar lo necesario…). Cada carta mantiene su factor INCUP. */
+
+export const NUM_MAZOS = 3
+
+type Mazo = Record<TipoReto, [reto: string, hecho: string]>
+
+function mazoExtra(mazo: number, tarea: string, base: string): Mazo {
+  const t = minuscula(sinPunto(tarea))
+  const b = minuscula(sinPunto(base))
+  return mazo === 1
+    ? {
+        novedad: [`Cambia de sitio: ve a otra habitación y ${b}`, 'estás en otro sitio y has empezado'],
+        desafio: [`Pon un temporizador de 5 minutos y avanza en «${t}» hasta que suene`, 'ha sonado el temporizador'],
+        pasion: [`Elige la parte de «${t}» que menos te cuesta y empieza por ahí`, 'has empezado por esa parte'],
+        interes: [`Escribe a alguien este mensaje: «Voy a ${t} ahora»`, 'has enviado el mensaje'],
+        urgencia: [`Pon en la mesa lo que necesitas para «${t}»`, 'lo que necesitas está en la mesa'],
+      }
+    : {
+        novedad: [`Hazlo de pie o en otra postura: ${b}`, 'has empezado en otra postura'],
+        desafio: [`Trabaja en «${t}» durante 2 minutos y para cuando pasen`, 'han pasado los 2 minutos'],
+        pasion: [`Pon tu canción favorita y ${b} mientras suena`, 'la canción ha terminado'],
+        interes: [`Pide a alguien que esté contigo, en persona o en videollamada, mientras empiezas «${t}»`, 'has empezado con alguien cerca'],
+        urgencia: [`Escribe en un papel el primer paso de «${t}» y déjalo a la vista`, 'el papel está a la vista'],
+      }
+}
+
+export function retosDe(tarea: string, esfuerzo?: 'ligero' | 'medio' | 'pesado', mazo = 0): RetoCarta[] {
   const { regla, base, hecho } = analizarTarea(tarea)
+  const extra = mazo > 0 ? mazoExtra(mazo % NUM_MAZOS || 1, tarea, base) : undefined
   const variantes = regla ? VARIANTES[regla.categoria] : undefined
 
   return ORDEN.map((tipo) => {
-    const propia = tipo !== 'urgencia' ? variantes?.[tipo] : undefined
+    const propia = extra ? extra[tipo] : tipo !== 'urgencia' ? variantes?.[tipo] : undefined
     let accion = propia ? propia[0] : base
     let criterio = propia ? propia[1] : hecho
     let pasos = pasosDe(accion)

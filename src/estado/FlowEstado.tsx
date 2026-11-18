@@ -3,6 +3,7 @@ import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
 import { NOMBRE_CATEGORIA, type Esfuerzo, type Mazo, type Tarea } from '../datos/modelo'
 import { detectarCategoria } from '../datos/retos'
+import { NUM_MAZOS } from '../datos/reglas'
 
 /* Estado de la app guardado en el navegador (localStorage).
    Más adelante se cambiará por una base de datos con cuentas. */
@@ -15,6 +16,8 @@ type Estado = {
   tareaActual: string | null
   /** Carta del mazo que se está mirando (0–4). */
   indiceReto: number
+  /** Mazo de la misma tarea (0, 1, 2): al rechazar las 5 cartas se reparte otro con retos distintos. */
+  mazo: number
   /** Tipo del reto aceptado. */
   retoAceptado: TipoReto | null
   /** Última tarea marcada como completada (resalta su fila en «Tus tareas»). */
@@ -30,6 +33,7 @@ type Accion =
   | { tipo: 'cambiar-categoria'; categoria: Categoria }
   | { tipo: 'siguiente-reto' }
   | { tipo: 'reiniciar-mazo' }
+  | { tipo: 'mazo-siguiente' }
   | { tipo: 'aceptar-reto'; reto: TipoReto }
   | { tipo: 'reto-conseguido' }
   | { tipo: 'completar-tarea' }
@@ -64,6 +68,7 @@ const INICIAL: Estado = {
   ],
   tareaActual: null,
   indiceReto: 0,
+  mazo: 0,
   retoAceptado: null,
   recienCompletada: null,
   mazos: [
@@ -98,22 +103,27 @@ function reductor(e: Estado, a: Accion): Estado {
         ultimoTipo: 'novedad',
         actualizada: Date.now(),
       }
-      return { ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, retoAceptado: null }
+      return { ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null }
     }
     case 'retomar':
       return {
         ...e,
         tareaActual: a.id,
         indiceReto: 0,
+        mazo: 0,
         retoAceptado: null,
         tareas: e.tareas.map((t) => (t.id === a.id ? { ...t, estado: 'en-curso' } : t)),
       }
     case 'cambiar-categoria':
       return cambiarTarea(e, (t) => ({ ...t, categoria: a.categoria }))
     case 'siguiente-reto':
+      // Al pasar la última carta llega un mazo nuevo de la misma tarea; tras el último, «agotado» (5)
+      if (e.indiceReto >= 4 && (e.mazo ?? 0) < NUM_MAZOS - 1) return { ...e, indiceReto: 0, mazo: (e.mazo ?? 0) + 1 }
       return { ...e, indiceReto: Math.min(e.indiceReto + 1, 5) }
     case 'reiniciar-mazo':
-      return { ...e, indiceReto: 0 }
+      return { ...e, indiceReto: 0, mazo: 0 }
+    case 'mazo-siguiente':
+      return { ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % NUM_MAZOS }
     case 'aceptar-reto':
       return { ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto }
     case 'reto-conseguido': {

@@ -63,6 +63,7 @@ Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES`
 | Control de tiempos y descansos | El modo enfoque ofrece «Sin límite», «10 min + 3 de descanso» o «25 min + 5 de descanso», con barra visual y aviso al cambiar de fase. Ningún reto tiene límite obligatorio. |
 | Integración de intereses | Pendiente: la app aún no sabe qué le interesa a cada persona. |
 | Recompensa (método RAN) | En el detalle se puede elegir un premio; «Reto conseguido» lo recuerda. |
+| Más retos si no encaja ninguno | Al rechazar las 5 cartas llega un mazo nuevo con 5 retos distintos de la misma tarea (3 mazos, 15 retos). |
 | Menos esfuerzo para arrancar | Si en Inicio se marca «Pesado», el reto se reduce al primer paso. |
 | Menos distracciones | El modo enfoque recuerda silenciar notificaciones y cerrar lo que no se use. |
 

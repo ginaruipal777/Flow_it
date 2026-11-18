@@ -55,7 +55,7 @@ export function CartaV3({ tipo, categoria, etiqueta, reto, numero, escala = 1, c
         <IconoConAcentos categoria={categoria} tamano={96} />
       </span>
       <p className="carta-v3__etiqueta">{etiqueta}</p>
-      <p className="carta-v3__reto" data-largo={reto.length > 52 || undefined}>
+      <p className="carta-v3__reto" data-largo={reto.length > 100 ? 2 : reto.length > 52 ? 1 : undefined}>
         {reto}
       </p>
       <div className="carta-v3__pie">

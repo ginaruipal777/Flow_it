@@ -5,9 +5,13 @@ import { analizarTarea, retosDe } from './reglas'
 /* Los retos salen de las reglas del «Sistema de Retos V2» y del sistema de frases propio (ver reglas.ts):
    regla → un reto distinto por carta INCUP (o plantilla → mismo reto con 5 fórmulas), con micropasos y criterio de éxito. */
 
-export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo'>>): Reto[] {
-  // Un reto distinto por carta INCUP (ver retosDe en reglas.ts y variantes.ts)
-  return retosDe(tarea.texto, tarea.esfuerzo).map((r, i) => ({ ...r, numero: String(i + 1).padStart(2, '0') }))
+export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo'>>, mazo = 0): Reto[] {
+  // Un reto distinto por carta INCUP (ver retosDe en reglas.ts y variantes.ts).
+  // Cada mazo nuevo de la misma tarea sigue la numeración: 01–05, 06–10, 11–15.
+  return retosDe(tarea.texto, tarea.esfuerzo, mazo).map((r, i) => ({
+    ...r,
+    numero: String(mazo * 5 + i + 1).padStart(2, '0'),
+  }))
 }
 
 /** Detección automática de categoría (se puede cambiar en la pantalla de selección). */

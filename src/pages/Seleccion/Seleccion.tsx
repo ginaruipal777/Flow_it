@@ -6,6 +6,7 @@ import { ICONOS_CATEGORIA, ICONOS_UI, type Categoria } from '../../components/Ic
 import { AccionesCarta, BotonVolver, Overlay, Pantalla } from '../../components/UI/UI'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { generarRetos, tituloTarea } from '../../datos/retos'
+import { NUM_MAZOS } from '../../datos/reglas'
 import { useFlow } from '../../estado/FlowEstado'
 import './Seleccion.css'
 
@@ -31,9 +32,25 @@ export default function Seleccion() {
   const [arrastrando, setArrastrando] = useState(false)
   const inicio = useRef<number | null>(null)
 
-  const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual) : []), [tareaActual])
+  const mazo = estado.mazo ?? 0
+  const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo) : []), [tareaActual, mazo])
   const indice = Math.min(estado.indiceReto, 4)
   const agotado = estado.indiceReto >= 5
+
+  // Aviso cuando llega un mazo nuevo de la misma tarea (se oculta solo a los 4 s)
+  const [avisoMazo, setAvisoMazo] = useState(false)
+  const mazoAnterior = useRef(mazo)
+  useEffect(() => {
+    if (mazo === mazoAnterior.current) return
+    mazoAnterior.current = mazo
+    if (mazo === 0) return
+    const mostrar = window.setTimeout(() => setAvisoMazo(true), 0)
+    const ocultar = window.setTimeout(() => setAvisoMazo(false), 4000)
+    return () => {
+      window.clearTimeout(mostrar)
+      window.clearTimeout(ocultar)
+    }
+  }, [mazo])
 
   const decidir = useCallback(
     (lado: 'izquierda' | 'derecha') => {
@@ -107,7 +124,7 @@ export default function Seleccion() {
         </div>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
-            Paso 1 · {Math.min(indice + 1, 5)} de 5
+            Mazo {mazo + 1} de {NUM_MAZOS} · carta {Math.min(indice + 1, 5)} de 5
           </p>
           <div className="progreso-mazo__pista">
             <span style={{ width: `${(Math.min(indice + 1, 5)) * 15}%` }} />
@@ -116,6 +133,9 @@ export default function Seleccion() {
       </header>
 
       <main className="seleccion__cuerpo">
+        <p className="aviso-mazo t-texto-control" role="status" data-visible={avisoMazo || undefined}>
+          {avisoMazo ? `Mazo nuevo: 5 retos distintos para la misma tarea (${mazo + 1} de ${NUM_MAZOS}).` : ''}
+        </p>
         <div className="mazo">
           {siguiente && !agotado && (
             <CartaReto
@@ -173,6 +193,7 @@ export default function Seleccion() {
         <DialogoAgotado
           onNuevaTarea={(texto) => despachar({ tipo: 'nueva-tarea', texto })}
           onSeguir={() => despachar({ tipo: 'reiniciar-mazo' })}
+          onOtroMazo={() => despachar({ tipo: 'mazo-siguiente' })}
         />
       )}
     </Pantalla>
@@ -230,7 +251,15 @@ function HojaCategorias({
 }
 
 /* ── 92 · Overlay · Retos agotados (07c) ───────────── */
-function DialogoAgotado({ onNuevaTarea, onSeguir }: { onNuevaTarea: (t: string) => void; onSeguir: () => void }) {
+function DialogoAgotado({
+  onNuevaTarea,
+  onSeguir,
+  onOtroMazo,
+}: {
+  onNuevaTarea: (t: string) => void
+  onSeguir: () => void
+  onOtroMazo: () => void
+}) {
   const [texto, setTexto] = useState('')
   return (
     <Overlay etiqueta="Se acabó el mazo" onCerrar={onSeguir}>
@@ -241,9 +270,9 @@ function DialogoAgotado({ onNuevaTarea, onSeguir }: { onNuevaTarea: (t: string) 
           if (texto.trim()) onNuevaTarea(texto)
         }}
       >
-        <p className="t-texto-eyebrow dialogo__eyebrow">Se acabó el mazo</p>
+        <p className="t-texto-eyebrow dialogo__eyebrow">Has visto los {NUM_MAZOS * 5} retos</p>
         <h2 className="t-titular-m">¿Se te atasca esta tarea?</h2>
-        <p className="t-texto-cuerpo dialogo__suave">Escribe otra y te preparamos cartas nuevas.</p>
+        <p className="t-texto-cuerpo dialogo__suave">Escríbela de otra forma, más pequeña o más concreta, y te preparamos cartas nuevas.</p>
         <div className="campo-pildora">
           <input
             className="t-texto-cuerpo"
@@ -258,7 +287,10 @@ function DialogoAgotado({ onNuevaTarea, onSeguir }: { onNuevaTarea: (t: string) 
           </button>
         </div>
         <button type="button" className="t-texto-subtitulo dialogo__enlace" onClick={onSeguir}>
-          Seguir intentando el reto
+          Volver a ver los retos desde el primer mazo
+        </button>
+        <button type="button" className="t-texto-control dialogo__enlace dialogo__enlace--suave" onClick={onOtroMazo}>
+          Ver otro mazo de retos de esta tarea
         </button>
       </form>
     </Overlay>

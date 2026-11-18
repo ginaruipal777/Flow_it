@@ -18,7 +18,7 @@ import './Reto.css'
 function useRetoAceptado(): { tarea: Tarea; reto: Reto } | null {
   const { estado, tareaActual } = useFlow()
   if (!tareaActual || !estado.retoAceptado) return null
-  const reto = generarRetos(tareaActual).find((r) => r.tipo === estado.retoAceptado)
+  const reto = generarRetos(tareaActual, estado.mazo ?? 0).find((r) => r.tipo === estado.retoAceptado)
   return reto ? { tarea: tareaActual, reto } : null
 }
 
@@ -363,7 +363,7 @@ export function Conseguido() {
           conIcono={false}
           className="boton--ancho"
           onClick={() => {
-            despachar({ tipo: 'reiniciar-mazo' })
+            despachar({ tipo: 'mazo-siguiente' })
             navegar('/reto', { replace: true })
           }}
         >

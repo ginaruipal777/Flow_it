@@ -357,3 +357,25 @@
     zoom: 0.62;
   }
 }
+
+/* Aviso de mazo nuevo (misma tarea, retos distintos) */
+.aviso-mazo {
+  align-self: stretch;
+  margin: 0;
+  padding: 0 14px;
+  max-height: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--marca-lima);
+  color: var(--marca-tinta);
+  text-align: center;
+  transition: max-height 250ms ease, padding 250ms ease;
+}
+.aviso-mazo[data-visible] {
+  max-height: 80px;
+  padding: 10px 14px;
+}
+.dialogo__enlace--suave {
+  margin-top: 0;
+  text-decoration: underline;
+}
