@@ -7,18 +7,6 @@
   align-items: flex-start;
   justify-content: space-between;
 }
-.inicio__perfil {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 24px;
-  background: var(--superficie-lienzo);
-  color: var(--marca-tinta);
-  cursor: pointer;
-}
 
 .inicio__cuerpo {
   display: flex;

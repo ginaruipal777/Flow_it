@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router-dom'
-import { Boton } from '../../components/Boton/Boton'
+import { BarraNav } from '../../components/BarraNav/BarraNav'
 import { Libreta } from '../../components/Libreta/Libreta'
 import { BotonVolver, Pantalla } from '../../components/UI/UI'
 import { useFlow } from '../../estado/FlowEstado'
@@ -9,7 +8,6 @@ import './Tareas.css'
    La última tarea completada entra arriba, en blanco, y se marca con animación. */
 
 export default function Tareas() {
-  const navegar = useNavigate()
   const { estado } = useFlow()
   const completadas = estado.tareas
     .filter((t) => t.estado === 'completada')
@@ -34,11 +32,7 @@ export default function Tareas() {
           Sin rachas ni presión: aquí quedan las tareas que has empezado y cuántos retos te costó arrancarlas.
         </p>
       </main>
-      <footer className="tareas__pie">
-        <Boton conIcono={false} className="boton--ancho" onClick={() => navegar('/inicio')}>
-          Nueva tarea
-        </Boton>
-      </footer>
+      <BarraNav />
     </Pantalla>
   )
 }

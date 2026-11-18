@@ -1,0 +1,109 @@
+/* Barra fija abajo, del ancho de la pantalla (máx. 430 px) */
+.barra-nav {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(100% - 32px, 398px);
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 999px;
+  /* Cristal: tinta translúcida + desenfoque, se lee sobre violeta y sobre lienzo */
+  background: color-mix(in srgb, var(--marca-tinta) 55%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid color-mix(in srgb, #fff 28%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+    0 12px 32px color-mix(in srgb, var(--marca-tinta) 30%, transparent);
+}
+
+.barra-nav__pestana {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--superficie-crema) 80%, transparent);
+  text-decoration: none;
+  transition: flex-grow 280ms cubic-bezier(.2, .8, .2, 1), background 200ms ease, color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.barra-nav__pestana:hover {
+  color: var(--superficie-crema);
+}
+.barra-nav__pestana:focus-visible {
+  outline: 3px solid var(--marca-lima);
+  outline-offset: 2px;
+}
+
+/* Activa: píldora lima con brillo */
+.barra-nav__pestana.active {
+  flex: 2.2;
+  justify-content: flex-start;
+  padding: 0 20px 0 6px;
+  background: linear-gradient(180deg, #e6ff7a, var(--marca-lima) 55%, #b9e81f);
+  color: var(--marca-tinta);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent),
+    0 0 24px color-mix(in srgb, var(--marca-lima) 45%, transparent);
+}
+
+.barra-nav__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.barra-nav__pestana.active .barra-nav__icono {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--marca-tinta);
+  color: var(--marca-lima);
+}
+
+.barra-nav__texto {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: barra-nav-entra 280ms ease both;
+}
+@keyframes barra-nav-entra {
+  from { opacity: 0; transform: translateX(-6px); }
+}
+
+/* Deja hueco abajo para que la barra no tape el contenido */
+.pantalla:has(> .barra-nav) {
+  padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+@media (max-width: 360px) {
+  .barra-nav { height: 68px; }
+  .barra-nav__pestana.active .barra-nav__icono { width: 42px; height: 42px; }
+  .barra-nav__texto { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-nav__pestana, .barra-nav__texto { transition: none; animation: none; }
+}
+
+/* Ordenador: la pantalla va centrada con margen; la barra sube con ella */
+@media (min-width: 600px) {
+  .barra-nav { bottom: 40px; }
+}
+
+/* Sobre fondo claro el cristal va más oscuro para que los iconos se lean */
+.pantalla[data-fondo="lienzo"] > .barra-nav {
+  background: color-mix(in srgb, var(--marca-tinta) 86%, transparent);
+}

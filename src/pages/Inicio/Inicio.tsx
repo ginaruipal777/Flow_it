@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { BarraNav } from '../../components/BarraNav/BarraNav'
 import { Boton } from '../../components/Boton/Boton'
 import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_CATEGORIA, ICONOS_UI } from '../../components/Icono/iconos'
@@ -63,9 +64,6 @@ export default function Inicio() {
     <Pantalla fondo="violeta" className="inicio">
       <header className="inicio__cabecera">
         <Logotipo tamano={37.986} />
-        <button type="button" className="inicio__perfil" aria-label="Perfil" onClick={() => navegar('/perfil')}>
-          <Icono svg={ICONOS_UI.usuario} tamano={24} />
-        </button>
       </header>
 
       <main className="inicio__cuerpo" data-abierto={abierto || undefined}>
@@ -139,6 +137,7 @@ export default function Inicio() {
           </Boton>
         </form>
       </main>
+      <BarraNav />
     </Pantalla>
   )
 }

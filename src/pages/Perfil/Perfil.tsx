@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { BarraNav } from '../../components/BarraNav/BarraNav'
 import { Boton } from '../../components/Boton/Boton'
 import { CartaReverso, IconoConAcentos } from '../../components/Cartas/Cartas'
 import { Icono } from '../../components/Icono/Icono'
@@ -128,6 +129,7 @@ export default function Perfil() {
           ))}
         </ul>
       )}
+      <BarraNav />
     </Pantalla>
   )
 }
