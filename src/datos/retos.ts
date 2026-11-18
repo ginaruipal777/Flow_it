@@ -15,7 +15,7 @@ export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, '
   if (tarea.esfuerzo === 'pesado' && pasos.length > 1) {
     base = pasos[0]
     pasos = [pasos[0]]
-    hecho = `ya has hecho esto: ${pasos[0].charAt(0).toLowerCase()}${pasos[0].slice(1)}`
+    hecho = 'has hecho este paso'
   }
 
   return ORDEN_TIPOS.map((tipo, i) => ({
