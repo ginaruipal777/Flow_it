@@ -58,7 +58,15 @@ Los textos se generan en [src/datos/reglas.ts](../src/datos/reglas.ts) (`FRASES`
 | Lectura en voz alta | Botón «Escuchar» en el detalle: lee el reto, los pasos y el criterio de éxito (voz del sistema). |
 | Control de tiempos | El cronómetro del modo enfoque es opcional; ningún reto tiene límite de tiempo. |
 | Integración de intereses | Pendiente: la app aún no sabe qué le interesa a cada persona. |
+| Recompensa (método RAN) | En el detalle se puede elegir un premio; «Reto conseguido» lo recuerda. |
+| Menos esfuerzo para arrancar | Si en Inicio se marca «Pesado», el reto se reduce al primer paso. |
+| Menos distracciones | El modo enfoque recuerda silenciar notificaciones y cerrar lo que no se use. |
 
 ## Pendiente
 
 Las pautas también piden ofrecer otros canales además del texto y respetar el ritmo de cada persona. Ideas para más adelante: preguntar los intereses en el onboarding y usarlos en los retos, pausas programadas en el modo enfoque y una opción para reducir animaciones dentro de la app (ya se respeta el ajuste «reducir movimiento» del sistema).
+
+## Fuentes
+
+- GAM Medical, «Cómo motivarte con la parálisis TDAH» (revisión clínica de Aintzane García). Factores INCUP (Interés, Novedad, Competencia, Urgencia, Pasión): son las 5 cartas de la app, y «Competencia» es la carta Desafío. Método RAN (Recompensa, Responsabilidad, Novedad), micropasos, seguimiento del progreso y reducir distracciones.
+- Isaac V., López V., Escobar M. J. (2024). «Arousal dysregulation and executive dysfunction in ADHD». *Frontiers in Psychiatry*, 14:1336040. https://pmc.ncbi.nlm.nih.gov/articles/PMC10827919/ — El rendimiento en TDAH varía mucho de un momento a otro y mejora cuando la tarea pide menos esfuerzo y cuando hay recompensa. Por eso los retos son mínimos, se reducen más si la tarea pesa y se puede elegir un premio.

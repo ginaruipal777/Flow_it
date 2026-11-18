@@ -35,6 +35,7 @@ type Accion =
   | { tipo: 'completar-tarea' }
   | { tipo: 'dejar-a-medias' }
   | { tipo: 'nuevo-mazo'; categoria: Categoria; nombre: string }
+  | { tipo: 'premio'; premio: string | undefined }
 
 const hora = (h: number) => Date.now() - h * 3600_000
 
@@ -82,6 +83,8 @@ function reductor(e: Estado, a: Accion): Estado {
   switch (a.tipo) {
     case 'onboarding-visto':
       return { ...e, onboardingVisto: true }
+    case 'premio':
+      return cambiarTarea(e, (t) => ({ ...t, premio: a.premio }))
     case 'esfuerzo':
       return { ...e, esfuerzo: a.esfuerzo }
     case 'nueva-tarea': {

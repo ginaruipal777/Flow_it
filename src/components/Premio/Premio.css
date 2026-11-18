@@ -1,0 +1,44 @@
+.premio {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--marca-tinta);
+}
+.premio__etiqueta {
+  color: var(--texto-gris);
+  font-family: var(--fuente-texto);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.premio__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.premio__chip {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+  cursor: pointer;
+}
+.premio__chip[aria-pressed="true"] {
+  border-width: 2.5px;
+  background: var(--marca-lima);
+}
+.premio__chip:focus-visible,
+.premio__campo:focus-visible {
+  outline: 3px solid var(--marca-violeta);
+  outline-offset: 2px;
+}
+.premio__campo {
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+}

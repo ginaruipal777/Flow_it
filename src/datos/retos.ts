@@ -5,9 +5,19 @@ import { analizarTarea, GATILLO_DE_CARTA, pasosDe, tono } from './reglas'
 /* Los retos salen de las reglas del «Sistema de Retos V2» y del sistema de frases propio (ver reglas.ts):
    regla o plantilla → reto base → un tono por carta, más sus micropasos y el criterio de éxito. */
 
-export function generarRetos(tarea: Pick<Tarea, 'texto'>): Reto[] {
-  const { base, hecho } = analizarTarea(tarea.texto)
-  const pasos = pasosDe(base)
+export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo'>>): Reto[] {
+  const analisis = analizarTarea(tarea.texto)
+  let { base, hecho } = analisis
+  let pasos = pasosDe(base)
+
+  /* Si la tarea pesa mucho, el reto es solo el primer paso: con menos esfuerzo
+     cuesta menos arrancar (teoría de regulación del estado, Isaac et al., 2024). */
+  if (tarea.esfuerzo === 'pesado' && pasos.length > 1) {
+    base = pasos[0]
+    pasos = [pasos[0]]
+    hecho = `ya has hecho esto: ${pasos[0].charAt(0).toLowerCase()}${pasos[0].slice(1)}`
+  }
+
   return ORDEN_TIPOS.map((tipo, i) => ({
     tipo,
     numero: String(i + 1).padStart(2, '0'),

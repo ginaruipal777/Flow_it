@@ -212,3 +212,27 @@
   color: var(--marca-tinta);
   cursor: pointer;
 }
+
+/* Recompensa (método RAN) y consejo para quitar distracciones */
+.conseguido__premio {
+  align-self: stretch;
+  margin: 0 7px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--marca-lima);
+  color: var(--marca-tinta);
+}
+.conseguido__premio strong {
+  font-weight: 800;
+}
+.enfoque__consejo {
+  max-width: 320px;
+  margin-top: 8px;
+  padding: 0 16px;
+  text-align: center;
+  color: var(--superficie-crema);
+  font-family: var(--fuente-texto);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.35;
+}

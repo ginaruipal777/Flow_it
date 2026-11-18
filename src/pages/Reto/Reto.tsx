@@ -4,6 +4,7 @@ import ilustracion from '../../assets/img/ilustracion-enfoque.png'
 import { Boton } from '../../components/Boton/Boton'
 import { CartaDetalle, CartaV3 } from '../../components/Cartas/Cartas'
 import { ListaPasos } from '../../components/ListaPasos/ListaPasos'
+import { ElegirPremio } from '../../components/Premio/Premio'
 import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_UI } from '../../components/Icono/iconos'
 import { BotonVolver, Overlay, Pantalla } from '../../components/UI/UI'
@@ -122,6 +123,7 @@ function DialogoArchivar({ onCerrar }: { onCerrar: () => void }) {
 /* ── 08 · Detalle del reto ─────────────────────────── */
 export function Detalle() {
   const navegar = useNavigate()
+  const { despachar } = useFlow()
   const datos = useRetoAceptado()
   const [archivar, setArchivar] = useState(false)
   if (!datos) return <Navigate to="/inicio" replace />
@@ -145,6 +147,7 @@ export function Detalle() {
           numero={reto.numero}
         />
         <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} />
+        <ElegirPremio premio={tarea.premio} onCambio={(premio) => despachar({ tipo: 'premio', premio })} />
         <BotonesReto onArchivar={() => setArchivar(true)} />
       </Panel>
 
@@ -176,6 +179,7 @@ export function Enfoque() {
     <Pantalla fondo="violeta-liso" className="enfoque">
       <BotonVolver a="/reto/detalle" color="var(--superficie-blanco)" className="reto__volver" />
       <p className="enfoque__etiqueta">Modo enfoque</p>
+      <p className="enfoque__consejo">Antes de empezar: silencia las notificaciones del móvil y cierra lo que no vayas a usar.</p>
       <img src={ilustracion} alt="" className="enfoque__ilustracion" data-activa={enMarcha || undefined} />
 
       <p className="enfoque__crono" aria-live="polite" aria-label={`Tiempo: ${formato(segundos)}`}>
@@ -239,6 +243,11 @@ export function Conseguido() {
           escala={0.985}
         />
       </div>
+      {tarea.premio && (
+        <p className="conseguido__premio t-texto-cuerpo">
+          <strong>Tu premio:</strong> {tarea.premio}. Puedes tomarlo ahora.
+        </p>
+      )}
       <div className="conseguido__bloque">
         <h2 className="t-titular-m">¿Has completado «{tituloTarea(tarea.texto)}»?</h2>
         <Boton

@@ -16,6 +16,8 @@ export type Tarea = {
   /** Tipo del último reto aceptado (da color a la tarjeta de «Retomar»). */
   ultimoTipo: TipoReto
   actualizada: number
+  /** Premio que la persona elige para cuando consiga el reto (método RAN: Recompensa). */
+  premio?: string
 }
 
 export type Reto = {
