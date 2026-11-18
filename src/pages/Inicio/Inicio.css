@@ -1,5 +1,5 @@
 .inicio {
-  padding: 48px 16px 40px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 .inicio__cabecera {

@@ -1,7 +1,7 @@
 .tareas {
   display: flex;
   flex-direction: column;
-  padding: 64px 24px 36px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 .tareas__volver {
   margin-left: -12px;
@@ -27,4 +27,13 @@
 .tareas__pie {
   margin-top: auto;
   padding-top: 32px;
+}
+
+/* El botón principal se queda fijo abajo para que siempre se vea */
+.tareas__pie {
+  position: sticky;
+  bottom: 0;
+  margin: auto -24px 0;
+  padding: 16px 24px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(transparent, var(--marca-violeta) 30%);
 }

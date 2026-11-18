@@ -6,7 +6,7 @@
   max-width: 430px;
   min-height: 100dvh;
   margin: 0 auto;
-  overflow-x: hidden;
+  overflow-x: clip; /* «clip» y no «hidden»: así funcionan los botones fijos (position: sticky) */
 }
 .pantalla[data-fondo="violeta"],
 .pantalla[data-fondo="violeta-liso"] {
@@ -249,5 +249,20 @@
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
+  }
+}
+
+/* ── Tablet y ordenador ──────────────────────────────
+   La app está diseñada para móvil (430 px). En pantallas anchas se muestra como
+   una tarjeta centrada sobre un fondo suave, en vez de una franja pegada arriba. */
+@media (min-width: 600px) {
+  body:has(.pantalla) {
+    background: var(--superficie-lila-suave);
+  }
+  .pantalla {
+    min-height: calc(100dvh - 48px);
+    margin: 24px auto;
+    border-radius: 32px;
+    box-shadow: 0 24px 60px color-mix(in srgb, var(--marca-tinta) 18%, transparent);
   }
 }

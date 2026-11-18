@@ -1,10 +1,10 @@
 .perfil {
-  padding: 64px 23px 40px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 23px calc(40px + env(safe-area-inset-bottom, 0px));
 }
 .perfil__volver {
   position: absolute;
   left: 12px;
-  top: 64px;
+  top: calc(24px + env(safe-area-inset-top, 0px));
 }
 
 /* Cabecera con avatar, nombre y nivel */
@@ -183,7 +183,7 @@
 
 /* ── 13 · Crear categoría ──────────────────────────── */
 .nueva-categoria {
-  padding: 64px 24px 46px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
   color: var(--marca-tinta);
 }
 .nueva-categoria__titulo {
@@ -290,4 +290,11 @@
 }
 .nueva-categoria__crear {
   align-self: center;
+}
+
+/* «Crear mazo» fijo abajo para que siempre se vea */
+.nueva-categoria__crear {
+  position: sticky;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 4px 0 var(--marca-tinta), 0 0 0 12px var(--superficie-lienzo);
 }

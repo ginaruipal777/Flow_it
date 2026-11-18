@@ -1,5 +1,5 @@
 .entrar {
-  padding: 52px 8px 40px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 8px calc(40px + env(safe-area-inset-bottom, 0px));
 }
 .entrar__cabecera {
   padding: 0 16px;

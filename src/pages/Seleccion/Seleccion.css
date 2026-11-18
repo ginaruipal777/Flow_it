@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 64px 16px 24px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 .seleccion__cabecera {
@@ -320,4 +320,40 @@
   background: var(--marca-lima);
   color: var(--marca-tinta);
   cursor: pointer;
+}
+
+/* Móviles con poco alto (Samsung A33 con barras del navegador ≈ 800 px):
+   la carta se reduce para que Rechazar / Aceptar se vean sin hacer scroll */
+@media (max-height: 900px) {
+  .mazo {
+    zoom: 0.86;
+  }
+}
+@media (max-height: 820px) {
+  .mazo {
+    zoom: 0.78;
+  }
+  .seleccion__tarea {
+    font-size: 38px;
+  }
+}
+@media (max-height: 720px) {
+  .mazo {
+    zoom: 0.68;
+  }
+}
+@media (max-height: 760px), (max-width: 380px) {
+  .seleccion__tarea {
+    font-size: 34px;
+  }
+}
+@media (max-height: 760px) {
+  .mazo {
+    zoom: 0.7;
+  }
+}
+@media (max-height: 680px) {
+  .mazo {
+    zoom: 0.62;
+  }
 }
