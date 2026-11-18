@@ -7,7 +7,8 @@ import type { TipoReto } from '../components/CartaReto/tipos'
 
    1. Se busca la tarea en las 49 REGLAS (palabras clave → reto base).
    2. Si no hay regla, se usa una PLANTILLA genérica según el verbo.
-   3. El reto base se adapta a cada gatillo motivacional (TONOS).
+   3. El reto base se dice con el tono de cada carta (FRASES, sistema propio:
+      la matriz de tonos del PDF se sustituyó porque sonaba forzada).
 
    Las 5 cartas de la app (Figma) usan estos gatillos del PDF:
      Novedad → Novedad · Desafío → Desafío · Pasión → Motivación
@@ -129,67 +130,67 @@ const PLANTILLAS: Plantilla[] = [
   { verbos: ['leer', 'revisar', 'repasar'], plantilla: (o) => `Lee solo el primer párrafo de ${o}` },
 ]
 
-export const RETO_GENERICO = 'Da el primer paso con esta tarea'
+export const RETO_GENERICO = 'Haz la parte más pequeña de esta tarea'
 
-/* ── 4. Matriz de tonos (filas explícitas del PDF) ──────────── */
+/* ── 4. Cómo se dice cada reto (sistema de comunicación propio) ──
+   Sustituye a la matriz de tonos del PDF, que sonaba forzada.
+   Reglas de estilo:
+   - Tuteo, frases cortas y lenguaje de todos los días.
+   - La acción (reto base) siempre se lee entera y clara.
+   - Sin emojis, sin «misiones» ni «niveles», sin presión ni culpa.
+   - Sin género gramatical para la persona («vas a notar», no «te sentirás ligero/a»).
+   Cada gatillo tiene varias frases; se elige una según la tarea para no repetir siempre la misma. */
 
-const MATRIZ: Record<string, Record<Gatillo, string>> = {
-  'Abre el correo y escribe solo el saludo': {
-    motivacion: 'Da el primer paso para liberar tu mente: abre el correo y escribe solo el saludo.',
-    novedad: 'Prueba un ángulo nuevo: abre el correo y escribe el saludo de forma súper creativa.',
-    urgencia: '⚡ ¡Acción rápida! Abre el correo y escribe el saludo ahora mismo.',
-    desafio: '🎮 Nivel 1: abre el correo y escribe el saludo. ¿Aceptas el reto?',
-    directo: 'Abre el correo. Escribe el saludo.',
-    amable: 'Cuando puedas, abre el correo y escribe solo el saludo sin ninguna presión.',
-  },
-  'Recoge solo 3 cosas de la mesa': {
-    motivacion: 'Siente la claridad instantánea: recoge solo 3 cosas de la mesa y celebra tu avance.',
-    novedad: 'Encuentra 3 cosas con un color o forma curiosa en la mesa y cámbialas de sitio.',
-    urgencia: '⚡ Acción inmediata: despeja 3 cosas de la mesa en este instante.',
-    desafio: '🏆 Reto Express: localiza 3 cosas en la mesa y recógelas ahora.',
-    directo: 'Recoge 3 cosas.',
-    amable: 'Recoge solo 3 cosas de la mesa, despacio y a tu ritmo.',
-  },
-  'Ponte la ropa de deporte': {
-    motivacion: 'Visualiza lo bien que te sentirás después: ponte la ropa de deporte ahora.',
-    novedad: 'Prueba combinar una prenda deportiva que casi nunca uses y póntela.',
-    urgencia: '🚨 ¡Acción rápida! Ponte la ropa de deporte ahora mismo.',
-    desafio: '🔥 Desafío de activación: ponte la ropa de deporte y ponte en marcha.',
-    directo: 'Ponte la ropa de deporte.',
-    amable: 'Ponte la ropa de deporte y ya decidirás si quieres entrenar o no.',
-  },
-  'Bebe un vaso de agua': {
-    motivacion: 'Dale energía e hidratación a tu cuerpo ahora mismo: bebe un vaso de agua.',
-    novedad: 'Toma un vaso de agua usando una temperatura o copa diferente.',
-    urgencia: '🚰 ¡Desafío express! Llena y bebe un vaso de agua ahora mismo.',
-    desafio: '💪 Misión de vitalidad: bebe un vaso entero de agua de un solo trago sostenido.',
-    directo: 'Bebe agua.',
-    amable: 'Bebe un vaso de agua tranquilamente cuando lo desees.',
-  },
-  [RETO_GENERICO]: {
-    motivacion: 'Cualquier pequeño avance cuenta: da el primer paso con esta tarea.',
-    novedad: 'Elige la parte más curiosa de esta tarea y empieza por ahí.',
-    urgencia: '⏱️ ¡Arranca ya! Haz la primera acción de esta tarea ahora mismo.',
-    desafio: '⚔️ Desafío de inicio: ¿cuál es el primer micro-avance que puedes hacer?',
-    directo: 'Avanza un poco en esta tarea.',
-    amable: 'Si te apetece, avanza solo un poco sin compromiso.',
-  },
-}
-
-/* Para el resto de retos base, el tono se construye con el mismo patrón de la matriz. */
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 
-const PATRONES: Record<Gatillo, (base: string) => string> = {
-  motivacion: (b) => `Da el primer paso para liberar tu mente: ${minuscula(b)}.`,
-  novedad: (b) => `Prueba un ángulo nuevo: ${minuscula(b)}, pero de una forma distinta.`,
-  urgencia: (b) => `⚡ ¡Acción rápida! ${b} ahora mismo.`,
-  desafio: (b) => `🎮 Nivel 1: ${minuscula(b)}. ¿Aceptas el reto?`,
-  directo: (b) => `${b}.`,
-  amable: (b) => `Cuando puedas, ${minuscula(b)} sin ninguna presión.`,
+type Frase = (accion: string, Accion: string) => string
+
+const FRASES: Record<Gatillo, Frase[]> = {
+  // Pasión → Motivación: por qué merece la pena
+  motivacion: [
+    (_a, A) => `${A}. Luego vas a notar el alivio.`,
+    (_a, A) => `${A}. Lo más difícil es empezar, y ya lo tienes.`,
+    (_a, A) => `${A}. Con esto ya has arrancado.`,
+  ],
+  // Novedad: hacerlo distinto
+  novedad: [
+    (a) => `Hoy, a tu manera: ${a}.`,
+    (a) => `Hazlo distinto a lo normal: ${a}.`,
+    (a) => `Cambia el chip: ${a}, pero en otro sitio o de otra forma.`,
+  ],
+  // Urgencia: ahora, sin darle vueltas
+  urgencia: [
+    (a) => `Ya, sin pensarlo: ${a}.`,
+    (a) => `Antes de mirar el móvil: ${a}.`,
+    (a) => `Ahora, mientras lees esto: ${a}.`,
+  ],
+  // Desafío: un reto pequeño y con gracia
+  desafio: [
+    (a) => `Mini reto: ${a}. ¿Hecho?`,
+    (a) => `A ver si puedes: ${a}.`,
+    (a) => `Reto rápido: ${a}. ¿Te atreves?`,
+  ],
+  // Interés → Directo: solo la acción
+  directo: [(_a, A) => `${A}. Y listo.`, (_a, A) => `${A}. Ya está.`],
+  // Amable: el «Primer paso» del detalle
+  amable: [
+    (a) => `Tranqui: ${a}. Con eso ya vale.`,
+    (a) => `Sin presión: ${a}. Si te apetece seguir, genial.`,
+  ],
 }
 
-export function tono(base: string, gatillo: Gatillo) {
-  return MATRIZ[base]?.[gatillo] ?? PATRONES[gatillo](base)
+/** Número estable a partir del texto de la tarea, para elegir siempre la misma frase para la misma tarea. */
+function semillaDe(texto: string) {
+  let h = 0
+  for (const c of texto) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return h
+}
+
+export function tono(base: string, gatillo: Gatillo, tarea = '') {
+  const A = sinPunto(base)
+  const opciones = FRASES[gatillo]
+  return opciones[semillaDe(tarea + gatillo) % opciones.length](minuscula(A), A)
 }
 
 /* ── 5. Lógica de ejecución ─────────────────────────────────── */
