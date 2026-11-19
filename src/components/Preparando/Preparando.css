@@ -1,0 +1,109 @@
+/* Pantalla de carga mientras se preparan los retos */
+.preparando {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: var(--marca-violeta);
+  color: var(--superficie-crema);
+}
+.preparando__caja {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 380px);
+  text-align: center;
+}
+.preparando__girando {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 6px solid color-mix(in srgb, var(--marca-lima) 25%, transparent);
+  border-top-color: var(--marca-lima);
+  animation: preparando-gira 900ms linear infinite;
+}
+@keyframes preparando-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.preparando__titulo {
+  margin-top: 20px;
+  color: var(--superficie-crema);
+  outline: none;
+}
+.preparando__tarea {
+  margin-top: 6px;
+  opacity: 0.85;
+}
+.preparando__pasos {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--marca-tinta) 35%, transparent);
+  text-align: left;
+}
+.preparando__paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: opacity 200ms ease;
+}
+.preparando__paso[data-estado="luego"] {
+  opacity: 0.45;
+}
+.preparando__marca {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--superficie-crema);
+  font-weight: 800;
+  font-size: 13px;
+}
+.preparando__paso[data-estado="ahora"] .preparando__marca {
+  border-color: var(--marca-lima);
+  color: var(--marca-lima);
+  animation: preparando-late 1s ease-in-out infinite;
+}
+.preparando__paso[data-estado="hecho"] .preparando__marca {
+  border-color: var(--marca-lima);
+  background: var(--marca-lima);
+  color: var(--marca-tinta);
+}
+@keyframes preparando-late {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--marca-lima) 30%, transparent);
+  }
+}
+.preparando__detalle {
+  display: block;
+  margin-top: 2px;
+  opacity: 0.85;
+}
+.preparando__saltar {
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  color: var(--marca-lima);
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  .preparando__girando,
+  .preparando__paso[data-estado="ahora"] .preparando__marca {
+    animation: none;
+  }
+}

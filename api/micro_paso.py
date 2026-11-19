@@ -580,12 +580,22 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         categoria=categoria_de(tarea, contexto if contexto.titulo else None),
         objeto=objeto,
         tipo_objeto=tipo,
-        origen="web" if contexto.documentos else "respaldo",
+        # «web» solo si la búsqueda encontró una herramienta concreta en 2 resultados (o en la tarea):
+        # nunca se inventa «la web de café» para algo que se hace con las manos
+        origen="web" if contexto.documentos and herramienta else "respaldo",
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=contexto.url_guia or None,
         fuentes=contexto.fuentes,
+        # Lo que encontró la búsqueda (títulos y resúmenes): la app lo usa para catalogar la tarea
+        resumen=resumen_de(contexto),
         diagnostico=contexto.diagnostico,
     )
+
+
+def resumen_de(contexto: Contexto, maximo: int = 1500) -> str:
+    """Títulos y primeras líneas de los resultados, sin Markdown, para que la app catalogue la tarea."""
+    trozos = [re.sub(r"[#*_>\[\]()`|]", " ", d.split("\n", 2)[0] + " " + d[:400]) for d in contexto.documentos]
+    return re.sub(r"\s+", " ", " ".join(trozos)).strip()[:maximo]
 
 
 # ── 4b. Trámites oficiales: lista fija, sin buscador ────────────

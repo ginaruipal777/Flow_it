@@ -8,6 +8,9 @@ import { useFlow } from '../../estado/FlowEstado'
 import { filtrarTarea, type Filtro } from '../../datos/filtros'
 import { analizarTarea } from '../../datos/reglas'
 import { buscarMicroPaso } from '../../datos/web'
+import { Preparando, type PasoPreparando } from '../../components/Preparando/Preparando'
+import { leerSituacion } from '../../datos/situacion'
+import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import './Inicio.css'
 
 /* 01 · Inicio y 02 · Inicio · escribiendo (Figma 2108:7545 y 2250:3782).
@@ -39,8 +42,9 @@ export default function Inicio() {
   const [dictando, setDictando] = useState(false)
   /** Aviso de seguridad o de texto que no se entiende */
   const [aviso, setAviso] = useState<Exclude<Filtro, { status: 'ok' }> | null>(null)
-  /** Búsqueda web en curso (solo tareas sin categoría): se puede saltar */
-  const [buscando, setBuscando] = useState<AbortController | null>(null)
+  /** Preparación de los retos en curso (pantalla de carga): paso actual, lo encontrado y cómo cancelar la búsqueda */
+  const [preparando, setPreparando] = useState<{ actual: number; pasos: PasoPreparando[]; control: AbortController } | null>(null)
+  const buscando = preparando
   const campo = useRef<HTMLInputElement>(null)
 
   const abierto = foco || texto.length > 0
@@ -49,7 +53,7 @@ export default function Inicio() {
 
   const empezar = async (e?: FormEvent) => {
     e?.preventDefault()
-    if (buscando) return
+    if (preparando) return
     if (!texto.trim()) {
       campo.current?.focus()
       return
@@ -60,21 +64,63 @@ export default function Inicio() {
       setAviso(filtro)
       return
     }
-    if (regla) {
-      despachar({ tipo: 'nueva-tarea', texto })
-      navegar('/reto')
-      return
-    }
-    // Sin categoría: se busca en internet el primer paso (máximo 30 s, se puede saltar)
+
+    // Antes de los retos: 1) buscar cómo se hace, 2) reconocer la tarea, 3) ver cuánto pesa, 4) elegir retos.
+    // Puede tardar unos segundos; el resultado es mejor y la persona ve qué está pasando.
+    const pasos: PasoPreparando[] = [
+      { titulo: 'Buscando cómo se hace' },
+      { titulo: 'Reconociendo la tarea' },
+      { titulo: 'Viendo cuánto te pesa' },
+      { titulo: 'Eligiendo tus retos' },
+    ]
     const control = new AbortController()
-    setBuscando(control)
+    const paso = (actual: number) => setPreparando({ actual, pasos: [...pasos], control })
+    const pausa = (ms: number) => new Promise((ok) => setTimeout(ok, ms))
+    paso(0)
+
+    // 1. Buscar en internet (máximo 30 s, se puede saltar)
     const resultado = await buscarMicroPaso(texto, estado.esfuerzo, control.signal)
-    setBuscando(null)
     if (resultado.status === 'blocked' || resultado.status === 'incomprehensible') {
+      setPreparando(null)
       setAviso(resultado)
       return
     }
-    despachar({ tipo: 'nueva-tarea', texto, web: resultado.status === 'success' ? resultado.web : undefined })
+    const web = resultado.status === 'success' ? resultado.web : undefined
+    pasos[0].detalle =
+      resultado.status === 'success'
+        ? web?.fiable
+          ? `Encontrado: ${web.contexto}`
+          : 'Encontrado en internet'
+        : control.signal.aborted
+          ? 'Búsqueda saltada'
+          : 'Sin conexión: uso lo que ya sé'
+    paso(1)
+    await pausa(500)
+
+    // 2. Reconocer la tarea (por sus palabras o por lo que encontró la búsqueda)
+    const categoria = regla?.categoria ?? web?.categoria
+    pasos[1].detalle = categoria
+      ? `${categoria}${!regla && web?.categoria ? ' (según lo encontrado)' : ''}`
+      : resultado.status === 'success' && web?.fiable
+        ? `Tarea nueva: con ${web.objeto}`
+        : 'Tarea nueva'
+    paso(2)
+    await pausa(500)
+
+    // 3. Esfuerzo y situación probable
+    const nombreEsfuerzo = { ligero: 'Ligero', medio: 'Medio', pesado: 'Pesado' }[estado.esfuerzo]
+    pasos[2].detalle = `${nombreEsfuerzo} · ${leerSituacion(texto, estado.esfuerzo).nombre}`
+    paso(3)
+    await pausa(450)
+
+    // 4. Retos
+    const icono = resultado.status === 'success' ? resultado.icono : undefined
+    const iconoFinal = icono ?? regla?.icono
+    pasos[3].detalle = iconoFinal ? `Mazo de ${NOMBRE_CATEGORIA[iconoFinal]}` : undefined
+    paso(4)
+    await pausa(300)
+    despachar({ tipo: 'nueva-tarea', texto, web, ...(icono && { icono }) })
+    setPreparando(null)
     navegar('/reto')
   }
 
@@ -192,17 +238,17 @@ export default function Inicio() {
             </div>
           )}
 
-          {buscando && (
-            <p className="inicio__buscando t-texto-cuerpo-s" aria-live="polite">
-              Buscando el primer paso en internet.{' '}
-              <button type="button" className="inicio__saltar" onClick={() => buscando.abort()}>
-                Saltar la búsqueda
-              </button>
-            </p>
-          )}
         </form>
       </main>
       <BarraNav />
+      {preparando && (
+        <Preparando
+          tarea={texto.trim()}
+          pasos={preparando.pasos}
+          actual={preparando.actual}
+          onSaltar={preparando.actual === 0 ? () => preparando.control.abort() : undefined}
+        />
+      )}
     </Pantalla>
   )
 }

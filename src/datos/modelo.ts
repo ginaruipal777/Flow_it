@@ -37,6 +37,10 @@ export type MicroPasoWeb = {
   fuenteEstrategia?: string
   /** Web oficial del trámite (lista fija de api/micro_paso.py) */
   enlace?: string
+  /** true si la búsqueda encontró una herramienta concreta (la app del test, la web oficial…) */
+  fiable?: boolean
+  /** Categoría de la app reconocida con lo que encontró la búsqueda («Cocina») */
+  categoria?: string
 }
 
 export type Reto = {

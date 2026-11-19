@@ -53,72 +53,72 @@ const r = (palabras: string, categoria: string, icono: Categoria, base: string, 
 
 export const REGLAS: Regla[] = [
   // 2.1 Trabajo, Administración y Estudio
-  r('email, correo, responder, escribir a', 'Comunicación', 'trabajo', 'Abre el correo y escribe solo el saludo', 'el saludo está escrito en el correo'),
-  r('declaración, impuestos, hacienda, papeleo', 'Administrativo', 'trabajo', 'Abre la web o el documento y mira la primera casilla', 'tienes el documento abierto y has leído la primera casilla'),
-  r('estudiar, leer, apuntes, examen', 'Académico', 'estudios', 'Abre el libro o apunte y lee solo el primer párrafo', 'has leído el primer párrafo'),
-  r('llamar, teléfono, cita, dentista', 'Llamadas', 'llamadas', 'Busca el número y tenlo listo para marcar', 'tienes el número en la pantalla, listo para llamar'),
-  r('decidir, elegir, escoger', 'Decisión', 'trabajo', 'Escribe las 2 opciones en un papel', 'las 2 opciones están escritas en el papel'),
-  r('creativo, escribir, diseñar, dibujar', 'Creativo', 'estudios', 'Abre el documento y escribe una frase', 'hay una frase escrita en el documento'),
-  r('ordenador, portátil, archivo, carpeta', 'Digital', 'trabajo', 'Abre la carpeta y mira el primer archivo', 'has abierto el primer archivo de la carpeta'),
+  r('email, correo, responder, escribir a, mail, contestar, responder mensaje, bandeja de entrada, newsletter, mandar un correo, enviar', 'Comunicación', 'trabajo', 'Abre el correo y escribe solo el saludo', 'el saludo está escrito en el correo'),
+  r('declaración, impuestos, hacienda, papeleo, trámite, tramites, renta, impuesto, formulario, solicitud, factura, facturas, recibo, banco, seguro, multa, certificado, empadronamiento, pasaporte, dni, nie, sepe, paro, seguridad social', 'Administrativo', 'trabajo', 'Abre la web o el documento y mira la primera casilla', 'tienes el documento abierto y has leído la primera casilla'),
+  r('estudiar, leer, apuntes, examen, estudio, temario, tema, deberes, trabajo de clase, tfg, tfm, asignatura, clase, universidad, instituto, repasar, resumen, esquema, apuntar, oposiciones, trabajo de fin de grado, trabajo final', 'Académico', 'estudios', 'Abre el libro o apunte y lee solo el primer párrafo', 'has leído el primer párrafo'),
+  r('llamar, teléfono, cita, dentista, telefonear, médico, medico, pedir cita, cita previa, consulta, reclamar, atención al cliente, ambulatorio, centro de salud, fisio', 'Llamadas', 'llamadas', 'Busca el número y tenlo listo para marcar', 'tienes el número en la pantalla, listo para llamar'),
+  r('decidir, elegir, escoger, decisión, decidirme, opciones, elegir entre, pensar si, comparar', 'Decisión', 'trabajo', 'Escribe las 2 opciones en un papel', 'las 2 opciones están escritas en el papel'),
+  r('creativo, escribir, diseñar, dibujar, diseño, proyecto creativo, idea, ilustración, maqueta, presentación, portfolio', 'Creativo', 'estudios', 'Abre el documento y escribe una frase', 'hay una frase escrita en el documento'),
+  r('ordenador, portátil, archivo, carpeta, móvil, fotos del móvil, escritorio del ordenador, descargas, backup, copia de seguridad, actualizar, contraseña, nube, drive', 'Digital', 'trabajo', 'Abre la carpeta y mira el primer archivo', 'has abierto el primer archivo de la carpeta'),
 
   // 2.2 Tareas del Hogar y Vida Cotidiana
-  r('limpiar, ordenar, recoger, fregar', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
-  r('comprar, tienda, supermercado, compra', 'Compra', 'alimentacion', 'Escribe la lista de 3 cosas que necesitas', 'la lista tiene 3 cosas apuntadas'),
-  r('cocinar, comida, cena, receta', 'Cocina', 'alimentacion', 'Abre la nevera y saca un ingrediente', 'hay un ingrediente fuera de la nevera'),
-  r('ropa, lavar, tender, planchar', 'Ropa', 'casa', 'Coge una prenda y llévala al sitio', 'una prenda está en su sitio'),
+  r('limpiar, ordenar, recoger, fregar, limpieza, cuarto, habitación, casa, piso, baño, polvo, aspirar, barrer, fregona, platos, lavavajillas, basura, armario, desorden, ordenar mi cuarto, hacer la cama, cambiar las sábanas, sábanas', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
+  r('comprar, tienda, supermercado, compra, super, súper, mercado, lista de la compra, hacer la compra, comprar comida, pedido online', 'Compra', 'alimentacion', 'Escribe la lista de 3 cosas que necesitas', 'la lista tiene 3 cosas apuntadas'),
+  r('cocinar, comida, cena, receta, café, cafe, preparar café, cafetera, té, infusión, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina', 'Cocina', 'alimentacion', 'Abre la nevera y saca un ingrediente', 'hay un ingrediente fuera de la nevera'),
+  r('ropa, lavar, tender, planchar, lavadora, colada, doblar, ropa sucia, secadora, ropa limpia, armario de ropa', 'Ropa', 'casa', 'Coge una prenda y llévala al sitio', 'una prenda está en su sitio'),
 
   // 2.3 Ocio y Entretenimiento
-  r('serie, ver serie, netflix, capítulo, temporada', 'Ver serie', 'autocuidado', 'Pon el capítulo y mira solo la intro', 'has visto la intro del capítulo'),
-  r('película, cine, ver peli, film', 'Ver película', 'autocuidado', 'Abre la plataforma y elige una peli', 'has elegido una película'),
-  r('leer, libro, novela, kindle', 'Lectura', 'autocuidado', 'Abre el libro y lee solo una página', 'has leído una página'),
-  r('jugar, videojuego, consola, partida', 'Videojuego', 'autocuidado', 'Abre el juego y haz solo una partida corta', 'has jugado una partida corta'),
-  r('música, escuchar, playlist, disco', 'Música', 'autocuidado', 'Pon una canción que te guste', 'está sonando una canción que te gusta'),
-  r('podcast, escuchar podcast', 'Podcast', 'autocuidado', 'Pon el podcast y escucha un poco', 'el podcast está sonando'),
-  r('youtube, vídeo, tutorial', 'Vídeo', 'autocuidado', 'Busca el vídeo y dale al play', 'el vídeo se está reproduciendo'),
+  r('serie, ver serie, netflix, capítulo, temporada, episodio, hbo, prime video, disney, ver un capítulo', 'Ver serie', 'autocuidado', 'Pon el capítulo y mira solo la intro', 'has visto la intro del capítulo'),
+  r('película, cine, ver peli, film, peli, filme, ver una película', 'Ver película', 'autocuidado', 'Abre la plataforma y elige una peli', 'has elegido una película'),
+  r('leer, libro, novela, kindle, leer un libro, lectura, cómic, comic, manga, audiolibro', 'Lectura', 'autocuidado', 'Abre el libro y lee solo una página', 'has leído una página'),
+  r('jugar, videojuego, consola, partida, videojuegos, play, playstation, xbox, switch, nintendo, jugar a', 'Videojuego', 'autocuidado', 'Abre el juego y haz solo una partida corta', 'has jugado una partida corta'),
+  r('música, escuchar, playlist, disco, canciones, spotify, escuchar música, álbum, concierto', 'Música', 'autocuidado', 'Pon una canción que te guste', 'está sonando una canción que te gusta'),
+  r('podcast, escuchar podcast, pódcast, episodio de podcast', 'Podcast', 'autocuidado', 'Pon el podcast y escucha un poco', 'el podcast está sonando'),
+  r('youtube, vídeo, tutorial, video, ver un vídeo, curso online, clase online', 'Vídeo', 'autocuidado', 'Busca el vídeo y dale al play', 'el vídeo se está reproduciendo'),
 
   // 2.4 Deporte y Movimiento
-  r('ejercicio, entrenar, gimnasio, pesas', 'Gimnasio', 'deporte', 'Ponte la ropa de deporte', 'llevas puesta la ropa de deporte'),
-  r('correr, running, salir a correr', 'Correr', 'deporte', 'Ponte las zapatillas y sal a la puerta', 'llevas las zapatillas puestas y estás en la puerta'),
-  r('caminar, andar, paseo', 'Caminar', 'deporte', 'Ponte los zapatos y sal a la calle', 'llevas los zapatos puestos y estás en la calle'),
-  r('yoga, estiramientos, flexibilidad', 'Yoga', 'deporte', 'Extiende la esterilla y haz una postura', 'la esterilla está extendida y has hecho una postura'),
-  r('bici, bicicleta, ciclismo', 'Bici', 'deporte', 'Saca la bici y pon el casco', 'la bici está fuera y llevas el casco puesto'),
-  r('nadar, piscina, natación', 'Natación', 'deporte', 'Prepara el bañador y la toalla', 'el bañador y la toalla están en la bolsa'),
-  r('bailar, baile, coreografía', 'Baile', 'deporte', 'Pon una canción y muévete', 'has bailado una canción'),
-  r('escalada, boulder, rocódromo', 'Escalada', 'deporte', 'Prepara el material y ve al rocódromo', 'el material está en la bolsa y sales hacia el rocódromo'),
-  r('fútbol, baloncesto, deporte de equipo', 'Deporte en equipo', 'deporte', 'Coge la equipación y confirma la hora', 'la equipación está preparada y sabes a qué hora es'),
+  r('ejercicio, entrenar, gimnasio, pesas, gym, deporte, entrenamiento, rutina de ejercicio, abdominales, sentadillas, crossfit, pilates, hacer ejercicio', 'Gimnasio', 'deporte', 'Ponte la ropa de deporte', 'llevas puesta la ropa de deporte'),
+  r('correr, running, salir a correr, trotar, footing, jogging, carrera', 'Correr', 'deporte', 'Ponte las zapatillas y sal a la puerta', 'llevas las zapatillas puestas y estás en la puerta'),
+  r('caminar, andar, paseo, pasear, dar un paseo, salir a caminar, andar un rato', 'Caminar', 'deporte', 'Ponte los zapatos y sal a la calle', 'llevas los zapatos puestos y estás en la calle'),
+  r('yoga, estiramientos, flexibilidad, estirar, pilates suave, postura', 'Yoga', 'deporte', 'Extiende la esterilla y haz una postura', 'la esterilla está extendida y has hecho una postura'),
+  r('bici, bicicleta, ciclismo, pedalear, spinning, rodar', 'Bici', 'deporte', 'Saca la bici y pon el casco', 'la bici está fuera y llevas el casco puesto'),
+  r('nadar, piscina, natación, largos, nadar un rato, bañador', 'Natación', 'deporte', 'Prepara el bañador y la toalla', 'el bañador y la toalla están en la bolsa'),
+  r('bailar, baile, coreografía, zumba, danza, clase de baile', 'Baile', 'deporte', 'Pon una canción y muévete', 'has bailado una canción'),
+  r('escalada, boulder, rocódromo, escalar, búlder, pared de escalada', 'Escalada', 'deporte', 'Prepara el material y ve al rocódromo', 'el material está en la bolsa y sales hacia el rocódromo'),
+  r('fútbol, baloncesto, deporte de equipo, pádel, padel, tenis, voleibol, balonmano, partido, entrenamiento de equipo, jugar al padel, jugar al pádel, jugar al tenis, jugar al fútbol, jugar al futbol', 'Deporte en equipo', 'deporte', 'Coge la equipación y confirma la hora', 'la equipación está preparada y sabes a qué hora es'),
 
   // 2.5 Vida Social
-  r('quedar, quedar con amigos, plan, salir', 'Quedar con amigos', 'social', 'Escribe un mensaje y propón un día', 'has enviado un mensaje con un día propuesto'),
-  r('llamar a un amigo, hablar con, llamada', 'Llamada social', 'social', 'Busca el contacto y mándale un mensaje', 'has enviado un mensaje a esa persona'),
-  r('cumpleaños, felicitar, regalo', 'Cumpleaños', 'social', 'Escribe el mensaje de felicitación', 'el mensaje de felicitación está enviado'),
-  r('fiesta, celebración, evento social', 'Fiesta', 'social', 'Confirma asistencia o prepara lo que llevar', 'has confirmado que vas o tienes preparado lo que vas a llevar'),
-  r('familia, visita, comida familiar', 'Familia', 'social', 'Llama o escribe para confirmar el plan', 'has llamado o escrito para confirmar el plan'),
-  r('cita, quedar con alguien, plan romántico', 'Cita', 'social', 'Escribe un mensaje y propón hora y sitio', 'has enviado un mensaje con hora y sitio'),
-  r('grupo, chat, whatsapp de amigos', 'Chat de grupo', 'social', 'Lee los últimos mensajes y responde uno', 'has respondido a un mensaje del grupo'),
+  r('quedar, quedar con amigos, plan, salir, amigos, amigas, quedada, salir con, tomar algo, cervezas, café con', 'Quedar con amigos', 'social', 'Escribe un mensaje y propón un día', 'has enviado un mensaje con un día propuesto'),
+  r('llamar a un amigo, hablar con, llamada, llamar a mi madre, llamar a mi padre, videollamada, hablar por teléfono', 'Llamada social', 'social', 'Busca el contacto y mándale un mensaje', 'has enviado un mensaje a esa persona'),
+  r('cumpleaños, felicitar, regalo, cumple, felicitación, regalo de cumpleaños, tarta', 'Cumpleaños', 'social', 'Escribe el mensaje de felicitación', 'el mensaje de felicitación está enviado'),
+  r('fiesta, celebración, evento social, boda, bautizo, comunión, cena de empresa, despedida', 'Fiesta', 'social', 'Confirma asistencia o prepara lo que llevar', 'has confirmado que vas o tienes preparado lo que vas a llevar'),
+  r('familia, visita, comida familiar, madre, padre, mamá, papá, abuela, abuelo, hermana, hermano, tía, tío, visitar a', 'Familia', 'social', 'Llama o escribe para confirmar el plan', 'has llamado o escrito para confirmar el plan'),
+  r('cita, quedar con alguien, plan romántico, pareja, novio, novia, primera cita, ligar', 'Cita', 'social', 'Escribe un mensaje y propón hora y sitio', 'has enviado un mensaje con hora y sitio'),
+  r('grupo, chat, whatsapp de amigos, mensajes, grupo de whatsapp, telegram, contestar al grupo', 'Chat de grupo', 'social', 'Lee los últimos mensajes y responde uno', 'has respondido a un mensaje del grupo'),
 
   // 2.6 Hobbies y Creatividad
-  r('dibujar, pintar, ilustrar, boceto', 'Dibujo', 'autocuidado', 'Coge papel y lápiz y haz una línea', 'hay una línea dibujada en el papel'),
-  r('escribir, escribir algo, relato, diario', 'Escritura', 'autocuidado', 'Abre el documento y escribe una frase', 'hay una frase escrita en el documento'),
-  r('fotografía, foto, cámara, editar fotos', 'Fotografía', 'autocuidado', 'Coge la cámara o el móvil y haz una foto', 'has hecho una foto'),
-  r('cocinar, receta nueva, postre', 'Cocina creativa', 'alimentacion', 'Saca los ingredientes y prepara uno', 'un ingrediente está lavado, cortado o medido'),
-  r('manualidades, coser, tejer, bricolaje', 'Manualidades', 'casa', 'Prepara el material y empieza una pieza', 'el material está en la mesa y has empezado una pieza'),
-  r('tocar instrumento, guitarra, piano, practicar', 'Instrumento', 'autocuidado', 'Coge el instrumento y toca una escala', 'has tocado una escala'),
-  r('jardín, plantas, huerto, regar', 'Jardín', 'casa', 'Riega una planta o retira una hoja seca', 'has regado una planta o quitado una hoja seca'),
-  r('meditar, mindfulness, respirar', 'Meditación', 'autocuidado', 'Siéntate y respira', 'has hecho 3 respiraciones lentas'),
+  r('dibujar, pintar, ilustrar, boceto, acuarela, sketch, dibujo, colorear', 'Dibujo', 'autocuidado', 'Coge papel y lápiz y haz una línea', 'hay una línea dibujada en el papel'),
+  r('escribir, escribir algo, relato, diario, escribir un texto, blog, poema, cuento, novela propia, carta', 'Escritura', 'autocuidado', 'Abre el documento y escribe una frase', 'hay una frase escrita en el documento'),
+  r('fotografía, foto, cámara, editar fotos, fotos, hacer fotos, sacar fotos, revelar', 'Fotografía', 'autocuidado', 'Coge la cámara o el móvil y haz una foto', 'has hecho una foto'),
+  r('cocinar, receta nueva, postre, repostería, bizcocho, galletas, tarta casera', 'Cocina creativa', 'alimentacion', 'Saca los ingredientes y prepara uno', 'un ingrediente está lavado, cortado o medido'),
+  r('manualidades, coser, tejer, bricolaje, costura, ganchillo, punto, arreglar, montar un mueble, pintar la pared, mueble, montar, ikea, taladro', 'Manualidades', 'casa', 'Prepara el material y empieza una pieza', 'el material está en la mesa y has empezado una pieza'),
+  r('tocar instrumento, guitarra, piano, practicar, tocar, ensayar, ukelele, violín, batería, bajo', 'Instrumento', 'autocuidado', 'Coge el instrumento y toca una escala', 'has tocado una escala'),
+  r('jardín, plantas, huerto, regar, planta, macetas, regar las plantas, abonar, trasplantar', 'Jardín', 'casa', 'Riega una planta o retira una hoja seca', 'has regado una planta o quitado una hoja seca'),
+  r('meditar, mindfulness, respirar, meditación, respiración, relajarme, calmarme', 'Meditación', 'autocuidado', 'Siéntate y respira', 'has hecho 3 respiraciones lentas'),
 
   // 2.7 Descanso y Autocuidado
-  r('dormir, siesta, descansar, acostarme', 'Descanso', 'autocuidado', 'Prepara la cama y apaga pantallas', 'la cama está abierta y las pantallas apagadas'),
-  r('ducha, baño, aseo', 'Aseo', 'autocuidado', 'Ve al baño y abre el grifo', 'estás en el baño con el grifo abierto'),
-  r('skincare, crema, rutina facial', 'Skincare', 'autocuidado', 'Aplica un solo producto', 'te has puesto un producto'),
-  r('desayuno, comer, cena, alimentarme', 'Comida', 'alimentacion', 'Prepara algo simple y siéntate a comer', 'tienes algo de comer en la mesa y has empezado'),
-  r('agua, beber, hidratarme', 'Hidratación', 'autocuidado', 'Bebe un vaso de agua', 'el vaso de agua está vacío'),
-  r('desconectar, parar, no hacer nada', 'Desconexión', 'autocuidado', 'Siéntate y tómate un momento', 'has pasado un momento sin pantallas ni tareas'),
+  r('dormir, siesta, descansar, acostarme, irme a dormir, acostarse, sueño, cama, dormir pronto', 'Descanso', 'autocuidado', 'Prepara la cama y apaga pantallas', 'la cama está abierta y las pantallas apagadas'),
+  r('ducha, baño, aseo, ducharme, duchar, lavarme, dientes, lavarme los dientes, bañarme, higiene, afeitarme, depilarme', 'Aseo', 'autocuidado', 'Ve al baño y abre el grifo', 'estás en el baño con el grifo abierto'),
+  r('skincare, crema, rutina facial, cuidado de la piel, cara, mascarilla, protector solar', 'Skincare', 'autocuidado', 'Aplica un solo producto', 'te has puesto un producto'),
+  r('desayuno, comer, cena, alimentarme, comer algo, desayunar, almorzar, merendar, cenar, merienda, almuerzo, picar algo, comer bien, dieta', 'Comida', 'alimentacion', 'Prepara algo simple y siéntate a comer', 'tienes algo de comer en la mesa y has empezado'),
+  r('agua, beber, hidratarme, beber agua, vaso de agua, botella, hidratación', 'Hidratación', 'autocuidado', 'Bebe un vaso de agua', 'el vaso de agua está vacío'),
+  r('desconectar, parar, no hacer nada, descanso de pantallas, sin móvil, apagar el móvil, relax', 'Desconexión', 'autocuidado', 'Siéntate y tómate un momento', 'has pasado un momento sin pantallas ni tareas'),
 
   // Ampliación (protocolo 5.2): la app tiene categoría «Mascotas»
-  r('perro, pasear al perro, sacar al perro', 'Pasear al perro', 'mascotas', 'Coge la correa y acércate a la puerta', 'tienes la correa en la mano y estás en la puerta'),
-  r('test, autoescuela, carnet de conducir, examen teórico, examen de conducir', 'Test', 'estudios', 'Abre la app del test', 'has abierto la app del test'),
-  r('veterinario, vacuna, revisión', 'Veterinario', 'mascotas', 'Busca el teléfono del veterinario y tenlo listo', 'tienes el número en la pantalla, listo para llamar'),
-  r('gato, mascota, cuidar a mi mascota', 'Mascotas', 'mascotas', 'Llena el cuenco de agua de tu mascota', 'el cuenco de agua está lleno'),
+  r('perro, pasear al perro, sacar al perro, paseo del perro, sacar a la perra, perra, sacar al perrito', 'Pasear al perro', 'mascotas', 'Coge la correa y acércate a la puerta', 'tienes la correa en la mano y estás en la puerta'),
+  r('test, autoescuela, carnet de conducir, examen teórico, examen de conducir, tests, test de conducir, teórico, dgt', 'Test', 'estudios', 'Abre la app del test', 'has abierto la app del test'),
+  r('veterinario, vacuna, revisión, vete, desparasitar, castrar, esterilizar', 'Veterinario', 'mascotas', 'Busca el teléfono del veterinario y tenlo listo', 'tienes el número en la pantalla, listo para llamar'),
+  r('gato, mascota, cuidar a mi mascota, gata, gatito, arenero, pienso, acuario, hámster, conejo', 'Mascotas', 'mascotas', 'Llena el cuenco de agua de tu mascota', 'el cuenco de agua está lleno'),
 ]
 
 /* ── 3. Respaldo: tareas sin regla ──────────────────────────────
@@ -158,7 +158,7 @@ export const RESPALDO = (t: string): Acciones => ({
 /* Retos con lo que encontró la búsqueda web (api/micro_paso.py): el objeto concreto
    («la app de test autoescuela») sustituye al texto de la tarea, y el micro-paso de la web
    es la carta Urgencia de su nivel. */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel }
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string }
 
 export function accionesWeb(w: DatosWeb): Acciones {
   const o = w.objeto
@@ -192,7 +192,7 @@ const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 /** Participio de cada verbo de acción, para escribir el criterio de éxito («has abierto…»).
     `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
 export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
-  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' },
+  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' }, comparte: { part: 'compartido' }, pela: { part: 'pelado' },
   cuenta: { part: 'contado' }, dicta: { part: 'dictado' }, estudia: { part: 'estudiado' }, huele: { part: 'olido' },
   muévete: { part: 'movido', pron: 'te' }, queda: { part: 'quedado' }, separa: { part: 'separado' }, apaga: { part: 'apagado' },
   aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },
@@ -335,15 +335,28 @@ export function mazosDe(esfuerzo: Nivel, conCategoria: boolean, conMetodos = fal
 }
 
 /** Tipo de actividad de la tarea, para elegir sus métodos (o nada si no tiene) */
-export function actividadDe(tarea: string, esfuerzo: Nivel = 'medio'): Actividad | undefined {
-  const { regla } = analizarTarea(tarea)
-  if (regla) return ACTIVIDAD_DE_CATEGORIA[regla.categoria]
+/** Categoría de la tarea: por sus palabras o, si no, por lo que encontró la búsqueda web */
+export function categoriaDe(tarea: string, web?: DatosWeb): string | undefined {
+  return analizarTarea(tarea).regla?.categoria ?? (web?.categoria && BANCO[web.categoria] ? web.categoria : undefined)
+}
+
+/** Cataloga la tarea con lo que encontró la búsqueda (títulos y resúmenes de las webs) */
+export function catalogarConWeb(tarea: string, resumen: string): { categoria: string; icono: Categoria } | undefined {
+  const propia = analizarTarea(tarea)
+  if (propia.regla) return { categoria: propia.regla.categoria, icono: propia.regla.icono }
+  const conWeb = analizarTarea(`${tarea} ${resumen}`)
+  return conWeb.regla ? { categoria: conWeb.regla.categoria, icono: conWeb.regla.icono } : undefined
+}
+
+export function actividadDe(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb): Actividad | undefined {
+  const categoria = categoriaDe(tarea, web)
+  if (categoria) return ACTIVIDAD_DE_CATEGORIA[categoria]
   return ACTIVIDAD_DE_SITUACION[leerSituacion(tarea, esfuerzo).id]
 }
 
 function mazosDeTarea(tarea: string, esfuerzo: Nivel, web?: DatosWeb) {
-  const conCategoria = Boolean(analizarTarea(tarea).regla) || Boolean(web)
-  return mazosDe(esfuerzo, conCategoria, Boolean(actividadDe(tarea, esfuerzo)))
+  const conCategoria = Boolean(categoriaDe(tarea, web)) || Boolean(web?.fiable)
+  return mazosDe(esfuerzo, conCategoria, Boolean(actividadDe(tarea, esfuerzo, web)))
 }
 
 /** Número de mazos distintos que tiene una tarea (depende del esfuerzo, de la categoría y de si tiene métodos). */
@@ -353,11 +366,19 @@ export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWe
 
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
   const analisis = analizarTarea(tarea)
-  const propias = !analisis.regla && web ? accionesWeb(web) : analisis.acciones
+  const categoria = categoriaDe(tarea, web)
+  // 1) categoría por sus palabras; 2) categoría por lo que encontró la web; 3) herramienta concreta de la web; 4) respaldo
+  const propias = analisis.regla
+    ? analisis.acciones
+    : categoria
+      ? BANCO[categoria]
+      : web?.fiable
+        ? accionesWeb(web)
+        : analisis.acciones
   const mazos = mazosDeTarea(tarea, esfuerzo, web)
   const fuente = mazos[mazo % mazos.length]
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
-  const actividad = actividadDe(tarea, esfuerzo)
+  const actividad = actividadDe(tarea, esfuerzo, web)
   return ORDEN.map((tipo) => {
     const metodo = actividad && fuente.metodos?.includes(tipo) ? METODOS[actividad][tipo] : undefined
     const accion = metodo ? metodo.retos[fuente.nivel] : acciones[fuente.nivel][tipo]

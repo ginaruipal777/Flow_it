@@ -12,11 +12,12 @@ import type { Fuente } from './situacion'
    - Pasión   → con algo que gusta (música, moverse, tu sitio favorito…).
    - Interés  → con compañía o contándolo (body doubling, explicarlo en voz alta…).
    - Urgencia → lo mínimo para arrancar; la app le añade el plazo del nivel.
+   La actividad sale de la categoría de la tarea: los métodos de higiene no se usan para comer, por ejemplo.
    Mismas reglas que banco.ts (verbo físico, una acción, objeto concreto, sin «hacer»…);
    las comprueba scripts/validar-retos.mts y `npm run fuentes` revisa los enlaces.
    ───────────────────────────────────────────────────────────── */
 
-export type Actividad = 'orden' | 'estudio' | 'escritura' | 'llamadas' | 'papeleo' | 'ejercicio' | 'cuidado'
+export type Actividad = 'orden' | 'estudio' | 'escritura' | 'llamadas' | 'papeleo' | 'ejercicio' | 'cuidado' | 'comida'
 
 export type Metodo = { nombre: string; fuente: Fuente; retos: Record<Nivel, string> }
 
@@ -33,6 +34,7 @@ export const FUENTES_METODOS = {
   ejercicio: { nombre: 'ADDA · Ejercicio y TDAH', url: 'https://add.org/exercising-your-adhd/' },
   higiene: { nombre: 'Life Skills Advocate · Higiene con TDAH', url: 'https://lifeskillsadvocate.com/blog/adhd-hygiene/' },
   cuidado: { nombre: 'CHADD · TDAH y cuidado personal', url: 'https://chadd.org/adhd-news/adhd-news-adults/attention-adhd-and-personal-care/' },
+  necesidades: { nombre: 'Inflow · El TDAH y las necesidades básicas (comer, beber)', url: 'https://www.getinflow.io/post/adhd-hyperfocus-forgetful-affects-basic-human-needs' },
 } satisfies Record<string, Fuente>
 
 const F = FUENTES_METODOS
@@ -92,6 +94,13 @@ export const METODOS: Record<Actividad, Record<TipoReto, Metodo>> = {
     interes: m('Con alguien que te acompañe', F.cuidado, 'Escribe a una persona de confianza que vas a cuidarte', 'Pide a una persona de casa que te avise para cenar', 'Prepara la cena con una persona de casa'),
     urgencia: m('Lo mínimo para cuidarte', F.cuidado, 'Bebe un trago de agua', 'Llena una taza de agua', 'Prepara un plato sencillo para ti'),
   },
+  comida: {
+    novedad: m('Comer sin cocinar', F.necesidades, 'Abre la nevera buscando comida ya lista', 'Saca de la nevera comida ya lista', 'Prepara un plato frío con lo que tengas'),
+    desafio: m('Tres ingredientes', F.necesidades, 'Busca con la mirada 3 ingredientes en la despensa', 'Saca 3 ingredientes para un plato', 'Prepara un plato con 3 ingredientes'),
+    pasion: m('Tu comida favorita fácil', F.necesidades, 'Busca la foto de tu comida favorita', 'Saca lo que necesitas para tu comida favorita', 'Prepara tu comida favorita fácil'),
+    interes: m('Comer en compañía', F.necesidades, 'Escribe a una persona de casa para comer en compañía', 'Pon 2 platos en la mesa', 'Comparte la comida con una persona de casa'),
+    urgencia: m('Lo mínimo para comer', F.necesidades, 'Coge una pieza de fruta', 'Pela una pieza de fruta', 'Prepara un bocadillo sencillo'),
+  },
 }
 
 /** Actividad de cada categoría del banco (las de ocio no llevan métodos) */
@@ -103,7 +112,8 @@ export const ACTIVIDAD_DE_CATEGORIA: Record<string, Actividad> = {
   Administrativo: 'papeleo', Decisión: 'papeleo',
   Gimnasio: 'ejercicio', Correr: 'ejercicio', Caminar: 'ejercicio', Yoga: 'ejercicio', Bici: 'ejercicio', Natación: 'ejercicio',
   Baile: 'ejercicio', Escalada: 'ejercicio', 'Deporte en equipo': 'ejercicio', 'Pasear al perro': 'ejercicio',
-  Aseo: 'cuidado', Skincare: 'cuidado', Comida: 'cuidado', Hidratación: 'cuidado', Descanso: 'cuidado',
+  Aseo: 'cuidado', Skincare: 'cuidado', Descanso: 'cuidado',
+  Comida: 'comida', Hidratación: 'comida', Cocina: 'comida',
 }
 
 /** Para tareas sin categoría: la actividad sale de la situación (situacion.ts) */

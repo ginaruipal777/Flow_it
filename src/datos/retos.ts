@@ -33,9 +33,10 @@ export function detectarCategoria(texto: string): Categoria {
 
 /** Nombre que se ve en la carta: la categoría de la regla del PDF («Comunicación», «Ver serie»…).
     Si la persona cambió la categoría a mano, o no hay regla, se usa la de la app. */
-export function nombreCategoriaReto(tarea: Pick<Tarea, 'texto' | 'categoria'>) {
+export function nombreCategoriaReto(tarea: Pick<Tarea, 'texto' | 'categoria'> & Partial<Pick<Tarea, 'web'>>) {
   const { regla } = analizarTarea(tarea.texto)
-  return regla && regla.icono === tarea.categoria ? regla.categoria : NOMBRE_CATEGORIA[tarea.categoria]
+  if (regla && regla.icono === tarea.categoria) return regla.categoria
+  return tarea.web?.categoria ?? NOMBRE_CATEGORIA[tarea.categoria]
 }
 
 /** «responder el email de Carlos» -> partes para el título partido en dos líneas. */

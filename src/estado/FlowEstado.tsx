@@ -38,7 +38,7 @@ type Estado = {
 type Accion =
   | { tipo: 'onboarding-visto' }
   | { tipo: 'esfuerzo'; esfuerzo: Esfuerzo }
-  | { tipo: 'nueva-tarea'; texto: string; web?: MicroPasoWeb }
+  | { tipo: 'nueva-tarea'; texto: string; web?: MicroPasoWeb; icono?: Categoria }
   | { tipo: 'retomar'; id: string }
   | { tipo: 'cambiar-categoria'; categoria: Categoria }
   /** `reto`: la carta que se deja (para aprender); `motivo: 'archivo'` si se archiva un reto ya aceptado */
@@ -117,7 +117,7 @@ function reductor(e: Estado, a: Accion): Estado {
       const t: Tarea = {
         id: crypto.randomUUID(),
         texto: a.texto.trim(),
-        categoria: detectarCategoria(a.texto),
+        categoria: a.icono ?? detectarCategoria(a.texto),
         esfuerzo: e.esfuerzo,
         retos: 0,
         estado: 'en-curso',

@@ -142,7 +142,7 @@ const SITUACIONES: Regla[] = [
     nombre: 'Cuidarse',
     señales: [
       [/\b(ducha\w*|duchar\w*|dientes|lavarme|crema|aseo|higiene)\b/, 3],
-      [/\b(comer|cenar|desayunar|beber|agua|dormir|descansar|acostarme|cuidarme)\b/, 2],
+      [/\b(comer|cenar|desayunar|desayuno|almuerzo|almorzar|merienda|merendar|cena|beber|agua|dormir|descansar|acostarme|cuidarme)\b/, 2],
     ],
     extraPorEsfuerzo: { pesado: 1 },
     frase: 'Cuidarte cuesta más en los días malos. Con un paso pequeño ya cuenta.',
