@@ -32,6 +32,9 @@ export type MicroPasoWeb = {
   tipo: 'digital' | 'fisico'
   /** Nivel de esfuerzo para el que se calculó el micro-paso */
   nivel: Esfuerzo
+  /** Consejo para arrancar sacado de understood.org (redactado por la app) */
+  estrategia?: string
+  fuenteEstrategia?: string
 }
 
 export type Reto = {

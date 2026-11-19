@@ -17,6 +17,8 @@ type Respuesta =
       objeto: string
       tipo_objeto: 'digital' | 'fisico'
       origen: 'web' | 'respaldo' | 'emergencia'
+      estrategia?: string | null
+      fuente_estrategia?: string | null
     }
   | Exclude<Filtro, { status: 'ok' }>
 
@@ -48,6 +50,8 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
         objeto: datos.objeto,
         tipo: datos.tipo_objeto,
         nivel: esfuerzo,
+        ...(datos.estrategia && { estrategia: datos.estrategia }),
+        ...(datos.fuente_estrategia && { fuenteEstrategia: datos.fuente_estrategia }),
       },
     }
   } catch {

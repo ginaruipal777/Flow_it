@@ -151,6 +151,19 @@ export function Detalle() {
           hecho={{ marcado, onCambiar: () => setHechoEn(marcado ? null : reto.tipo) }}
         />
         <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} marcado={marcado} />
+        {tarea.web?.estrategia && (
+          <p className="detalle__consejo t-texto-cuerpo">
+            <strong>Una idea para arrancar:</strong> {tarea.web.estrategia}
+            {tarea.web.fuenteEstrategia && (
+              <>
+                {' '}
+                <a href={tarea.web.fuenteEstrategia} target="_blank" rel="noopener noreferrer">
+                  Fuente: Understood
+                </a>
+              </>
+            )}
+          </p>
+        )}
         <ElegirPremio premio={tarea.premio} onCambio={(premio) => despachar({ tipo: 'premio', premio })} />
         <BotonesReto onArchivar={() => setArchivar(true)} />
       </Panel>

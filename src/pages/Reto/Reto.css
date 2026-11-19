@@ -309,3 +309,15 @@
 .enfoque__aviso:empty {
   display: none;
 }
+
+/* Consejo para arrancar (understood.org, solo tareas buscadas en internet) */
+.detalle__consejo {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--superficie-crema);
+  color: var(--marca-tinta);
+}
+.detalle__consejo a {
+  color: var(--marca-violeta);
+  font-weight: 700;
+}

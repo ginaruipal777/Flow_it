@@ -3,12 +3,13 @@ Flow it! · Generador de micro-pasos con búsqueda web (función de Python en Ve
 
 POST /api/micro_paso   {"tarea": "Hacer test autoescuela", "esfuerzo": "pesado"}
 
-Busca en internet cómo se empieza la tarea (librería `webless`, sin claves de API) y
-devuelve SOLO el primer paso físico: nunca el proceso entero, para no abrumar.
+Busca en internet cómo se empieza la tarea (librería `webless`, sin claves de API): la web general
+explica de qué va la tarea y con qué herramienta se hace; understood.org (es-mx) aporta una estrategia
+para arrancar con TDAH. Devuelve SOLO el primer paso físico: nunca el proceso entero, para no abrumar.
 Todo el análisis es local y determinista (expresiones regulares, sin IA generativa).
 
 Respuestas (JSON estricto):
-  success           → {"status", "tarea_original", "contexto", "micro_paso", "categoria", "objeto", "tipo_objeto", "origen"}
+  success           → {"status", "tarea_original", "contexto", "micro_paso", "categoria", "objeto", "tipo_objeto", "origen", "estrategia", "fuente_estrategia", "fuentes"}
   incomprehensible  → {"status", "mensaje"}
   blocked           → {"status", "mensaje", "ayuda"?}
 
@@ -139,13 +140,53 @@ def comprobar_comprension(tarea: str) -> dict | None:
 @dataclass
 class Contexto:
     titulo: str
-    texto: str  # snippets + página en Markdown
+    texto: str  # snippets + página en Markdown (de qué va la tarea y con qué herramienta)
+    fuentes: list[str]
+    guia: str = ""  # texto de understood.org (estrategias para arrancar con TDAH)
+    url_guia: str = ""
+
+
+UNDERSTOOD = "understood.org"
 
 
 async def _buscar(tarea: str) -> Contexto:
+    """Dos búsquedas a la vez: la web general (qué es la tarea) y understood.org (cómo arrancar)."""
+    general, guia = await asyncio.gather(_buscar_general(tarea), _buscar_understood(tarea), return_exceptions=True)
+    general = None if isinstance(general, BaseException) else general
+    guia = None if isinstance(guia, BaseException) else guia
+    if not general and not guia:
+        raise LookupError("Ninguna búsqueda devolvió resultados")
+    titulo, texto, fuentes = general or ("", "", [])
+    texto_guia, url_guia = guia or ("", "")
+    return Contexto(titulo=titulo, texto=texto, fuentes=fuentes + ([url_guia] if url_guia else []), guia=texto_guia, url_guia=url_guia)
+
+
+async def _buscar_understood(tarea: str) -> tuple[str, str] | None:
+    """understood.org (en español, es-mx): estrategias para empezar tareas con TDAH o
+    dificultades de función ejecutiva. Si no hay nada sobre la tarea, busca cómo empezar en general."""
+    from webless import fetch, search
+
+    hits = []
+    for consulta in (f"cómo empezar {tarea}", "cómo empezar una tarea TDAH función ejecutiva"):
+        resultado = await search(consulta, limit=6, allowed_domains=[UNDERSTOOD], timeout=10.0)
+        hits = sorted(resultado.hits, key=lambda h: "/es-mx/" not in h.url)  # primero las páginas en español
+        if hits:
+            break
+    if not hits:
+        return None
+    snippets = "\n".join(f"{h.title}. {h.snippet or ''}" for h in hits[:3])
+    try:
+        pagina = await fetch(hits[0].url, format="markdown", max_chars=MAX_CARACTERES_PAGINA)
+        return f"{snippets}\n{pagina.content or ''}", hits[0].url
+    except Exception:
+        return snippets, hits[0].url
+
+
+async def _buscar_general(tarea: str) -> tuple[str, str, list[str]] | None:
+    """Web general: de qué va la tarea y con qué herramienta se hace (app, web, libro…)."""
     from webless import fetch, search  # importación tardía: si falta la librería, salta el respaldo
 
-    resultado = await search(f"cómo {tarea} primer paso", limit=8, timeout=12.0)
+    resultado = await search(f"cómo {tarea} primer paso", limit=8, blocked_domains=[UNDERSTOOD], timeout=12.0)
     # Solo cuentan los resultados que hablan de la tarea: al menos la mitad de sus palabras
     # importantes en el título o el resumen («test autoescuela» no es «Speedtest»)
     claves = [p for p in normalizar(tarea).split() if len(p) >= 4] or normalizar(tarea).split()
@@ -157,14 +198,14 @@ async def _buscar(tarea: str) -> Contexto:
 
     hits = [h for h in resultado.hits if relevante(h)][:3]
     if not hits:
-        raise LookupError("La búsqueda no devolvió resultados sobre la tarea")
+        return None
     snippets = "\n".join(f"{h.title}. {h.snippet or ''}" for h in hits)
     try:
         pagina = await fetch(hits[0].url, format="markdown", max_chars=MAX_CARACTERES_PAGINA)
         contenido, titulo = pagina.content or "", pagina.title or hits[0].title
     except Exception:  # la página puede bloquear: con los snippets basta
         contenido, titulo = "", hits[0].title
-    return Contexto(titulo=titulo or "", texto=f"{snippets}\n{contenido}")
+    return titulo or "", f"{snippets}\n{contenido}", [h.url for h in hits]
 
 
 def buscar_contexto(tarea: str) -> Contexto | None:
@@ -228,6 +269,29 @@ CATEGORIAS = [
     ("Salud", r"\b(medico|dentista|farmacia|receta|centro de salud|vacuna)\b"),
     ("Trabajo", r"\b(correo|email|informe|curriculum|cv|reunion|cliente|factura)\b"),
 ]
+# Estrategias para arrancar que aparecen en understood.org → consejo propio de la app.
+# No se copia su texto: se detecta la idea y se dice con las pautas de Flow it! (literal, sin prisas).
+ESTRATEGIAS = [
+    (r"body doubling|doble de cuerpo|acompanamiento|alguien (cerca|contigo|al lado)|companer\w*", "Tener a alguien cerca mientras empiezas ayuda a arrancar."),
+    (r"recompensa\w*|premio\w*|refuerzo\w* positivo", "Elige un premio para cuando lo consigas."),
+    (r"dividir|divide\w*|pasos (mas )?pequen\w*|partes pequen\w*|trozos", "Con un paso pequeño cada vez es suficiente."),
+    (r"distraccion\w*|notificacion\w*|silenci\w*", "Deja el móvil boca abajo mientras empiezas."),
+    (r"lista de (tareas|control|verificacion)|checklist|tachar", "Apunta en tu libreta lo que ya has conseguido."),
+    (r"rutina\w*|misma hora|mismo momento", "Repetirlo a la misma hora del día lo vuelve más fácil."),
+    (r"movimiento|moverse|ejercicio fisico", "Moverte un poco antes de empezar ayuda a arrancar."),
+]
+
+
+def elegir_estrategia(contexto: Contexto | None) -> str | None:
+    """La estrategia que más menciona understood.org para esta tarea (o para empezar en general)."""
+    if not contexto or not contexto.guia:
+        return None
+    texto = normalizar(contexto.guia)
+    puntos = [(len(re.findall(patron, texto)), frase) for patron, frase in ESTRATEGIAS]
+    mejor = max(puntos, key=lambda p: p[0])
+    return mejor[1] if mejor[0] > 0 else None
+
+
 PROHIBIDO_EN_PASO = re.compile(
     r"\b(minutos?|segundos?|horas?|rapido|deprisa|haz|hacer|tarea|primera parte)\b|\s(y|o)\s", re.I
 )
@@ -310,6 +374,9 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto | None) -> 
         objeto=objeto,
         tipo_objeto=tipo,
         origen="web" if contexto else "respaldo",
+        estrategia=elegir_estrategia(contexto),
+        fuente_estrategia=contexto.url_guia if contexto and contexto.url_guia else None,
+        fuentes=contexto.fuentes if contexto else [],
     )
 
 
