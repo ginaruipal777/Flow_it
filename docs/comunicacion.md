@@ -43,6 +43,23 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 - Debajo del reto, una frase de permiso del nivel: Pesado «Con eso ya cuenta.», Medio «No tiene que quedar perfecto.», Ligero «Si sale regular, también vale.».
 - «Está hecho cuando…» sale de la propia acción: «Abre la app del test» → «has abierto la app del test».
 
+## 5b. Lectura de la situación
+
+Con la tarea y el esfuerzo, la app deduce qué puede estar frenando ([src/datos/situacion.ts](../src/datos/situacion.ts)), lo dice en una frase corta en la pantalla de las cartas y pone primero la carta que mejor encaja:
+
+| Situación | Señales en la tarea | Frase | Primera carta |
+|---|---|---|---|
+| Plazo encima | hoy, mañana, urgente, plazo | Hay un plazo encima. Esa presión puede ayudar: la carta Urgencia va primero. | Urgencia |
+| Hablar con otras personas | llamar, responder, jefe, cita, quedar | Hablar con otras personas puede dar respeto. Empiezas por lo que no exige hablar con nadie. | Novedad |
+| Mal rato | médico, dentista, análisis, veterinario | Es normal posponer lo que da mal rato. Los primeros pasos no te comprometen a nada todavía. | Novedad |
+| Miedo a hacerlo mal | escribir, informe, proyecto, examen | Puede que pese el miedo a que no quede bien. Aquí vale un primer borrador feo. | Novedad |
+| Verlo enorme | limpiar, ordenar, estudiar, mudanza | Puede parecer enorme porque se ve entero. Solo hace falta un trozo que se pueda contar. | Desafío |
+| Poca energía | gimnasio, correr, pasear | Con poca energía, el cuerpo arranca mejor con algo pequeño que te guste. | Pasión |
+| Aburrimiento | papeleo, trámites, platos, lavadora | Es más aburrida que difícil. Juntarla con algo que te gusta ayuda a empezar. | Pasión |
+| Cuidarse | ducharse, comer, dormir | Cuidarte cuesta más en los días malos. Con un paso pequeño ya cuenta. | Pasión |
+
+Si no encaja ninguna, la frase sale del esfuerzo (Pesado: «Hoy cuesta mucho arrancar…»). Nunca diagnostica: dice «puede que» y la persona decide.
+
 ## 6. Ley del esfuerzo inverso
 
 Cuanto más pesa la tarea, más pequeña es la acción (nivel elegido en «¿Cuánto te pesa?»):

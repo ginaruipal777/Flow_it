@@ -1,14 +1,19 @@
 import type { Categoria } from '../components/Icono/iconos'
 import { NOMBRE_CATEGORIA, type Reto, type Tarea } from './modelo'
 import { analizarTarea, retosDe } from './reglas'
+import { leerSituacion } from './situacion'
 
-/* Los retos salen de la matriz de combinación (ver reglas.ts y banco.ts):
-   acción del banco según el nivel de esfuerzo + modificador INCUP de cada carta. */
+/* Los retos salen del banco escrito a mano (banco.ts y reglas.ts). El orden de las cartas
+   depende de la situación probable de la persona (situacion.ts): primero las que mejor encajan. */
 
 export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web'>>, mazo = 0): Reto[] {
   // Un reto distinto por carta INCUP (ver retosDe en reglas.ts).
   // Cada mazo nuevo de la misma tarea sigue la numeración: 01–05, 06–10…
-  return retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web).map((r, i) => ({
+  const { orden } = leerSituacion(tarea.texto, tarea.esfuerzo)
+  const retos = retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web)
+  return orden
+    .map((tipo) => retos.find((r) => r.tipo === tipo)!)
+    .map((r, i) => ({
     ...r,
     numero: String(mazo * 5 + i + 1).padStart(2, '0'),
   }))

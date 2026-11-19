@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { BANCO, PERMISO, PLAZO, type Nivel } from '../src/datos/banco.ts'
 import { analizarTarea, numMazos, REGLAS, RESPALDO, retosDe, type Regla } from '../src/datos/reglas.ts'
+import { leerSituacion, POR_ESFUERZO_DOC, SITUACIONES_DOC } from '../src/datos/situacion.ts'
 
 type Tipo = 'novedad' | 'desafio' | 'pasion' | 'interes' | 'urgencia'
 
@@ -228,6 +229,22 @@ const html = `<!doctype html>
   ${ejemploCompleto('Responder el email de Carlos', 'pesado')}
   ${ejemploCompleto('Pasear al perro', 'medio')}
   ${ejemploCompleto('Estudiar para el examen', 'ligero')}
+</section>
+
+<section class="salto">
+  <h2>4b. Lectura de la situación</h2>
+  <p>Con TDAH una tarea se evita por motivos distintos, y cada uno pide otro empujón. Con <strong>la tarea que escribe la persona y el esfuerzo que marca</strong>, la app deduce qué puede estar pasando, lo dice en una frase corta en la pantalla de las cartas y <strong>ordena las cartas</strong> para que salga primero la que mejor encaja. Nunca diagnostica: dice «puede que» y la persona decide.</p>
+  <table>
+    <tr><th>Situación</th><th>Lo que ve la persona</th><th>Primera carta</th></tr>
+    ${SITUACIONES_DOC.map((x) => `<tr><td><strong>${x.id}</strong></td><td>${esc(x.frase)}</td><td>${({ novedad: 'Novedad', desafio: 'Desafío', pasion: 'Pasión', interes: 'Interés', urgencia: 'Urgencia' } as Record<string, string>)[x.orden[0]]}</td></tr>`).join('')}
+    ${Object.values(POR_ESFUERZO_DOC).map((x) => `<tr><td><strong>${x.id}</strong> <span class="peq">(si no encaja ninguna)</span></td><td>${esc(x.frase)}</td><td>${({ novedad: 'Novedad', desafio: 'Desafío', pasion: 'Pasión', interes: 'Interés', urgencia: 'Urgencia' } as Record<string, string>)[x.orden[0]]}</td></tr>`).join('')}
+  </table>
+  <h3>Ejemplos</h3>
+  <table>
+    <tr><th>Tarea</th><th>Esfuerzo</th><th>Lectura</th></tr>
+    ${([['Llamar al dentista', 'pesado'], ['Limpiar la cocina', 'medio'], ['Hacer la declaración de la renta', 'ligero'], ['Entregar el informe mañana', 'medio']] as const).map(([t, n]) => `<tr><td>${esc(t)}</td><td>${n}</td><td>${esc(leerSituacion(t, n).frase)}</td></tr>`).join('')}
+  </table>
+  <p class="peq">Las situaciones salen de las causas de evitación de tareas con TDAH que describen las guías de inicio de tareas (miedo a la respuesta, sensación de tamaño, aburrimiento, perfeccionismo, poca energía, malestar) y de los mensajes que prueba Tiimo según la energía de la persona.</p>
 </section>
 
 <section class="salto">

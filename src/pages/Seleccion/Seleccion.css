@@ -324,22 +324,22 @@
 
 /* Móviles con poco alto (Samsung A33 con barras del navegador ≈ 800 px):
    la carta se reduce para que Rechazar / Aceptar se vean sin hacer scroll */
+@media (max-height: 960px) {
+  .mazo {
+    zoom: 0.9;
+  }
+}
 @media (max-height: 900px) {
   .mazo {
-    zoom: 0.86;
+    zoom: 0.8;
   }
 }
 @media (max-height: 820px) {
   .mazo {
-    zoom: 0.78;
+    zoom: 0.72;
   }
   .seleccion__tarea {
     font-size: 38px;
-  }
-}
-@media (max-height: 720px) {
-  .mazo {
-    zoom: 0.68;
   }
 }
 @media (max-height: 760px), (max-width: 380px) {
@@ -347,14 +347,24 @@
     font-size: 34px;
   }
 }
+/* De mayor a menor alto, para que la regla más pequeña sea la que gane */
 @media (max-height: 760px) {
   .mazo {
-    zoom: 0.7;
+    zoom: 0.6;
+  }
+  .seleccion__situacion {
+    margin-top: 6px;
+    font-size: 12.5px;
+  }
+}
+@media (max-height: 720px) {
+  .mazo {
+    zoom: 0.56;
   }
 }
 @media (max-height: 680px) {
   .mazo {
-    zoom: 0.62;
+    zoom: 0.52;
   }
 }
 
@@ -378,4 +388,15 @@
 .dialogo__enlace--suave {
   margin-top: 0;
   text-decoration: underline;
+}
+
+/* Lectura de la situación: qué puede estar frenando y qué hace la app (situacion.ts) */
+.seleccion__situacion {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--superficie-crema);
+  color: var(--marca-tinta);
+  font-size: 13.5px;
+  line-height: 1.3;
 }

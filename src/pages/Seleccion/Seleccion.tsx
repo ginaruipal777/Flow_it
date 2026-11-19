@@ -7,6 +7,7 @@ import { AccionesCarta, BotonVolver, Overlay, Pantalla } from '../../components/
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { generarRetos, tituloTarea } from '../../datos/retos'
 import { numMazos } from '../../datos/reglas'
+import { leerSituacion } from '../../datos/situacion'
 import { useFlow } from '../../estado/FlowEstado'
 import './Seleccion.css'
 
@@ -123,6 +124,7 @@ export default function Seleccion() {
             </span>
           </button>
         </div>
+        <p className="seleccion__situacion t-texto-cuerpo-s">{leerSituacion(tareaActual.texto, tareaActual.esfuerzo).frase}</p>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
             Mazo {mazo + 1} de {totalMazos} · carta {Math.min(indice + 1, 5)} de 5
