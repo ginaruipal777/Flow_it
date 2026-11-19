@@ -369,23 +369,18 @@ export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWe
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
   const analisis = analizarTarea(tarea)
   const categoria = categoriaDe(tarea, web)
-  // 1) categoría por sus palabras; 2) categoría por lo que encontró la web; 3) herramienta concreta de la web; 4) respaldo
-  let propias = analisis.regla
-    ? analisis.acciones
-    : categoria
-      ? BANCO[categoria]
-      : web?.fiable
-        ? accionesWeb(web)
+  // Cuando la web encontró cómo se hace la tarea, TODAS las cartas son del objeto concreto
+  // («el descalcificador», «la cafetera»…) aunque haya una categoría del banco que coincida.
+  // Si no hay web fiable: 1) categoría propia; 2) categoría web; 3) respaldo.
+  const propias = web?.fiable
+    ? accionesWeb(web)
+    : analisis.regla
+      ? analisis.acciones
+      : categoria
+        ? BANCO[categoria]
         : analisis.acciones
   const mazos = mazosDeTarea(tarea, esfuerzo, web)
   const fuente = mazos[mazo % mazos.length]
-  // Cuando la web encontró el primer paso real de esta tarea específica, la carta Urgencia
-  // usa ese paso en lugar del genérico de la categoría (ej: «Coge el descalcificador» para
-  // «descalcificar cafetera», no «Coge una prenda»)
-  if (web?.fiable && analisis.regla && !fuente.metodos?.includes('urgencia')) {
-    const pasoWeb = web.microPaso.replace(/^Solo /i, '').replace(/\.$/, '')
-    propias = { ...propias, [fuente.nivel]: { ...propias[fuente.nivel], urgencia: pasoWeb } }
-  }
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
   const actividad = actividadDe(tarea, esfuerzo, web)
   return ORDEN.map((tipo) => {
