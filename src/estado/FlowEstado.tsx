@@ -29,6 +29,10 @@ type Estado = {
   aprendizaje: Aprendizaje
   /** Orden de las cartas del mazo actual; se calcula al empezar cada mazo y no cambia dentro de él */
   ordenCartas: TipoReto[] | null
+  /** Cartas rechazadas seguidas en esta tarea: cada RECHAZOS_PARA_AVISO se abre el aviso */
+  rechazosSeguidos: number
+  /** Aviso «¿Se te atasca esta tarea?» abierto */
+  avisoRechazos: boolean
 }
 
 type Accion =
@@ -48,6 +52,7 @@ type Accion =
   | { tipo: 'nuevo-mazo'; categoria: Categoria; nombre: string }
   | { tipo: 'premio'; premio: string | undefined }
   | { tipo: 'borrar-aprendizaje' }
+  | { tipo: 'cerrar-aviso' }
 
 /* Versión de fábrica: la app arranca vacía, como recién descargada.
    Las reglas y el banco de retos están en src/datos; aquí solo se guarda lo que hace cada persona. */
@@ -64,7 +69,12 @@ const INICIAL: Estado = {
   mazos: [],
   aprendizaje: APRENDIZAJE_VACIO,
   ordenCartas: null,
+  rechazosSeguidos: 0,
+  avisoRechazos: false,
 }
+
+/** El aviso «¿Se te atasca esta tarea?» se abre cada 9 cartas rechazadas seguidas */
+export const RECHAZOS_PARA_AVISO = 9
 
 /** Mazos distintos de la tarea actual (dependen del esfuerzo y de si tiene categoría) */
 function mazosDeTarea(e: Estado) {
@@ -115,7 +125,7 @@ function reductor(e: Estado, a: Accion): Estado {
         actualizada: Date.now(),
         ...(a.web && { web: a.web }),
       }
-      return conOrden({ ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null })
+      return conOrden({ ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null, rechazosSeguidos: 0, avisoRechazos: false })
     }
     case 'retomar':
       return conOrden({
@@ -124,23 +134,29 @@ function reductor(e: Estado, a: Accion): Estado {
         indiceReto: 0,
         mazo: 0,
         retoAceptado: null,
+        rechazosSeguidos: 0,
+        avisoRechazos: false,
         tareas: e.tareas.map((t) => (t.id === a.id ? { ...t, estado: 'en-curso' } : t)),
       })
     case 'cambiar-categoria':
       return cambiarTarea(e, (t) => ({ ...t, categoria: a.categoria }))
     case 'siguiente-reto': {
       const n = a.motivo === 'archivo' ? aprender(e, e.retoAceptado, 'archivada') : aprender(e, a.reto, 'rechazada')
-      // Al pasar la última carta llega un mazo nuevo de la misma tarea, ya ordenado con lo aprendido;
-      // tras el último, «agotado» (5)
-      if (n.indiceReto >= 4 && (n.mazo ?? 0) < mazosDeTarea(n) - 1) return conOrden({ ...n, indiceReto: 0, mazo: (n.mazo ?? 0) + 1 })
-      return { ...n, indiceReto: Math.min(n.indiceReto + 1, 5) }
+      // Cada 9 rechazos seguidos se abre el aviso; los mazos no se acaban: tras el último vuelve el primero
+      const rechazos = a.motivo === 'rechazo' ? (n.rechazosSeguidos ?? 0) + 1 : (n.rechazosSeguidos ?? 0)
+      const conAviso = { ...n, rechazosSeguidos: rechazos, avisoRechazos: a.motivo === 'rechazo' && rechazos % RECHAZOS_PARA_AVISO === 0 }
+      // Al pasar la última carta llega otro mazo de la misma tarea, ya ordenado con lo aprendido
+      if (n.indiceReto >= 4) return conOrden({ ...conAviso, indiceReto: 0, mazo: ((n.mazo ?? 0) + 1) % mazosDeTarea(n) })
+      return { ...conAviso, indiceReto: n.indiceReto + 1 }
     }
     case 'reiniciar-mazo':
-      return conOrden({ ...e, indiceReto: 0, mazo: 0 })
+      return conOrden({ ...e, indiceReto: 0, mazo: 0, avisoRechazos: false })
     case 'mazo-siguiente':
-      return conOrden({ ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e) })
+      return conOrden({ ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e), avisoRechazos: false })
+    case 'cerrar-aviso':
+      return { ...e, avisoRechazos: false }
     case 'aceptar-reto':
-      return aprender({ ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto }, a.reto, 'aceptada')
+      return aprender({ ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto, rechazosSeguidos: 0 }, a.reto, 'aceptada')
     case 'reto-conseguido': {
       const actual = e.tareas.find((t) => t.id === e.tareaActual)
       const reto = e.retoAceptado

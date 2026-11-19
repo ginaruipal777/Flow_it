@@ -136,7 +136,7 @@ Antes la app pegaba «entradilla + acción + modificador» y salían frases sin 
 | Control de tiempos y descansos | El modo enfoque ofrece «Sin límite», «10 min + 3 de descanso» o «25 min + 5 de descanso», con barra visual y aviso al cambiar de fase. Solo la carta Urgencia propone un plazo corto. |
 | Integración de intereses | Pendiente: la app aún no sabe qué le interesa a cada persona. |
 | Recompensa (método RAN) | En el detalle se puede elegir un premio; «Reto conseguido» lo recuerda. |
-| Más retos si no encaja ninguno | Al rechazar las 5 cartas llega otro mazo de la misma tarea, igual o más fácil: el nivel elegido, los niveles más ligeros y retos genéricos con el nombre de la tarea. |
+| Más retos si no encaja ninguno | Al rechazar las 5 cartas llega otro mazo de la misma tarea, igual o más fácil: el nivel elegido, los niveles más ligeros y retos genéricos con el nombre de la tarea. Los mazos no se acaban y cada 9 rechazos seguidos aparece «¿Se te atasca esta tarea?» para proponer escribirla de otra forma. |
 | Menos esfuerzo para arrancar | El nivel de esfuerzo elige el tamaño de la acción: Ligero 1–3 min, Medio 30–60 s, Pesado 5–10 s. |
 | Menos distracciones | El modo enfoque recuerda silenciar notificaciones y cerrar lo que no se use. |
 

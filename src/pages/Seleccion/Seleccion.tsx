@@ -39,7 +39,8 @@ export default function Seleccion() {
   const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo, orden) : []), [tareaActual, mazo, orden])
   const totalMazos = tareaActual ? numMazos(tareaActual.texto, tareaActual.esfuerzo, tareaActual.web) : 1
   const indice = Math.min(estado.indiceReto, 4)
-  const agotado = estado.indiceReto >= 5
+  // Aviso «¿Se te atasca esta tarea?»: se abre cada 9 cartas rechazadas seguidas
+  const agotado = Boolean(estado.avisoRechazos)
 
   // Aviso cuando llega un mazo nuevo de la misma tarea (se oculta solo a los 4 s)
   const [avisoMazo, setAvisoMazo] = useState(false)
@@ -201,9 +202,10 @@ export default function Seleccion() {
 
       {agotado && (
         <DialogoAgotado
-          total={totalMazos * 5}
+          rechazos={estado.rechazosSeguidos ?? 0}
           onNuevaTarea={(texto) => despachar({ tipo: 'nueva-tarea', texto })}
-          onSeguir={() => despachar({ tipo: 'reiniciar-mazo' })}
+          onSeguir={() => despachar({ tipo: 'cerrar-aviso' })}
+          onPrimerMazo={() => despachar({ tipo: 'reiniciar-mazo' })}
           onOtroMazo={() => despachar({ tipo: 'mazo-siguiente' })}
         />
       )}
@@ -266,9 +268,11 @@ function DialogoAgotado({
   onNuevaTarea,
   onSeguir,
   onOtroMazo,
-  total,
+  onPrimerMazo,
+  rechazos,
 }: {
-  total: number
+  rechazos: number
+  onPrimerMazo: () => void
   onNuevaTarea: (t: string) => void
   onSeguir: () => void
   onOtroMazo: () => void
@@ -283,7 +287,7 @@ function DialogoAgotado({
           if (texto.trim()) onNuevaTarea(texto)
         }}
       >
-        <p className="t-texto-eyebrow dialogo__eyebrow">Has visto los {total} retos</p>
+        <p className="t-texto-eyebrow dialogo__eyebrow">Has pasado {rechazos} retos seguidos</p>
         <h2 className="t-titular-m">¿Se te atasca esta tarea?</h2>
         <p className="t-texto-cuerpo dialogo__suave">Escríbela de otra forma, más pequeña o más concreta, y te preparamos cartas nuevas.</p>
         <div className="campo-pildora">
@@ -300,7 +304,10 @@ function DialogoAgotado({
           </button>
         </div>
         <button type="button" className="t-texto-subtitulo dialogo__enlace" onClick={onSeguir}>
-          Volver a ver los retos desde el primer mazo
+          Seguir viendo retos
+        </button>
+        <button type="button" className="t-texto-control dialogo__enlace dialogo__enlace--suave" onClick={onPrimerMazo}>
+          Volver a los retos del primer mazo
         </button>
         <button type="button" className="t-texto-control dialogo__enlace dialogo__enlace--suave" onClick={onOtroMazo}>
           Ver otro mazo de retos de esta tarea

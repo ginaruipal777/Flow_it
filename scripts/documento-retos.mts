@@ -272,7 +272,7 @@ const html = `<!doctype html>
     <tr><td>Pesado</td><td>Pesado con métodos (2 mazos) → retos genéricos con el nombre de la tarea</td></tr>
   </table>
   ${ejemploCompleto('Responder el email de Carlos', 'pesado', 1)}
-  <div class="nota">Al terminar los mazos aparece «Has visto los N retos», con tres opciones: escribir la tarea de otra forma (más pequeña o más concreta), volver al primer mazo o ver otro mazo.</div>
+  <div class="nota">Los mazos no se acaban: tras el último vuelve el primero. Cada <strong>9 cartas rechazadas seguidas</strong> aparece «¿Se te atasca esta tarea?» con cuatro opciones: escribir la tarea de otra forma (más pequeña o más concreta), seguir viendo retos, volver al primer mazo o ver otro mazo. Aceptar una carta pone la cuenta a cero.</div>
 </section>
 
 <section class="salto">
