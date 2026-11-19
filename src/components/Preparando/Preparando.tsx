@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Icono } from '../Icono/Icono'
+import { FondoOrganico } from '../UI/UI'
 import { ICONOS_TIPO } from '../Icono/iconos'
 import type { TipoReto } from '../CartaReto/tipos'
 import './Preparando.css'
@@ -37,6 +38,8 @@ export function Preparando({
 
   return (
     <div className="preparando" role="dialog" aria-modal="true" aria-labelledby="preparando-titulo" data-pregunta={pregunta ? '' : undefined}>
+      {/* Mismo fondo que el inicio: violeta con las manchas orgánicas */}
+      <FondoOrganico />
       <div className="preparando__caja">
         <div className="preparando__baraja" aria-hidden="true">
           {BARAJA.map((tipo, i) => (

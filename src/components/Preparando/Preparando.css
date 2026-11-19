@@ -3,6 +3,7 @@
   position: fixed;
   inset: 0;
   z-index: 60;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,8 +22,8 @@
 .preparando__baraja {
   position: relative;
   width: 100%;
-  height: clamp(96px, 16vh, 132px);
-  overflow: hidden;
+  /* Alto de la carta (ancho × 1,33) más margen para el giro y la sombra: se ve entera */
+  height: calc(clamp(68px, 18vw, 92px) * 1.33 + 40px);
 }
 .preparando__carta {
   --ancho: clamp(68px, 18vw, 92px);
