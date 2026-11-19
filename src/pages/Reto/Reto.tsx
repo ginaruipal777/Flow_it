@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import ilustracion from '../../assets/img/ilustracion-enfoque.png'
 import { Boton } from '../../components/Boton/Boton'
 import { CartaDetalle, CartaV3 } from '../../components/Cartas/Cartas'
 import { ListaPasos } from '../../components/ListaPasos/ListaPasos'
@@ -121,6 +120,26 @@ function DialogoArchivar({ onCerrar }: { onCerrar: () => void }) {
 }
 
 /* ── 08 · Detalle del reto ─────────────────────────── */
+/** Animación del modo enfoque (public/video/enfoque.mp4, 480 px, sin sonido).
+    Con «reducir movimiento» activado en el sistema se queda quieta en el primer fotograma. */
+function VideoEnfoque({ className }: { className: string }) {
+  const base = import.meta.env.BASE_URL
+  const quieto = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  return (
+    <video
+      className={className}
+      src={`${base}video/enfoque.mp4`}
+      poster={`${base}video/enfoque-poster.jpg`}
+      autoPlay={!quieto}
+      loop
+      muted
+      playsInline
+      preload="auto"
+      aria-hidden="true"
+    />
+  )
+}
+
 export function Detalle() {
   const navegar = useNavigate()
   const { despachar } = useFlow()
@@ -136,7 +155,7 @@ export function Detalle() {
   return (
     <Pantalla fondo="violeta-liso" className="detalle">
       <BotonVolver a="/reto" color="var(--superficie-blanco)" className="reto__volver" />
-      <img src={ilustracion} alt="" className="detalle__ilustracion" />
+      <VideoEnfoque className="detalle__ilustracion" />
 
       <Panel sentido="abajo" onDeslizar={abrirEnfoque} className="detalle__panel">
         <button type="button" className="boton-enfoque t-titular-boton" data-tipo={reto.tipo} onClick={abrirEnfoque}>
@@ -268,7 +287,7 @@ export function Enfoque() {
       <BotonVolver a="/reto/detalle" color="var(--superficie-blanco)" className="reto__volver" />
       <p className="enfoque__etiqueta">Modo enfoque</p>
       <p className="enfoque__consejo">Antes de empezar: silencia las notificaciones del móvil y cierra lo que no vayas a usar.</p>
-      <img src={ilustracion} alt="" className="enfoque__ilustracion" data-activa={enMarcha || undefined} />
+      <VideoEnfoque className="enfoque__ilustracion" />
 
       <div className="enfoque__modos" role="radiogroup" aria-label="Tipo de temporizador">
         {MODOS.map((m) => (

@@ -1,7 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BarraNav } from '../../components/BarraNav/BarraNav'
-import { Boton } from '../../components/Boton/Boton'
 import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_CATEGORIA, ICONOS_UI } from '../../components/Icono/iconos'
 import { ContadorRetos, Logotipo, Pantalla, SelectorEsfuerzo } from '../../components/UI/UI'
@@ -28,6 +27,10 @@ function crearDictado(): Reconocimiento | null {
   return Clase ? new Clase() : null
 }
 
+/* Enviar (avión de papel), como el componente «dictar» de Figma */
+const ICONO_ENVIAR =
+  '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 4.4 20.6 11.3a.75.75 0 0 1 0 1.4L4.2 19.6a.6.6 0 0 1-.8-.75L5.9 12 3.4 5.15a.6.6 0 0 1 .8-.75Z" fill="currentColor"/><path d="M6 12h6.5" stroke="var(--marca-tinta)" stroke-width="2" stroke-linecap="round"/></svg>'
+
 export default function Inicio() {
   const navegar = useNavigate()
   const { estado, despachar } = useFlow()
@@ -41,6 +44,7 @@ export default function Inicio() {
   const campo = useRef<HTMLInputElement>(null)
 
   const abierto = foco || texto.length > 0
+  const hayTexto = texto.trim().length > 0
   const historial = estado.tareas.filter((t) => t.estado === 'a-medias').slice(0, 3)
 
   const empezar = async (e?: FormEvent) => {
@@ -120,15 +124,33 @@ export default function Inicio() {
                 aria-label="Tarea"
                 enterKeyHint="go"
               />
-              <button
-                type="button"
-                className="formulario-tarea__dictar"
-                data-activo={dictando || undefined}
-                aria-label="Dictar la tarea"
-                onClick={dictar}
-              >
-                <Icono svg={ICONOS_UI.microfono} tamano={18} />
-              </button>
+              {/* Como en las apps de mensajería: micrófono con el campo vacío, enviar cuando hay texto */}
+              {hayTexto ? (
+                <button
+                  type="submit"
+                  className="formulario-tarea__accion"
+                  data-modo="enviar"
+                  aria-label={buscando ? 'Buscando el primer paso' : 'Enviar la tarea'}
+                  disabled={Boolean(buscando)}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <span className="formulario-tarea__icono" key="enviar" dangerouslySetInnerHTML={{ __html: ICONO_ENVIAR }} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="formulario-tarea__accion"
+                  data-modo="dictar"
+                  data-activo={dictando || undefined}
+                  aria-label="Dictar la tarea"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={dictar}
+                >
+                  <span className="formulario-tarea__icono" key="dictar">
+                    <Icono svg={ICONOS_UI.microfono} tamano={22} />
+                  </span>
+                </button>
+              )}
             </div>
 
             {abierto && historial.length > 0 && (
@@ -170,18 +192,9 @@ export default function Inicio() {
             </div>
           )}
 
-          <Boton
-            type="submit"
-            className="boton--ancho"
-            onMouseDown={(e) => e.preventDefault()}
-            disabled={Boolean(buscando)}
-            conIcono={!buscando}
-          >
-            {buscando ? 'Buscando el primer paso…' : '¡Vamos!'}
-          </Boton>
           {buscando && (
             <p className="inicio__buscando t-texto-cuerpo-s" aria-live="polite">
-              Estoy mirando en internet cómo se empieza.{' '}
+              Buscando el primer paso en internet.{' '}
               <button type="button" className="inicio__saltar" onClick={() => buscando.abort()}>
                 Saltar la búsqueda
               </button>

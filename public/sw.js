@@ -37,6 +37,9 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
+  // Los vídeos se piden por trozos (Range): mejor que los sirva siempre la red
+  if (url.pathname.includes('/video/')) return
+
   const mismoOrigen = url.origin === self.location.origin
   const fuentes = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'
   if (!mismoOrigen && !fuentes) return

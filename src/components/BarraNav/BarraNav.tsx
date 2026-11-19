@@ -1,28 +1,26 @@
 import { NavLink } from 'react-router-dom'
 import './BarraNav.css'
 
-/* Barra de navegación inferior de cristal: Empezar · Tareas · Perfil.
-   La pestaña activa se abre en una píldora lima con el icono en un círculo tinta;
-   las otras se quedan solo con el icono de línea. */
-
-const trazo = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
+/* Barra de navegación inferior: Empezar · Tareas · Perfil.
+   Píldora tinta; la pestaña activa es una píldora lima con icono y nombre en tinta;
+   las otras son solo el icono relleno en lima. */
 
 const ICONOS = {
-  casa: (activo: boolean) => (
+  casa: (
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.5H9v5.5H5.5A1.5 1.5 0 0 1 4 19z" {...trazo} fill={activo ? 'currentColor' : 'none'} />
+      <path d="M3.5 10.6 12 3.8l8.5 6.8v8.6a1.3 1.3 0 0 1-1.3 1.3H14.8v-5.6H9.2v5.6H4.8a1.3 1.3 0 0 1-1.3-1.3z" fill="currentColor" />
     </svg>
   ),
-  tareas: (activo: boolean) => (
+  tareas: (
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <rect x="5" y="3.5" width="14" height="17" rx="2.5" {...trazo} fill={activo ? 'currentColor' : 'none'} />
-      <path d="M9 8.5h6M9 12h6M9 15.5h3.5" {...trazo} stroke={activo ? 'var(--marca-tinta)' : 'currentColor'} />
+      <path d="M7.5 3h9A2.5 2.5 0 0 1 19 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 18.5v-13A2.5 2.5 0 0 1 7.5 3Z" fill="currentColor" />
+      <path d="M8.8 8.5h6.4M8.8 12h6.4M8.8 15.5h3.6" stroke="var(--barra-fondo-icono)" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   ),
-  perfil: (activo: boolean) => (
+  perfil: (
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.8" {...trazo} fill={activo ? 'currentColor' : 'none'} />
-      <path d="M4.5 20c.8-3.6 3.8-5.8 7.5-5.8s6.7 2.2 7.5 5.8z" {...trazo} fill={activo ? 'currentColor' : 'none'} />
+      <circle cx="12" cy="7.8" r="4.3" fill="currentColor" />
+      <path d="M3.8 20.4c.7-4 4-6.6 8.2-6.6s7.5 2.6 8.2 6.6a.8.8 0 0 1-.8.9H4.6a.8.8 0 0 1-.8-.9Z" fill="currentColor" />
     </svg>
   ),
 }
@@ -40,7 +38,7 @@ export function BarraNav() {
         <NavLink key={p.a} to={p.a} end className="barra-nav__pestana" aria-label={p.texto}>
           {({ isActive }) => (
             <>
-              <span className="barra-nav__icono">{p.icono(isActive)}</span>
+              <span className="barra-nav__icono">{p.icono}</span>
               {isActive && <span className="barra-nav__texto">{p.texto}</span>}
             </>
           )}

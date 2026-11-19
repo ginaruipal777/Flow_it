@@ -72,21 +72,50 @@
 .formulario-tarea__campo input::placeholder {
   color: var(--texto-secundario);
 }
-.formulario-tarea__dictar {
+/* Botón redondo a la derecha del campo: micrófono o enviar (como en las apps de mensajería) */
+.formulario-tarea__accion {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border: 0;
-  border-radius: 24px;
+  border-radius: 50%;
   background: var(--marca-tinta);
   color: var(--marca-lima);
   cursor: pointer;
+  transition: transform 120ms ease, opacity 160ms ease;
 }
-.formulario-tarea__dictar[data-activo] {
+.formulario-tarea__accion:active {
+  transform: scale(0.94);
+}
+.formulario-tarea__accion:focus-visible {
+  outline: 3px solid var(--marca-violeta);
+  outline-offset: 2px;
+}
+.formulario-tarea__accion:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.formulario-tarea__accion[data-activo] {
   animation: latido 1s ease-in-out infinite;
+}
+/* El icono cambia con un pequeño giro, como al pasar de micrófono a enviar */
+.formulario-tarea__icono {
+  display: inline-flex;
+  animation: icono-entra 180ms ease-out;
+}
+@keyframes icono-entra {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-20deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .formulario-tarea__icono {
+    animation: none;
+  }
 }
 @keyframes latido {
   50% {

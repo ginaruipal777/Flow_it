@@ -163,13 +163,13 @@ export function accionesWeb(w: DatosWeb): Acciones {
   const base: Acciones =
     w.tipo === 'digital'
       ? {
-          pesado: { novedad: `Abre ${o} con la pantalla en modo oscuro`, desafio: `Abre ${o} a la primera`, pasion: `Abre ${o} con tu canción favorita sonando`, interes: `Mira el menú de ${o}`, urgencia: `Abre ${o}` },
+          pesado: { novedad: `Abre ${o} con la pantalla en modo oscuro`, desafio: `Mira 2 pantallas de ${o}`, pasion: `Abre ${o} con tu canción favorita sonando`, interes: `Mira el menú de ${o}`, urgencia: `Abre ${o}` },
           medio: { novedad: `Entra en ${o} desde el ordenador`, desafio: `Pulsa el primer botón de ${o}`, pasion: `Entra en ${o} con tu bebida favorita al lado`, interes: `Lee el título de ${o}`, urgencia: `Entra en ${o}` },
           ligero: { novedad: `Lee la primera pantalla de ${o} desde el ordenador`, desafio: `Rellena la primera casilla de ${o}`, pasion: `Lee la primera pantalla de ${o} con tu música favorita de fondo`, interes: `Apunta en tu libreta lo que pide ${o}`, urgencia: `Lee la primera pantalla de ${o}` },
         }
       : {
-          pesado: { novedad: `Mira ${o} desde otro sitio de la habitación`, desafio: `Toca ${o} a la primera`, pasion: `Toca ${o} con tu canción favorita sonando`, interes: `Señala ${o} a una persona de casa`, urgencia: `Toca ${o}` },
-          medio: { novedad: `Pon ${o} en un sitio distinto de la mesa`, desafio: `Coge ${o} a la primera`, pasion: `Coge ${o} con tu música favorita de fondo`, interes: `Enséñale ${o} a una persona de casa`, urgencia: `Coge ${o}` },
+          pesado: { novedad: `Mira ${o} desde otro sitio de la habitación`, desafio: `Toca ${o} 2 veces`, pasion: `Toca ${o} con tu canción favorita sonando`, interes: `Señala ${o} a una persona de casa`, urgencia: `Toca ${o}` },
+          medio: { novedad: `Pon ${o} en un sitio distinto de la mesa`, desafio: `Pon ${o} junto a 2 cosas que vas a usar`, pasion: `Coge ${o} con tu música favorita de fondo`, interes: `Enséñale ${o} a una persona de casa`, urgencia: `Coge ${o}` },
           ligero: { novedad: `Usa ${o} empezando por el lado contrario`, desafio: `Usa ${o} 3 veces`, pasion: `Usa ${o} con tu música favorita de fondo`, interes: `Usa ${o} con una persona de casa cerca`, urgencia: `Usa ${o} una vez` },
         }
   const propia = w.microPaso.replace(/^Solo /, '').replace(/[.]$/, '')
@@ -190,7 +190,7 @@ const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 /** Participio de cada verbo de acción, para escribir el criterio de éxito («has abierto…»).
     `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
 export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
-  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, apaga: { part: 'apagado' },
+  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, apaga: { part: 'apagado' },
   aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },
   baila: { part: 'bailado' }, baja: { part: 'bajado' }, bebe: { part: 'bebido' }, busca: { part: 'buscado' },
   calienta: { part: 'calentado' }, camina: { part: 'caminado' }, cambia: { part: 'cambiado' },

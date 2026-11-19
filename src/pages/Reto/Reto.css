@@ -62,10 +62,12 @@
 }
 .detalle__ilustracion {
   display: block;
-  width: 240px;
+  width: 250px;
   height: 250px;
   margin: 0 auto;
-  object-fit: contain;
+  border-radius: 28px;
+  object-fit: cover;
+  pointer-events: none;
 }
 .detalle__panel {
   flex: 1;
@@ -105,18 +107,12 @@
   line-height: 23px;
 }
 .enfoque__ilustracion {
-  width: 240px;
+  width: 250px;
   height: 250px;
   margin-top: 16px;
-  object-fit: contain;
-}
-.enfoque__ilustracion[data-activa] {
-  animation: flotar 2.4s ease-in-out infinite;
-}
-@keyframes flotar {
-  50% {
-    transform: translateY(-8px);
-  }
+  border-radius: 28px;
+  object-fit: cover;
+  pointer-events: none;
 }
 .enfoque__crono {
   margin-top: 24px;

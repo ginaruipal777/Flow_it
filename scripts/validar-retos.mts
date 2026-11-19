@@ -16,6 +16,8 @@ const PROHIBIDO: [RegExp, string][] = [
   [/\b(piensa|decide|organiza|planifica|elige)\b/i, 'pide pensar o decidir'],
   [/(primera parte|una parte|la parte|lo primero|primer movimiento|(^|\s)algo(\s|$)|(^|\s)esto(\s|$))/i, 'no dice un objeto concreto'],
   [/(mano que no usas|mano izquierda|mano no dominante|de una forma distinta)/i, 'fricción artificial'],
+  [/(^|\s)a la primera(\s|$)/i, '«a la primera» no es un reto (usa una meta que se pueda contar)'],
+  [/(otra puerta|puerta de atrás|otra mesa|otra pantalla|otro dispositivo|una pajita|con hielo|un cojín)/i, 'da por hecho algo que quizá no hay en casa'],
   [/\b(tumbad[oa]|sentad[oa]|junt[oa]s|cansad[oa]|solit[oa])\b/i, 'tiene género gramatical para la persona'],
   [/(¡plan nuevo!|mini reto|modo disfrute|ponle interés|hazlo interesante|¿te apuntas\?)/i, 'lleva entradilla'],
 ]
