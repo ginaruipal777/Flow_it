@@ -231,6 +231,15 @@ def tema_de(tarea: str) -> str:
     return ARTICULO_INICIAL.sub("", tema).strip() or tarea.strip()
 
 
+VERBO_INICIAL = re.compile(r"^[a-záéíóúñ]{2,}(ar|er|ir)(me|te|se|lo|la|le)?s+", re.I)
+
+
+def nombre_de(tema: str) -> str:
+    """Para nombrar el objeto: sin verbo ni artículo y en minúscula («Renovar el pasaporte» → «pasaporte»)."""
+    nombre = ARTICULO_INICIAL.sub("", VERBO_INICIAL.sub("", tema)).strip()
+    return (nombre or tema).lower()
+
+
 @dataclass
 class Herramienta:
     patron: re.Pattern
@@ -239,6 +248,7 @@ class Herramienta:
 
 
 HERRAMIENTAS = [
+    Herramienta(re.compile(r"(test|tests)"), "la app de {tema}", "digital"),  # los tests se hacen casi siempre en una app
     Herramienta(re.compile(r"\b(app|apps|aplicacion|aplicaciones)\b"), "la app de {tema}", "digital"),
     Herramienta(re.compile(r"\bsede electronica\b"), "la sede electrónica de {tema}", "digital"),
     Herramienta(re.compile(r"\bcita previa\b"), "la web de cita previa", "digital"),
@@ -335,12 +345,14 @@ def contexto_corto(contexto: Contexto | None, tema: str) -> str:
     if not contexto or not contexto.titulo:
         return tema
     titulo = re.split(r"\s[|\-–—:]\s", contexto.titulo)[0].strip()
-    return titulo[:60] or tema
+    if len(titulo) > 60:  # se corta en una palabra entera
+        titulo = titulo[:60].rsplit(" ", 1)[0]
+    return titulo or tema
 
 
 def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto | None) -> dict:
     """Extrae UN micro-paso físico calibrado por el esfuerzo. Nunca el proceso entero."""
-    tema = tema_de(tarea)
+    tema = nombre_de(tema_de(tarea))
     herramienta = elegir_herramienta(tarea, contexto)
     if herramienta:
         objeto, tipo = herramienta.objeto.format(tema=tema), herramienta.tipo
