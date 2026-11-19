@@ -194,3 +194,57 @@
 .preparando[data-pregunta] .preparando__titulo {
   margin-top: 0;
 }
+
+/* Barra pequeña de progreso */
+.preparando__barra {
+  width: min(180px, 60%);
+  height: 6px;
+  margin-top: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--superficie-crema) 25%, transparent);
+  overflow: hidden;
+}
+.preparando__barra span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--marca-lima);
+  transition: width 450ms ease;
+}
+/* Mientras busca en internet, la barra avanza despacio sola */
+.preparando__barra[data-buscando] span {
+  animation: preparando-busca 10s cubic-bezier(.1, .7, .3, 1) forwards;
+}
+@keyframes preparando-busca {
+  from { width: 8%; }
+  to { width: 30%; }
+}
+.preparando__oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.preparando[data-pregunta] .preparando__barra {
+  display: none;
+}
+
+/* Ordenador: la pantalla de carga tiene el tamaño del móvil, como el resto de la app */
+@media (min-width: 600px) {
+  .preparando {
+    inset: 24px auto;
+    left: 50%;
+    width: min(430px, 100% - 32px);
+    transform: translateX(-50%);
+    border-radius: 32px;
+    box-shadow: 0 24px 60px color-mix(in srgb, var(--marca-tinta) 18%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preparando__barra[data-buscando] span {
+    animation: none;
+    width: 20%;
+  }
+}

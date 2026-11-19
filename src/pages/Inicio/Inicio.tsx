@@ -272,7 +272,6 @@ export default function Inicio() {
           tarea={texto.trim()}
           pasos={preparando.pasos}
           actual={preparando.actual}
-          onSaltar={preparando.actual === 0 ? () => preparando.control.abort() : undefined}
           pregunta={preparando.pregunta}
         />
       )}

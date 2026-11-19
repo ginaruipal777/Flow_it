@@ -9,7 +9,8 @@ import './Preparando.css'
    2. la reconoce (categoría),
    3. mira cuánto le pesa a la persona,
    4. elige los retos.
-   Cada paso enseña lo que ha encontrado. Mientras busca, se puede saltar la búsqueda. */
+   Se ve solo la baraja animada, «Preparando tus retos» y una barra pequeña de progreso;
+   el paso en marcha se anuncia al lector de pantalla. */
 
 /* Cartas que pasan rápido mientras se preparan los retos: una por factor INCUP */
 const BARAJA: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
@@ -23,15 +24,12 @@ export function Preparando({
   tarea,
   pasos,
   actual,
-  onSaltar,
   pregunta,
 }: {
   tarea: string
   pasos: PasoPreparando[]
   /** Índice del paso en marcha (los anteriores están hechos) */
   actual: number
-  /** Solo durante la búsqueda */
-  onSaltar?: () => void
   pregunta?: PreguntaTipo
 }) {
   const titulo = useRef<HTMLHeadingElement>(null)
@@ -50,24 +48,22 @@ export function Preparando({
         <h2 id="preparando-titulo" ref={titulo} tabIndex={-1} className="t-titular-m preparando__titulo">
           Preparando tus retos
         </h2>
-        <p className="t-texto-cuerpo preparando__tarea">«{tarea}»</p>
-
-        <ol className="preparando__pasos" aria-live="polite">
-          {pasos.map((p, i) => {
-            const estado = i < actual ? 'hecho' : i === actual ? 'ahora' : 'luego'
-            return (
-              <li key={p.titulo} className="preparando__paso" data-estado={estado}>
-                <span className="preparando__marca" aria-hidden="true">
-                  {estado === 'hecho' ? '✓' : i + 1}
-                </span>
-                <span>
-                  <span className="t-texto-control">{p.titulo}</span>
-                  {estado === 'hecho' && p.detalle && <span className="t-texto-cuerpo-s preparando__detalle">{p.detalle}</span>}
-                </span>
-              </li>
-            )
-          })}
-        </ol>
+        {/* Barra pequeña: avanza con cada paso (buscar, reconocer, esfuerzo, retos) */}
+        <div
+          className="preparando__barra"
+          role="progressbar"
+          aria-label="Progreso"
+          aria-valuemin={0}
+          aria-valuemax={pasos.length}
+          aria-valuenow={Math.min(actual, pasos.length)}
+          data-buscando={actual === 0 ? '' : undefined}
+        >
+          <span style={{ width: `${Math.max(8, (Math.min(actual, pasos.length) / pasos.length) * 100)}%` }} />
+        </div>
+        {/* El paso en marcha solo se anuncia al lector de pantalla */}
+        <p className="preparando__oculto" aria-live="polite">
+          {pasos[actual]?.titulo ?? 'Listo'} · {tarea}
+        </p>
 
         {pregunta && (
           <div className="preparando__pregunta" role="group" aria-labelledby="preparando-pregunta">
@@ -87,11 +83,6 @@ export function Preparando({
           </div>
         )}
 
-        {onSaltar && (
-          <button type="button" className="preparando__saltar t-texto-control" onClick={onSaltar}>
-            Saltar la búsqueda
-          </button>
-        )}
       </div>
     </div>
   )
