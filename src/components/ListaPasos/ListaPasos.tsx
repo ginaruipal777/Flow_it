@@ -12,17 +12,21 @@ export function ListaPasos({
   titulo,
   pasos,
   hecho,
+  marcado,
 }: {
   /** Texto de la carta: se lee antes de los pasos. */
   titulo: string
   pasos: string[]
   /** «Está hecho cuando …» (sin la parte inicial). */
   hecho: string
+  /** Si llega, el botón «Hecho» está en la carta: aquí solo quedan Escuchar y el criterio de éxito. */
+  marcado?: boolean
 }) {
   // Un paso cada vez (Sanitas: dar las instrucciones de una en una): solo se ve el paso actual.
   const [hechos, setHechos] = useState(0)
   const [leyendo, setLeyendo] = useState(false)
-  const todos = hechos >= pasos.length
+  const enCarta = marcado !== undefined
+  const todos = enCarta ? marcado : hechos >= pasos.length
 
   // Si se sale de la pantalla mientras lee, se para.
   useEffect(() => () => void (puedeHablar() && window.speechSynthesis.cancel()), [])
@@ -53,7 +57,7 @@ export function ListaPasos({
   return (
     <section className="lista-pasos" aria-label="Pasos del reto">
       <div className="lista-pasos__cabecera">
-        <p className="lista-pasos__etiqueta">{pasos.length > 1 ? `PASOS (${pasos.length})` : 'PASO'}</p>
+        <p className="lista-pasos__etiqueta">{enCarta ? '' : pasos.length > 1 ? `PASOS (${pasos.length})` : 'PASO'}</p>
         {puedeHablar() && (
           <button type="button" className="lista-pasos__escuchar t-texto-control" onClick={escuchar} aria-pressed={leyendo}>
             <Icono svg={ICONOS_UI.altavoz} tamano={20} />
@@ -62,7 +66,7 @@ export function ListaPasos({
         )}
       </div>
 
-      {hechos > 0 && (
+      {!enCarta && hechos > 0 && (
         <ol className="lista-pasos__hechos" aria-label="Pasos hechos">
           {pasos.slice(0, hechos).map((paso, i) => (
             <li key={i}>
@@ -84,7 +88,7 @@ export function ListaPasos({
         </ol>
       )}
 
-      {!todos && (
+      {!enCarta && !todos && (
         <div className="paso-actual" aria-live="polite">
           {pasos.length > 1 && (
             <p className="paso-actual__contador">
@@ -104,7 +108,7 @@ export function ListaPasos({
       </p>
 
       <p className="lista-pasos__aviso" aria-live="polite">
-        {todos ? 'Ya has hecho todos los pasos. Pulsa «Reto conseguido».' : ''}
+        {todos ? (enCarta ? 'Ya lo has hecho. Pulsa «Reto conseguido».' : 'Ya has hecho todos los pasos. Pulsa «Reto conseguido».') : ''}
       </p>
     </section>
   )

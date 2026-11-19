@@ -69,7 +69,19 @@ export function CartaV3({ tipo, categoria, etiqueta, reto, numero, escala = 1, c
   )
 }
 
-export function CartaDetalle({ tipo, categoria, etiqueta, reto, numero, className, style }: ConTextos) {
+export function CartaDetalle({
+  tipo,
+  categoria,
+  etiqueta,
+  reto,
+  numero,
+  className,
+  style,
+  hecho,
+}: ConTextos & {
+  /** Botón «Hecho» dentro de la carta (detalle del reto aceptado). */
+  hecho?: { marcado: boolean; onCambiar: () => void }
+}) {
   return (
     <article className={['carta-detalle', className].filter(Boolean).join(' ')} data-tipo={tipo} style={style}>
       <span className="carta-detalle__icono">
@@ -80,6 +92,20 @@ export function CartaDetalle({ tipo, categoria, etiqueta, reto, numero, classNam
         <p className="carta-detalle__reto t-carta-reto-s" data-largo={reto.length > 48 || undefined}>
           {reto}
         </p>
+        {hecho && (
+          <button
+            type="button"
+            className="carta-detalle__hecho t-texto-control"
+            role="checkbox"
+            aria-checked={hecho.marcado}
+            onClick={hecho.onCambiar}
+          >
+            <span className="carta-detalle__casilla" data-marcada={hecho.marcado || undefined}>
+              {hecho.marcado && <Icono svg={ICONOS_UI['tick-grande']} tamano={22} />}
+            </span>
+            {hecho.marcado ? '¡Hecho!' : 'Hecho'}
+          </button>
+        )}
       </div>
       <div className="carta-detalle__pie">
         <span className="carta-detalle__numero">{numero}</span>

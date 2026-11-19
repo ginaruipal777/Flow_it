@@ -126,9 +126,12 @@ export function Detalle() {
   const { despachar } = useFlow()
   const datos = useRetoAceptado()
   const [archivar, setArchivar] = useState(false)
+  // «Hecho» se marca en la propia carta; se guarda el tipo para que otro reto empiece sin marcar
+  const [hechoEn, setHechoEn] = useState<string | null>(null)
   if (!datos) return <Navigate to="/inicio" replace />
   const { tarea, reto } = datos
   const abrirEnfoque = () => navegar('/reto/enfoque', { replace: true })
+  const marcado = hechoEn === reto.tipo
 
   return (
     <Pantalla fondo="violeta-liso" className="detalle">
@@ -145,8 +148,9 @@ export function Detalle() {
           etiqueta={etiquetaCarta(tarea).toUpperCase()}
           reto={reto.titulo}
           numero={reto.numero}
+          hecho={{ marcado, onCambiar: () => setHechoEn(marcado ? null : reto.tipo) }}
         />
-        <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} />
+        <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} marcado={marcado} />
         <ElegirPremio premio={tarea.premio} onCambio={(premio) => despachar({ tipo: 'premio', premio })} />
         <BotonesReto onArchivar={() => setArchivar(true)} />
       </Panel>

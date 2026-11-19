@@ -130,6 +130,51 @@
   font-size: 16px;
   line-height: 1.35;
 }
+/* Botón «Hecho» dentro de la carta: usa los colores de la carta (tinta y pegatina) */
+.carta-detalle__hecho {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0 16px 0 6px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: var(--carta-tinta);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+}
+.carta-detalle__hecho:active {
+  transform: scale(0.97);
+}
+.carta-detalle__hecho:focus-visible {
+  outline: 3px solid var(--carta-pegatina-fondo);
+  outline-offset: 2px;
+}
+.carta-detalle__hecho[aria-checked="true"] {
+  border-color: var(--carta-pegatina-fondo);
+  background: var(--carta-pegatina-fondo);
+  color: var(--carta-pegatina-tinta);
+}
+.carta-detalle__casilla {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 2px solid currentColor;
+}
+.carta-detalle__casilla[data-marcada] {
+  border-color: var(--carta-pegatina-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+}
+
 .carta-detalle__pie {
   display: flex;
   align-items: center;
