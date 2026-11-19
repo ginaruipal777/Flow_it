@@ -424,7 +424,7 @@ class Herramienta:
 
 
 DIGITALES = frozenset({"Trámites", "Autoescuela", "Estudio", "Salud", "Trabajo", "Otro"})
-ESTUDIO = frozenset({"Estudio", "Autoescuela", "Otro"})
+ESTUDIO = frozenset({"Estudio", "Autoescuela"})
 CASA = frozenset({"Casa"})
 
 
