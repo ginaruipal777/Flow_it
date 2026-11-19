@@ -153,6 +153,7 @@ class Contexto:
     tipo_busqueda: str = "Otro"
     guia: str = ""  # texto de understood.org/es-mx (estrategias para arrancar con TDAH)
     url_guia: str = ""
+    enciclopedia: str = ""  # Wikipedia: qué es la cosa de la tarea (solo para catalogar)
     diagnostico: dict = field(default_factory=dict)
 
     @property
@@ -281,7 +282,12 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
     claves, necesarias = _claves(tarea)
     regla = FUENTES_CONFIANZA.get(tipo, {})
     pais = " España" if tipo == "Trámites" else ""
-    consultas = [_consultar(f"cómo {tarea}{pais} primer paso", limit=10, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=12.0)]
+    bloqueados = DOMINIOS_BLOQUEADOS + [UNDERSTOOD]
+    # Dos formulaciones a la vez: si una no da resultados válidos, la otra suele darlos
+    consultas = [
+        _consultar(f"cómo {tarea}{pais} primer paso", limit=10, blocked_domains=bloqueados, timeout=12.0),
+        _consultar(f"{tarea}{pais} paso a paso guía", limit=10, blocked_domains=bloqueados, timeout=12.0),
+    ]
     if regla.get("dominios"):
         # «site:» en la consulta: así el buscador ya devuelve páginas de las sedes oficiales
         sitios = " OR ".join(f"site:{d}" for d in regla["dominios"])
@@ -309,7 +315,8 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
     diagnostico = {
         "tipo": tipo,
         "general": respuestas[0][1],
-        "confianza": respuestas[1][1] if len(respuestas) > 1 else None,
+        "general_2": respuestas[1][1],
+        "confianza": respuestas[2][1] if len(respuestas) > 2 else None,
         "validos": len(confianza) + len(resto),
         "de_confianza": len(confianza),
         "descartes": descartes,
@@ -360,10 +367,36 @@ async def _buscar_understood(tarea: str) -> tuple[str, str, dict] | None:
     return contenido, url, diagnostico
 
 
+WIKIPEDIA_API = "https://es.wikipedia.org/w/api.php"
+
+
+async def _buscar_wikipedia(tarea: str) -> tuple[str, str, dict] | None:
+    """Wikipedia en español (API abierta, sin clave): qué es la cosa de la tarea («café», «estantería»).
+    No dice cómo se hace, pero ayuda a la app a catalogar la tarea."""
+    from urllib.parse import urlencode
+
+    from webless import fetch
+
+    tema = nombre_de(tema_de(tarea))
+    parametros = urlencode({"action": "query", "list": "search", "srsearch": tema, "srlimit": 3, "format": "json", "utf8": 1})
+    try:
+        pagina = await asyncio.wait_for(fetch(f"{WIKIPEDIA_API}?{parametros}", format="raw"), timeout=8.0)
+        datos = json.loads(pagina.content or "{}")
+    except Exception as error:
+        return "", "", {"error": repr(error)[:120]}
+    resultados = datos.get("query", {}).get("search", [])
+    texto = " ".join(f"{x.get('title', '')}. {re.sub(r'<[^>]+>', '', x.get('snippet', ''))}" for x in resultados)
+    url = f"https://es.wikipedia.org/wiki/{resultados[0]['title'].replace(' ', '_')}" if resultados else ""
+    return texto, url, {"resultados": len(resultados)}
+
+
 async def _buscar(tarea: str) -> Contexto:
     """Las dos búsquedas a la vez: web general (qué es la tarea) y understood.org (cómo arrancar)."""
     tipo = tipo_de_busqueda(tarea)
-    general, guia = await asyncio.gather(_buscar_general(tarea, tipo), _buscar_understood(tarea), return_exceptions=True)
+    general, guia, wiki = await asyncio.gather(
+        _buscar_general(tarea, tipo), _buscar_understood(tarea), _buscar_wikipedia(tarea), return_exceptions=True
+    )
+    texto_wiki, url_wiki, diag_wiki = wiki if wiki and not isinstance(wiki, BaseException) else ("", "", {"error": "fallo"})
     error_general = repr(general)[:120] if isinstance(general, BaseException) else None
     error_guia = repr(guia)[:120] if isinstance(guia, BaseException) else None
     vacio_general = ("", [], [], {"tipo": tipo, "error": error_general})
@@ -378,7 +411,8 @@ async def _buscar(tarea: str) -> Contexto:
         tipo_busqueda=tipo,
         guia=texto_guia,
         url_guia=url_guia,
-        diagnostico={"web": diag_general, "understood": diag_guia},
+        enciclopedia=texto_wiki,
+        diagnostico={"web": diag_general, "understood": diag_guia, "wikipedia": {**diag_wiki, "url": url_wiki}},
     )
 
 
@@ -596,6 +630,8 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
 def resumen_de(contexto: Contexto, maximo: int = 1500) -> str:
     """Títulos y primeras líneas de los resultados, sin Markdown, para que la app catalogue la tarea."""
     trozos = [re.sub(r"[#*_>\[\]()`|]", " ", d.split("\n", 2)[0] + " " + d[:400]) for d in contexto.documentos]
+    if contexto.enciclopedia:
+        trozos.append(contexto.enciclopedia)
     return re.sub(r"\s+", " ", " ".join(trozos)).strip()[:maximo]
 
 

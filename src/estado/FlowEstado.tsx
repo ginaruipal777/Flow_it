@@ -38,6 +38,7 @@ type Estado = {
 type Accion =
   | { tipo: 'onboarding-visto' }
   | { tipo: 'esfuerzo'; esfuerzo: Esfuerzo }
+  | { tipo: 'nombre'; nombre: string }
   | { tipo: 'nueva-tarea'; texto: string; web?: MicroPasoWeb; icono?: Categoria }
   | { tipo: 'retomar'; id: string }
   | { tipo: 'cambiar-categoria'; categoria: Categoria }
@@ -111,6 +112,8 @@ function reductor(e: Estado, a: Accion): Estado {
       return { ...e, onboardingVisto: true }
     case 'premio':
       return cambiarTarea(e, (t) => ({ ...t, premio: a.premio }))
+    case 'nombre':
+      return { ...e, nombre: a.nombre.trim().replace(/\s+/g, ' ').slice(0, 24) }
     case 'esfuerzo':
       return { ...e, esfuerzo: a.esfuerzo }
     case 'nueva-tarea': {

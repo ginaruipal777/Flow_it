@@ -19,16 +19,60 @@ import './Perfil.css'
 const GIROS = [-1, 2, -3, 3, -4]
 
 function Cabecera({ claro }: { claro?: boolean }) {
-  const { estado } = useFlow()
+  const { estado, despachar } = useFlow()
   const retos = estado.tareas.reduce((s, t) => s + t.retos, 0)
   const nivel = 1 + Math.floor(retos / 2)
+  // Nombre editable: se toca el lápiz (o «Ponte un nombre»), se escribe y se guarda con Intro o al salir
+  const [editando, setEditando] = useState(false)
+  const [borrador, setBorrador] = useState('')
+  const empezar = () => {
+    setBorrador(estado.nombre)
+    setEditando(true)
+  }
+  const guardar = () => {
+    despachar({ tipo: 'nombre', nombre: borrador })
+    setEditando(false)
+  }
   return (
     <header className="perfil__cabecera">
       <BotonVolver a="/inicio" className="perfil__volver" />
       <span className="perfil__avatar t-titular-l" data-claro={claro || undefined}>
-        {estado.nombre ? estado.nombre.charAt(0) : <Icono svg={ICONOS_UI.usuario} tamano={40} />}
+        {estado.nombre ? estado.nombre.charAt(0).toUpperCase() : <Icono svg={ICONOS_UI.usuario} tamano={40} />}
       </span>
-      <h1 className="t-titular-l perfil__nombre">{estado.nombre || 'Tu perfil'}</h1>
+      {editando ? (
+        <form
+          className="perfil__editar"
+          onSubmit={(e) => {
+            e.preventDefault()
+            guardar()
+          }}
+        >
+          <input
+            className="t-titular-m perfil__campo-nombre"
+            value={borrador}
+            onChange={(e) => setBorrador(e.target.value.slice(0, 24))}
+            onBlur={guardar}
+            onKeyDown={(e) => e.key === 'Escape' && setEditando(false)}
+            placeholder="Tu nombre"
+            aria-label="Tu nombre"
+            autoComplete="given-name"
+            enterKeyHint="done"
+            autoFocus
+          />
+        </form>
+      ) : (
+        <div className="perfil__fila-nombre">
+          <h1 className="t-titular-l perfil__nombre">{estado.nombre || 'Tu perfil'}</h1>
+          <button type="button" className="perfil__lapiz" aria-label={estado.nombre ? 'Cambiar tu nombre' : 'Ponte un nombre'} onClick={empezar}>
+            <Icono svg={ICONOS_UI.lapiz} tamano={20} />
+          </button>
+        </div>
+      )}
+      {!estado.nombre && !editando && (
+        <button type="button" className="perfil__poner-nombre t-texto-control" onClick={empezar}>
+          Ponte un nombre
+        </button>
+      )}
       <div className="perfil__nivel">
         <p>
           Nivel {nivel}

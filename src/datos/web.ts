@@ -32,7 +32,47 @@ export type ResultadoWeb =
   | Exclude<Filtro, { status: 'ok' }>
   | { status: 'sin-conexion' }
 
+/* Búsquedas guardadas en el móvil: repetir una tarea es instantáneo y no gasta búsquedas.
+   Duran 7 días; se guardan como mucho las 60 últimas. */
+const CLAVE_GUARDADAS = 'flowit:busquedas:v1'
+const DURACION_MS = 7 * 24 * 3600_000
+const MAXIMO_GUARDADAS = 60
+type Guardada = { t: number; r: Extract<ResultadoWeb, { status: 'success' }> }
+
+const claveDe = (tarea: string, esfuerzo: Esfuerzo) =>
+  `${esfuerzo}|${tarea.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim()}`
+
+function leerGuardadas(): Record<string, Guardada> {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_GUARDADAS) ?? '{}') as Record<string, Guardada>
+  } catch {
+    return {}
+  }
+}
+
+function guardar(clave: string, r: Guardada['r']) {
+  try {
+    const todas = Object.entries({ ...leerGuardadas(), [clave]: { t: Date.now(), r } })
+      .filter(([, g]) => Date.now() - g.t < DURACION_MS)
+      .sort(([, a], [, b]) => b.t - a.t)
+      .slice(0, MAXIMO_GUARDADAS)
+    localStorage.setItem(CLAVE_GUARDADAS, JSON.stringify(Object.fromEntries(todas)))
+  } catch {
+    /* sin almacenamiento: no pasa nada, se vuelve a buscar */
+  }
+}
+
+/** Busca cómo se hace la tarea (o usa la búsqueda guardada si se hizo hace menos de 7 días) */
 export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal): Promise<ResultadoWeb> {
+  const clave = claveDe(tarea, esfuerzo)
+  const guardada = leerGuardadas()[clave]
+  if (guardada && Date.now() - guardada.t < DURACION_MS) return guardada.r
+  const resultado = await buscarEnServidor(tarea, esfuerzo, senal)
+  if (resultado.status === 'success') guardar(clave, resultado)
+  return resultado
+}
+
+async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal): Promise<ResultadoWeb> {
   // Se cancela al pulsar «Saltar la búsqueda» o a los 30 s (AbortSignal.any no existe en móviles antiguos)
   const control = new AbortController()
   const reloj = setTimeout(() => control.abort(), LIMITE_MS)
