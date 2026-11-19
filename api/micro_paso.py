@@ -9,7 +9,8 @@ para arrancar con TDAH. Devuelve SOLO el primer paso físico: nunca el proceso e
 Todo el análisis es local y determinista (expresiones regulares, sin IA generativa).
 
 Respuestas (JSON estricto):
-  success           → {"status", "tarea_original", "contexto", "micro_paso", "categoria", "objeto", "tipo_objeto", "origen", "estrategia", "fuente_estrategia", "fuentes"}
+  success           → {"status", "tarea_original", "contexto", "micro_paso", "categoria", "objeto", "tipo_objeto", "origen",
+                        "estrategia", "fuente_estrategia", "fuentes", "diagnostico"}
   incomprehensible  → {"status", "mensaje"}
   blocked           → {"status", "mensaje", "ayuda"?}
 
@@ -27,7 +28,7 @@ import asyncio
 import json
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler
 
 LIMITE_SEGUNDOS = 30  # búsqueda + lectura
@@ -135,85 +136,228 @@ def comprobar_comprension(tarea: str) -> dict | None:
 
 
 # ── 3. Búsqueda web con límite de tiempo ────────────────────────
+#
+# Reglas de la búsqueda:
+#   1. Fuentes de confianza según el tipo de tarea (FUENTES_CONFIANZA); se buscan primero.
+#   2. Solo resultados en español; fuera buscadores, tiendas y foros (DOMINIOS_BLOQUEADOS).
+#   3. Solo resultados que hablan de la tarea (la mitad de sus palabras importantes).
+#   4. understood.org solo en español (es-mx), y solo para la estrategia de arranque.
+#   5. Cada respuesta lleva un diagnóstico: qué buscador respondió y cuál falló.
 
 
 @dataclass
 class Contexto:
     titulo: str
-    texto: str  # snippets + página en Markdown (de qué va la tarea y con qué herramienta)
+    documentos: list[str]  # un texto por resultado (resumen + página): sirve para contar coincidencias
     fuentes: list[str]
-    guia: str = ""  # texto de understood.org (estrategias para arrancar con TDAH)
+    tipo_busqueda: str = "Otro"
+    guia: str = ""  # texto de understood.org/es-mx (estrategias para arrancar con TDAH)
     url_guia: str = ""
+    diagnostico: dict = field(default_factory=dict)
+
+    @property
+    def texto(self) -> str:
+        return "\n".join(self.documentos)
 
 
 UNDERSTOOD = "understood.org"
+UNDERSTOOD_ES = "understood.org/es-mx"
+PORTADA_UNDERSTOOD = "https://www.understood.org/es-mx"
+
+# Fuentes de confianza por tipo de tarea
+FUENTES_CONFIANZA: dict[str, dict] = {
+    "Trámites": {"dominios": ["dgt.es", "sede.gob.es", "administracion.gob.es", "inclusion.gob.es"]},
+    # Estudio de autoescuela: la DGT y webs de autoescuelas
+    "Autoescuela": {"dominios": ["dgt.es"], "host_contiene": ["autoescuel", "autoescola"]},
+    # Casa: guías de limpieza
+    "Casa": {"texto_contiene": ["limpi", "guia", "paso a paso", "trucos para"]},
+}
+
+DOMINIOS_BLOQUEADOS = [
+    # buscadores
+    "google.com", "google.es", "bing.com", "duckduckgo.com", "yahoo.com", "mojeek.com",
+    # tiendas
+    "amazon.es", "amazon.com", "ebay.es", "ebay.com", "aliexpress.com", "mercadolibre.com", "wallapop.com",
+    "milanuncios.com", "temu.com", "shein.com",
+    # foros y redes
+    "reddit.com", "pinterest.com", "pinterest.es", "quora.com", "forocoches.com", "facebook.com",
+    "instagram.com", "tiktok.com", "x.com", "twitter.com", "youtube.com",
+]
+RUTA_FORO_O_TIENDA = re.compile(r"(/foro|foro\.|forum|/tienda/|/shop/|/producto|/product/|/comprar/|/carrito)")
+PALABRAS_ES = {"de", "la", "el", "en", "los", "las", "para", "con", "por", "que", "del", "una", "como", "tu", "paso"}
+PALABRAS_EN = {"the", "and", "how", "to", "of", "with", "for", "your", "step", "what"}
+
+
+def tipo_de_busqueda(tarea: str) -> str:
+    texto = normalizar(tarea)
+    if re.search(r"\b(autoescuela|dgt|carnet|permiso de conducir|test de conducir|examen teorico)\b", texto) or (
+        re.search(r"\btests?\b", texto) and re.search(r"\b(conducir|coche|moto|autoescuela)\b", texto)
+    ):
+        return "Autoescuela"
+    return categoria_de(tarea, None)
+
+
+def _host(url: str) -> str:
+    return re.sub(r"^https?://(www\.)?", "", url).split("/")[0].lower()
+
+
+def bloqueado(url: str) -> bool:
+    host = _host(url)
+    return any(host == d or host.endswith("." + d) for d in DOMINIOS_BLOQUEADOS) or bool(RUTA_FORO_O_TIENDA.search(url.lower()))
+
+
+def en_espanol(hit) -> bool:
+    url = hit.url.lower()
+    if _host(url).endswith(".es") or "/es/" in url or "/es-" in url:
+        return True
+    palabras = normalizar(f"{hit.title} {hit.snippet or ''}").split()
+    es = sum(p in PALABRAS_ES for p in palabras)
+    en = sum(p in PALABRAS_EN for p in palabras)
+    return es >= 2 and es > en
+
+
+def de_confianza(hit, tipo: str) -> bool:
+    regla = FUENTES_CONFIANZA.get(tipo)
+    if not regla:
+        return False
+    host = _host(hit.url)
+    if any(host == d or host.endswith("." + d) for d in regla.get("dominios", [])):
+        return True
+    if any(c in host for c in regla.get("host_contiene", [])):
+        return True
+    texto = normalizar(f"{hit.title} {hit.snippet or ''}")
+    return any(c in texto for c in regla.get("texto_contiene", []))
+
+
+def _claves(tarea: str) -> tuple[list[str], int]:
+    claves = [p for p in normalizar(tarea).split() if len(p) >= 4] or normalizar(tarea).split()
+    return claves, max(1, (len(claves) + 1) // 2)
+
+
+def habla_de(hit, claves: list[str], necesarias: int) -> bool:
+    texto = f" {normalizar(f'{hit.title} {hit.snippet or ''}')} "
+    return sum(f" {c}" in texto for c in claves) >= necesarias
+
+
+async def _consultar(consulta: str, **opciones) -> tuple[list, dict]:
+    """Una búsqueda con su diagnóstico: qué buscadores respondieron y cuáles fallaron."""
+    from webless import search  # importación tardía: si falta la librería, salta el respaldo
+
+    try:
+        resultado = await search(consulta, **opciones)
+    except Exception as error:
+        return [], {"consulta": consulta, "respondieron": [], "fallaron": {"webless": str(error)[:120]}, "resultados": 0}
+    return list(resultado.hits), {
+        "consulta": consulta,
+        "respondieron": list(resultado.succeeded),
+        "fallaron": {k: str(v)[:120] for k, v in dict(resultado.failed).items()},
+        "resultados": len(resultado.hits),
+    }
+
+
+async def _leer(url: str, segundos: float = 8.0, completa: bool = False) -> tuple[str, str]:
+    """Contenido en Markdown y título; vacío si la página bloquea o tarda."""
+    from webless import fetch
+
+    try:
+        pagina = await asyncio.wait_for(
+            fetch(url, format="markdown", full_page=completa, max_chars=MAX_CARACTERES_PAGINA), timeout=segundos
+        )
+        return pagina.content or "", pagina.title or ""
+    except Exception:
+        return "", ""
+
+
+async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[str], dict] | None:
+    """Web general: de qué va la tarea y con qué herramienta se hace. Fuentes de confianza primero."""
+    claves, necesarias = _claves(tarea)
+    regla = FUENTES_CONFIANZA.get(tipo, {})
+    consultas = [_consultar(f"cómo {tarea} primer paso", limit=10, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=12.0)]
+    if regla.get("dominios"):
+        consultas.append(_consultar(f"{tarea}", limit=8, allowed_domains=regla["dominios"], timeout=12.0))
+    respuestas = await asyncio.gather(*consultas)
+
+    vistos, confianza, resto = set(), [], []
+    for hits, _ in reversed(respuestas):  # primero la búsqueda en dominios de confianza
+        for h in hits:
+            if h.url in vistos or bloqueado(h.url) or not en_espanol(h) or not habla_de(h, claves, necesarias):
+                continue
+            vistos.add(h.url)
+            (confianza if de_confianza(h, tipo) else resto).append(h)
+    elegidos = (confianza + resto)[:4]
+    diagnostico = {
+        "tipo": tipo,
+        "general": respuestas[0][1],
+        "confianza": respuestas[1][1] if len(respuestas) > 1 else None,
+        "validos": len(confianza) + len(resto),
+        "de_confianza": len(confianza),
+    }
+    if not elegidos:
+        return None
+
+    # Se leen hasta 3 páginas a la vez: cada una es un documento independiente
+    paginas = await asyncio.gather(*(_leer(h.url) for h in elegidos[:3]))
+    documentos = [f"{h.title}. {h.snippet or ''}\n{p[0]}" for h, p in zip(elegidos, list(paginas) + [("", "")] * 4)]
+    titulo = paginas[0][1] or elegidos[0].title
+    return titulo, documentos, [h.url for h in elegidos], diagnostico
+
+
+ENLACE_UNDERSTOOD = re.compile(r"https://www\.understood\.org/es-mx/[a-z0-9/\-]+")
+TEMAS_ARRANQUE = re.compile(r"(empez|comenzar|tarea|funcion-ejecutiva|procrastin|motiva|organiz|concentr|tdah|atencion)")
+
+
+async def _buscar_understood(tarea: str) -> tuple[str, str, dict] | None:
+    """understood.org solo en español (es-mx): estrategias para empezar con TDAH.
+    No se usa para saber con qué se hace la tarea. Si la búsqueda no da nada, se mira su portada es-mx."""
+    diagnostico: dict = {"busquedas": [], "via": None}
+    url = ""
+    for consulta in (f"site:{UNDERSTOOD_ES} cómo empezar {tarea}", f"site:{UNDERSTOOD_ES} cómo empezar una tarea TDAH"):
+        hits, diag = await _consultar(consulta, limit=8, allowed_domains=[UNDERSTOOD], timeout=10.0)
+        diagnostico["busquedas"].append(diag)
+        hits = [h for h in hits if "/es-mx/" in h.url]
+        if hits:
+            url, diagnostico["via"] = hits[0].url, "busqueda"
+            break
+    if not url:  # portada en español: se elige un artículo sobre empezar tareas o función ejecutiva
+        portada, _ = await _leer(PORTADA_UNDERSTOOD, completa=True)
+        enlaces = [e for e in dict.fromkeys(ENLACE_UNDERSTOOD.findall(portada)) if TEMAS_ARRANQUE.search(e)]
+        if enlaces:
+            url, diagnostico["via"] = enlaces[0], "portada"
+    if not url:
+        return None
+    contenido, _ = await _leer(url)
+    diagnostico["pagina_leida"] = bool(contenido)
+    return contenido, url, diagnostico
 
 
 async def _buscar(tarea: str) -> Contexto:
-    """Dos búsquedas a la vez: la web general (qué es la tarea) y understood.org (cómo arrancar)."""
-    general, guia = await asyncio.gather(_buscar_general(tarea), _buscar_understood(tarea), return_exceptions=True)
-    general = None if isinstance(general, BaseException) else general
-    guia = None if isinstance(guia, BaseException) else guia
-    if not general and not guia:
-        raise LookupError("Ninguna búsqueda devolvió resultados")
-    titulo, texto, fuentes = general or ("", "", [])
-    texto_guia, url_guia = guia or ("", "")
-    return Contexto(titulo=titulo, texto=texto, fuentes=fuentes + ([url_guia] if url_guia else []), guia=texto_guia, url_guia=url_guia)
+    """Las dos búsquedas a la vez: web general (qué es la tarea) y understood.org (cómo arrancar)."""
+    tipo = tipo_de_busqueda(tarea)
+    general, guia = await asyncio.gather(_buscar_general(tarea, tipo), _buscar_understood(tarea), return_exceptions=True)
+    error_general = repr(general)[:120] if isinstance(general, BaseException) else None
+    error_guia = repr(guia)[:120] if isinstance(guia, BaseException) else None
+    vacio_general = ("", [], [], {"tipo": tipo, "error": error_general})
+    vacio_guia = ("", "", {"error": error_guia})
+    titulo, documentos, fuentes, diag_general = general if general and not isinstance(general, BaseException) else vacio_general
+    texto_guia, url_guia, diag_guia = guia if guia and not isinstance(guia, BaseException) else vacio_guia
+    return Contexto(
+        titulo=titulo,
+        documentos=documentos,
+        fuentes=fuentes + ([url_guia] if url_guia else []),
+        tipo_busqueda=tipo,
+        guia=texto_guia,
+        url_guia=url_guia,
+        diagnostico={"web": diag_general, "understood": diag_guia},
+    )
 
 
-async def _buscar_understood(tarea: str) -> tuple[str, str] | None:
-    """understood.org (en español, es-mx): estrategias para empezar tareas con TDAH o
-    dificultades de función ejecutiva. Si no hay nada sobre la tarea, busca cómo empezar en general."""
-    from webless import fetch, search
-
-    hits = []
-    for consulta in (f"cómo empezar {tarea}", "cómo empezar una tarea TDAH función ejecutiva"):
-        resultado = await search(consulta, limit=6, allowed_domains=[UNDERSTOOD], timeout=10.0)
-        hits = sorted(resultado.hits, key=lambda h: "/es-mx/" not in h.url)  # primero las páginas en español
-        if hits:
-            break
-    if not hits:
-        return None
-    snippets = "\n".join(f"{h.title}. {h.snippet or ''}" for h in hits[:3])
-    try:
-        pagina = await fetch(hits[0].url, format="markdown", max_chars=MAX_CARACTERES_PAGINA)
-        return f"{snippets}\n{pagina.content or ''}", hits[0].url
-    except Exception:
-        return snippets, hits[0].url
-
-
-async def _buscar_general(tarea: str) -> tuple[str, str, list[str]] | None:
-    """Web general: de qué va la tarea y con qué herramienta se hace (app, web, libro…)."""
-    from webless import fetch, search  # importación tardía: si falta la librería, salta el respaldo
-
-    resultado = await search(f"cómo {tarea} primer paso", limit=8, blocked_domains=[UNDERSTOOD], timeout=12.0)
-    # Solo cuentan los resultados que hablan de la tarea: al menos la mitad de sus palabras
-    # importantes en el título o el resumen («test autoescuela» no es «Speedtest»)
-    claves = [p for p in normalizar(tarea).split() if len(p) >= 4] or normalizar(tarea).split()
-    necesarias = max(1, (len(claves) + 1) // 2)
-
-    def relevante(h) -> bool:
-        texto = f" {normalizar(f'{h.title} {h.snippet or ''}')} "
-        return sum(f" {c}" in texto for c in claves) >= necesarias
-
-    hits = [h for h in resultado.hits if relevante(h)][:3]
-    if not hits:
-        return None
-    snippets = "\n".join(f"{h.title}. {h.snippet or ''}" for h in hits)
-    try:
-        pagina = await fetch(hits[0].url, format="markdown", max_chars=MAX_CARACTERES_PAGINA)
-        contenido, titulo = pagina.content or "", pagina.title or hits[0].title
-    except Exception:  # la página puede bloquear: con los snippets basta
-        contenido, titulo = "", hits[0].title
-    return titulo or "", f"{snippets}\n{contenido}", [h.url for h in hits]
-
-
-def buscar_contexto(tarea: str) -> Contexto | None:
-    """Búsqueda + lectura con un límite total de LIMITE_SEGUNDOS. None si falla o tarda más."""
+def buscar_contexto(tarea: str) -> Contexto:
+    """Búsqueda + lectura con un límite total de LIMITE_SEGUNDOS. Si falla, un contexto vacío con el motivo."""
     try:
         return asyncio.run(asyncio.wait_for(_buscar(tarea), timeout=LIMITE_SEGUNDOS))
-    except Exception:
-        return None
+    except Exception as error:
+        motivo = "tiempo agotado" if isinstance(error, (asyncio.TimeoutError, TimeoutError)) else repr(error)[:120]
+        return Contexto(titulo="", documentos=[], fuentes=[], tipo_busqueda=tipo_de_busqueda(tarea), diagnostico={"error": motivo})
 
 
 # ── 4. Extracción del micro-paso (filtro de abstracción) ────────
@@ -231,7 +375,7 @@ def tema_de(tarea: str) -> str:
     return ARTICULO_INICIAL.sub("", tema).strip() or tarea.strip()
 
 
-VERBO_INICIAL = re.compile(r"^[a-záéíóúñ]{2,}(ar|er|ir)(me|te|se|lo|la|le)?s+", re.I)
+VERBO_INICIAL = re.compile(r"^[a-záéíóúñ]{2,}(ar|er|ir)(me|te|se|lo|la|le)?\s+", re.I)
 
 
 def nombre_de(tema: str) -> str:
@@ -245,24 +389,34 @@ class Herramienta:
     patron: re.Pattern
     objeto: str  # {tema} se sustituye por el tema de la tarea
     tipo: str  # "digital" o "fisico"
+    tipos_tarea: frozenset[str] | None = None  # None: vale para cualquier tipo de tarea
+
+
+DIGITALES = frozenset({"Trámites", "Autoescuela", "Estudio", "Salud", "Trabajo", "Otro"})
+ESTUDIO = frozenset({"Estudio", "Autoescuela", "Otro"})
+CASA = frozenset({"Casa"})
 
 
 HERRAMIENTAS = [
-    Herramienta(re.compile(r"(test|tests)"), "la app de {tema}", "digital"),  # los tests se hacen casi siempre en una app
-    Herramienta(re.compile(r"\b(app|apps|aplicacion|aplicaciones)\b"), "la app de {tema}", "digital"),
-    Herramienta(re.compile(r"\bsede electronica\b"), "la sede electrónica de {tema}", "digital"),
-    Herramienta(re.compile(r"\bcita previa\b"), "la web de cita previa", "digital"),
-    Herramienta(re.compile(r"\b(formulario|impreso|solicitud|modelo \d{3})\b"), "el formulario de {tema}", "digital"),
-    Herramienta(re.compile(r"\b(libro|manual|temario)\b"), "el libro de {tema}", "fisico"),
-    Herramienta(re.compile(r"\b(apuntes|cuaderno|libreta)\b"), "los apuntes de {tema}", "fisico"),
-    Herramienta(re.compile(r"\b(documento|pdf)\b"), "el documento de {tema}", "digital"),
-    Herramienta(re.compile(r"\b(fregona|fregar el suelo)\b"), "la fregona", "fisico"),
-    Herramienta(re.compile(r"\b(escoba|barrer)\b"), "la escoba", "fisico"),
-    Herramienta(re.compile(r"\baspiradora\b"), "la aspiradora", "fisico"),
-    Herramienta(re.compile(r"\b(bayeta|trapo|estropajo)\b"), "la bayeta", "fisico"),
-    Herramienta(re.compile(r"\b(lavavajillas|platos)\b"), "el primer plato del fregadero", "fisico"),
-    Herramienta(re.compile(r"\b(web|pagina web|portal|plataforma|online)\b"), "la web de {tema}", "digital"),
+    Herramienta(re.compile(r"\btests?\b"), "la app de {tema}", "digital", frozenset({"Autoescuela", "Estudio"})),
+    Herramienta(re.compile(r"\b(app|apps|aplicacion|aplicaciones)\b"), "la app de {tema}", "digital", DIGITALES),
+    Herramienta(re.compile(r"\bsede electronica\b"), "la sede electrónica de {tema}", "digital", DIGITALES),
+    Herramienta(re.compile(r"\bcita previa\b"), "la web de cita previa", "digital", DIGITALES),
+    Herramienta(re.compile(r"\b(formulario|impreso|solicitud|modelo \d{3})\b"), "el formulario de {tema}", "digital", DIGITALES),
+    Herramienta(re.compile(r"\b(libro|manual|temario)\b"), "el libro de {tema}", "fisico", ESTUDIO),
+    Herramienta(re.compile(r"\b(apuntes|cuaderno|libreta)\b"), "los apuntes de {tema}", "fisico", ESTUDIO),
+    Herramienta(re.compile(r"\b(documento|pdf)\b"), "el documento de {tema}", "digital", DIGITALES),
+    Herramienta(re.compile(r"\b(desengrasante|quitagrasas)\b"), "el desengrasante", "fisico", CASA),
+    Herramienta(re.compile(r"\b(fregona|fregar el suelo)\b"), "la fregona", "fisico", CASA),
+    Herramienta(re.compile(r"\b(escoba|barrer)\b"), "la escoba", "fisico", CASA),
+    Herramienta(re.compile(r"\baspiradora\b"), "la aspiradora", "fisico", CASA),
+    Herramienta(re.compile(r"\b(bayeta|trapo|estropajo|pano)\b"), "la bayeta", "fisico", CASA),
+    Herramienta(re.compile(r"\b(lavavajillas|platos)\b"), "el primer plato del fregadero", "fisico", CASA),
+    Herramienta(re.compile(r"\b(web|pagina web|portal|plataforma|online)\b"), "la web de {tema}", "digital", DIGITALES),
 ]
+# Si ninguna herramienta llega a 2 resultados: objeto por defecto según el tipo de tarea
+POR_DEFECTO = {"Casa": ("el producto de limpieza", "fisico")}
+MIN_COINCIDENCIAS = 2  # la herramienta debe salir en al menos 2 resultados distintos
 
 # Verbos físicos que pueden abrir el primer paso de una guía (infinitivo o imperativo) → imperativo de tú
 VERBO_FISICO = {
@@ -292,9 +446,9 @@ ESTRATEGIAS = [
 ]
 
 
-def elegir_estrategia(contexto: Contexto | None) -> str | None:
+def elegir_estrategia(contexto: Contexto) -> str | None:
     """La estrategia que más menciona understood.org para esta tarea (o para empezar en general)."""
-    if not contexto or not contexto.guia:
+    if not contexto.guia:
         return None
     texto = normalizar(contexto.guia)
     puntos = [(len(re.findall(patron, texto)), frase) for patron, frase in ESTRATEGIAS]
@@ -307,21 +461,30 @@ PROHIBIDO_EN_PASO = re.compile(
 )
 
 
-def elegir_herramienta(tarea: str, contexto: Contexto | None) -> Herramienta | None:
-    """La herramienta más citada (la tarea cuenta 5 veces más que la web)."""
+def elegir_herramienta(tarea: str, contexto: Contexto) -> tuple[Herramienta | None, dict]:
+    """La herramienta que nombra la tarea o, si no, la que sale en al menos MIN_COINCIDENCIAS
+    resultados distintos (no depende de una sola página). Solo herramientas de ese tipo de tarea."""
     en_tarea = normalizar(tarea)
-    en_web = normalizar(contexto.texto) if contexto else ""
-    mejor, puntos_mejor = None, 0
+    documentos = [normalizar(d) for d in contexto.documentos]
+    mejor, puntos_mejor, recuento = None, 0.0, {}
     for h in HERRAMIENTAS:
-        puntos = 5 * len(h.patron.findall(en_tarea)) + len(h.patron.findall(en_web))
+        if h.tipos_tarea is not None and contexto.tipo_busqueda not in h.tipos_tarea:
+            continue
+        nombrada = bool(h.patron.search(en_tarea))
+        coincidencias = sum(bool(h.patron.search(d)) for d in documentos)
+        if coincidencias:
+            recuento[h.objeto.split(" de ")[0]] = coincidencias
+        if not nombrada and coincidencias < MIN_COINCIDENCIAS:
+            continue
+        puntos = 10 * nombrada + coincidencias
         if puntos > puntos_mejor:
             mejor, puntos_mejor = h, puntos
-    return mejor
+    return mejor, recuento
 
 
-def verbo_del_primer_paso(contexto: Contexto | None) -> str | None:
+def verbo_del_primer_paso(contexto: Contexto) -> str | None:
     """Busca la frase del primer paso en la guía y se queda solo con su verbo físico."""
-    if not contexto:
+    if not contexto.documentos:
         return None
     lineas = contexto.texto.splitlines()
     for i, linea in enumerate(lineas):
@@ -341,8 +504,8 @@ def categoria_de(tarea: str, contexto: Contexto | None) -> str:
     return "Otro"
 
 
-def contexto_corto(contexto: Contexto | None, tema: str) -> str:
-    if not contexto or not contexto.titulo:
+def contexto_corto(contexto: Contexto, tema: str) -> str:
+    if not contexto.titulo:
         return tema
     titulo = re.split(r"\s[|\-–—:]\s", contexto.titulo)[0].strip()
     if len(titulo) > 60:  # se corta en una palabra entera
@@ -350,14 +513,15 @@ def contexto_corto(contexto: Contexto | None, tema: str) -> str:
     return titulo or tema
 
 
-def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto | None) -> dict:
+def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
     """Extrae UN micro-paso físico calibrado por el esfuerzo. Nunca el proceso entero."""
     tema = nombre_de(tema_de(tarea))
-    herramienta = elegir_herramienta(tarea, contexto)
+    herramienta, recuento = elegir_herramienta(tarea, contexto)
     if herramienta:
         objeto, tipo = herramienta.objeto.format(tema=tema), herramienta.tipo
     else:
-        objeto, tipo = f"la web de {tema}", "digital"
+        objeto, tipo = POR_DEFECTO.get(contexto.tipo_busqueda, (f"la web de {tema}", "digital"))
+    contexto.diagnostico["herramientas"] = recuento
 
     verbo = verbo_del_primer_paso(contexto)
     # Solo verbos que encajan con el objeto («Descarga la app», nunca «Llama a la web»)
@@ -382,13 +546,14 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto | None) -> 
         tarea_original=tarea,
         contexto=contexto_corto(contexto, tema),
         micro_paso=f"{paso}.",
-        categoria=categoria_de(tarea, contexto),
+        categoria=categoria_de(tarea, contexto if contexto.titulo else None),
         objeto=objeto,
         tipo_objeto=tipo,
-        origen="web" if contexto else "respaldo",
+        origen="web" if contexto.documentos else "respaldo",
         estrategia=elegir_estrategia(contexto),
-        fuente_estrategia=contexto.url_guia if contexto and contexto.url_guia else None,
-        fuentes=contexto.fuentes if contexto else [],
+        fuente_estrategia=contexto.url_guia or None,
+        fuentes=contexto.fuentes,
+        diagnostico=contexto.diagnostico,
     )
 
 
