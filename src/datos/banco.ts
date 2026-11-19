@@ -41,13 +41,13 @@ const a = (pesado: Cartas, medio: Cartas, ligero: Cartas): Acciones => ({ pesado
 export const BANCO: Record<string, Acciones> = {
   // ── Trabajo, administración y estudio ──
   Comunicación: a(
-    c('Abre el correo en el móvil en vez del ordenador', 'Lee el asunto del correo', 'Abre el correo con tu canción favorita sonando', 'Mira quién te ha escrito el correo', 'Abre la app de correo'),
+    c('Abre el correo en el móvil en vez del ordenador', 'Lee el correo entero sin saltar a otro', 'Abre el correo con tu canción favorita sonando', 'Mira quién te ha escrito el correo', 'Abre la app de correo'),
     c('Escribe el saludo del correo desde el móvil', 'Escribe un saludo de 5 palabras', 'Escribe el saludo con tu bebida favorita al lado', 'Copia en un pósit la pregunta del correo', 'Pulsa «Responder» en el correo'),
     c('Escribe la respuesta en una nota del móvil', 'Escribe la respuesta en 3 frases', 'Escribe la respuesta con tu música favorita de fondo', 'Lee el correo en voz alta a una persona de confianza', 'Escribe la primera frase de la respuesta'),
   ),
   Administrativo: a(
     c('Abre el documento en el móvil en vez del ordenador', 'Lee el título del documento', 'Abre el documento con tu canción favorita sonando', 'Mira la fecha límite del documento', 'Abre la web del trámite'),
-    c('Pon los papeles del trámite en otro sitio de la casa', 'Saca 3 papeles de la carpeta', 'Saca tu DNI con tu bebida favorita al lado', 'Envía una foto del papel a una persona de confianza', 'Escribe tu nombre en la primera casilla'),
+    c('Lee los papeles del trámite en voz alta', 'Saca 3 papeles de la carpeta', 'Saca tu DNI con tu bebida favorita al lado', 'Envía una foto del papel a una persona de confianza', 'Escribe tu nombre en la primera casilla'),
     c('Rellena el formulario empezando por la última casilla', 'Rellena 5 casillas del formulario', 'Rellena el formulario con tu música favorita de fondo', 'Rellena el formulario con una persona de confianza al lado', 'Rellena la primera sección del formulario'),
   ),
   Académico: a(
@@ -57,7 +57,7 @@ export const BANCO: Record<string, Acciones> = {
   ),
   Llamadas: a(
     c('Busca el número en el historial de llamadas', 'Apunta el número en un pósit', 'Coge el móvil con tu canción favorita sonando', 'Mira el horario de atención en su web', 'Coge el móvil'),
-    c('Marca el número desde otra habitación', 'Marca el número sin pulsar llamar', 'Marca el número con tu bebida favorita al lado', 'Escribe en un pósit tu pregunta para la llamada', 'Abre la web de citas de ese sitio'),
+    c('Marca el número con el altavoz puesto', 'Marca el número sin pulsar llamar', 'Marca el número con tu bebida favorita al lado', 'Escribe en un pósit tu pregunta para la llamada', 'Abre la web de citas de ese sitio'),
     c('Pide la cita por la web en vez de llamar', 'Escribe 3 preguntas para la llamada', 'Pulsa el botón de llamar con tu bebida favorita al lado', 'Pulsa el botón de llamar con una persona de confianza al lado', 'Pulsa el botón de llamar'),
   ),
   Decisión: a(
@@ -71,7 +71,7 @@ export const BANCO: Record<string, Acciones> = {
     c('Dibuja un boceto en una hoja de otro color', 'Escribe 3 ideas en una lista', 'Escribe una frase con tu música favorita de fondo', 'Enseña el boceto a una persona de confianza', 'Escribe una frase en el documento'),
   ),
   Digital: a(
-    c('Abre la carpeta desde el móvil', 'Mira el primer archivo de la carpeta', 'Abre la carpeta con tu canción favorita sonando', 'Mira el archivo más antiguo de la carpeta', 'Abre la carpeta'),
+    c('Abre la carpeta desde el móvil', 'Arrastra 1 archivo repetido a la papelera', 'Abre la carpeta con tu canción favorita sonando', 'Mira el archivo más antiguo de la carpeta', 'Abre la carpeta'),
     c('Ordena la carpeta por fecha', 'Arrastra 3 archivos a la papelera', 'Cambia el nombre de un archivo con tu música favorita de fondo', 'Busca el archivo más pesado de la carpeta', 'Abre el primer archivo de la carpeta'),
     c('Crea una carpeta nueva con un nombre claro', 'Mueve 5 archivos a su carpeta', 'Mueve archivos con tu música favorita de fondo', 'Enseña la carpeta ordenada a una persona de casa', 'Vacía la papelera del ordenador'),
   ),
@@ -83,29 +83,29 @@ export const BANCO: Record<string, Acciones> = {
 
   // ── Hogar y vida cotidiana ──
   Doméstico: a(
-    c('Mira la habitación desde la puerta', 'Tira un papel a la papelera', 'Pon tu canción favorita en el móvil', 'Busca el objeto que más tiempo lleva fuera de su sitio', 'Coge un trapo'),
-    c('Recoge la mesa empezando por la esquina contraria', 'Recoge 5 cosas de la mesa', 'Recoge la mesa con tu música favorita de fondo', 'Recoge la mesa con una persona de casa', 'Recoge una cosa del suelo'),
-    c('Limpia la habitación en un orden distinto al de siempre', 'Recoge 10 cosas de la habitación', 'Pasa el trapo con tu música favorita de fondo', 'Pasa el trapo con una persona de casa', 'Pasa el trapo por la mesa entera'),
+    c('Coge una bolsa para ir metiendo la basura', 'Tira un papel a la papelera', 'Pon tu canción favorita en el móvil', 'Busca el objeto que más tiempo lleva fuera de su sitio', 'Coge un trapo'),
+    c('Recoge la mesa por colores', 'Recoge 5 cosas de la mesa', 'Recoge la mesa con tu música favorita de fondo', 'Recoge la mesa con una persona de casa', 'Recoge una cosa del suelo'),
+    c('Recoge la habitación de arriba abajo', 'Recoge 10 cosas de la habitación', 'Pasa el trapo con tu música favorita de fondo', 'Pasa el trapo con una persona de casa', 'Pasa el trapo por la mesa entera'),
   ),
   Compra: a(
-    c('Abre la app del súper en vez de la lista de papel', 'Mira la puerta de la nevera', 'Abre la nota de la compra con tu canción favorita sonando', 'Mira qué falta en la despensa', 'Abre la nota de la compra'),
+    c('Abre la app del súper en vez de la lista de papel', 'Escribe en la lista 2 cosas que faltan', 'Abre la nota de la compra con tu canción favorita sonando', 'Mira qué falta en la despensa', 'Abre la nota de la compra'),
     c('Escribe la lista empezando por la despensa', 'Escribe 3 productos en la lista', 'Escribe la lista con tu bebida favorita al lado', 'Pregunta a una persona de casa qué falta', 'Escribe en la lista el producto que más falta'),
     c('Pide la compra por la web del súper', 'Escribe una lista con 10 productos', 'Sal a la tienda con tu música favorita en los auriculares', 'Sal a la tienda con una persona de casa', 'Coge las bolsas de la compra'),
   ),
   Café: a(
-    c('Coge una taza distinta a la de siempre', 'Coge 2 cucharadas de café', 'Coge tu taza favorita', 'Mira cuánto café queda en el bote', 'Coge la cafetera'),
-    c('Prepara el café en un vaso en vez de la taza', 'Echa 2 cucharadas de café en la cafetera', 'Pon tu canción favorita en la cocina mientras sale el café', 'Prepara un café para una persona de casa', 'Llena de agua la cafetera'),
-    c('Prepara el café con una receta nueva de un vídeo', 'Prepara 2 cafés en la cafetera', 'Tómate el café en tu sitio favorito de la casa', 'Tómate el café con una persona de casa', 'Pon la cafetera al fuego'),
+    c('Coge una taza distinta a la de siempre', 'Busca en el móvil una receta de café en 3 pasos', 'Coge tu taza favorita', 'Pregunta a una persona de casa si quiere café', 'Coge la cafetera'),
+    c('Busca en el móvil otra forma de preparar café', 'Prepara el café sin mirar el móvil', 'Prepara el café bailando tu canción favorita', 'Prepara un café para una persona de casa', 'Llena de agua la cafetera'),
+    c('Prepara el café con un método que nunca has probado', 'Prepara el café sin derramar ni una gota', 'Tómate el café en tu sitio favorito de la casa', 'Tómate el café con una persona de casa', 'Pon la cafetera al fuego'),
   ),
   Cocina: a(
     c('Abre una receta nueva en el móvil', 'Mira 3 ingredientes de la nevera', 'Pon tu canción favorita en la cocina', 'Busca en el móvil una receta con lo que tienes', 'Abre la nevera'),
-    c('Saca los ingredientes empezando por el último', 'Saca 3 ingredientes de la nevera', 'Saca los ingredientes con tu música favorita de fondo', 'Pide ayuda a una persona de casa para picar', 'Pon una olla con agua al fuego'),
+    c('Prepara los ingredientes en cuencos antes de cocinar', 'Saca 3 ingredientes de la nevera', 'Saca los ingredientes con tu música favorita de fondo', 'Pide ayuda a una persona de casa para picar', 'Pon una olla con agua al fuego'),
     c('Cocina una receta que no has probado', 'Corta 3 verduras', 'Cocina con tu música favorita de fondo', 'Cocina con una persona de casa', 'Prepara un plato sencillo'),
   ),
   Ropa: a(
-    c('Mira el cesto de la ropa desde la puerta', 'Coge una prenda del suelo', 'Pon tu canción favorita en el móvil', 'Busca la prenda que más te gusta del cesto', 'Toca el cesto de la ropa'),
-    c('Mete la ropa en la lavadora empezando por la oscura', 'Mete 5 prendas en la lavadora', 'Dobla una camiseta con tu música favorita de fondo', 'Dobla la ropa con una persona de casa', 'Abre la puerta de la lavadora'),
-    c('Dobla la ropa sobre la cama en vez de la mesa', 'Tiende 10 prendas', 'Tiende la ropa con tu música favorita de fondo', 'Tiende la ropa con una persona de casa', 'Pon una lavadora'),
+    c('Separa una prenda oscura del cesto', 'Coge una prenda del suelo', 'Pon tu canción favorita en el móvil', 'Busca la prenda que más te gusta del cesto', 'Toca el cesto de la ropa'),
+    c('Separa la ropa del cesto por colores', 'Mete 5 prendas en la lavadora', 'Dobla una camiseta con tu música favorita de fondo', 'Dobla la ropa con una persona de casa', 'Abre la puerta de la lavadora'),
+    c('Dobla la ropa en rollo para el cajón', 'Tiende 10 prendas', 'Tiende la ropa con tu música favorita de fondo', 'Tiende la ropa con una persona de casa', 'Pon una lavadora'),
   ),
 
   // ── Ocio y entretenimiento ──
@@ -135,29 +135,29 @@ export const BANCO: Record<string, Acciones> = {
     c('Escucha un disco entero de un artista nuevo', 'Guarda 10 canciones en una lista nueva', 'Escucha tu disco favorito entero', 'Escucha un disco con una persona de casa', 'Escucha un disco entero'),
   ),
   Podcast: a(
-    c('Abre la app de podcasts en el ordenador', 'Lee el título del episodio', 'Coge tus auriculares favoritos', 'Lee la descripción del episodio', 'Ponte los auriculares'),
+    c('Busca un podcast nuevo del mismo tema', 'Lee el título del episodio', 'Coge tus auriculares favoritos', 'Lee la descripción del episodio', 'Ponte los auriculares'),
     c('Pon el episodio a otra velocidad', 'Escucha la presentación del episodio', 'Pon el episodio con tu bebida favorita al lado', 'Envía el episodio a una persona de confianza', 'Pulsa play en el episodio'),
     c('Escucha el episodio paseando por la calle', 'Apunta 3 ideas del episodio', 'Escucha el episodio con tu manta favorita encima', 'Escucha el episodio con una persona de casa', 'Escucha un episodio entero'),
   ),
   Vídeo: a(
-    c('Abre el vídeo en el ordenador en vez del móvil', 'Lee el título del vídeo', 'Coge tus auriculares favoritos', 'Lee los comentarios del vídeo', 'Coge el móvil'),
+    c('Activa los subtítulos del vídeo', 'Lee el título del vídeo', 'Coge tus auriculares favoritos', 'Lee los comentarios del vídeo', 'Coge el móvil'),
     c('Pon el vídeo a pantalla completa', 'Mira 2 vídeos cortos del mismo tema', 'Pon el vídeo con tu bebida favorita al lado', 'Envía el vídeo a una persona de confianza', 'Pulsa play en el vídeo'),
     c('Copia en tu libreta el primer paso que enseña el vídeo', 'Apunta 3 cosas que enseña el vídeo', 'Mira el vídeo con tu manta favorita encima', 'Mira el vídeo con una persona de casa', 'Mira el vídeo entero'),
   ),
 
   // ── Deporte y movimiento ──
   Gimnasio: a(
-    c('Mira la mochila del gimnasio desde la cama', 'Estira los brazos hacia arriba', 'Pon tu canción de entrenar favorita', 'Mira el horario de clases del gimnasio', 'Ponte una zapatilla'),
-    c('Ponte la ropa de deporte empezando por los calcetines', 'Baja 5 veces en sentadilla junto a una silla', 'Ponte tu ropa de deporte favorita', 'Escribe a una persona de confianza que vas al gimnasio', 'Llena la botella de agua'),
+    c('Busca una clase del gimnasio que no has probado', 'Estira los brazos 10 veces', 'Pon tu canción de entrenar favorita', 'Mira el horario de clases del gimnasio', 'Ponte una zapatilla'),
+    c('Prueba en casa un ejercicio nuevo de un vídeo', 'Baja 5 veces en sentadilla junto a una silla', 'Ponte tu ropa de deporte favorita', 'Escribe a una persona de confianza que vas al gimnasio', 'Llena la botella de agua'),
     c('Prueba una máquina que no has usado', 'Completa 3 ejercicios de tu rutina', 'Entrena con tu música favorita en los auriculares', 'Entrena con una persona de confianza', 'Sal hacia el gimnasio'),
   ),
   Correr: a(
-    c('Mira una ruta nueva en el mapa', 'Estira las piernas', 'Pon tu canción de correr favorita', 'Mira cuántos kilómetros corriste la última vez', 'Ponte una zapatilla'),
-    c('Ponte la ropa de correr empezando por las zapatillas', 'Ponte la ropa de correr sin sentarte', 'Ponte tu ropa de correr favorita', 'Escribe a una persona de confianza que sales a correr', 'Ponte las zapatillas'),
+    c('Mira una ruta nueva en el mapa', 'Estira cada pierna 5 veces', 'Pon tu canción de correr favorita', 'Mira cuántos kilómetros corriste la última vez', 'Ponte una zapatilla'),
+    c('Busca en el mapa una ruta nueva para hoy', 'Da 20 saltos en el sitio', 'Ponte tu ropa de correr favorita', 'Escribe a una persona de confianza que sales a correr', 'Ponte las zapatillas'),
     c('Corre por una calle nueva', 'Corre hasta la tercera esquina', 'Corre con tu música favorita en los auriculares', 'Corre con una persona de confianza', 'Sal a correr por tu ruta de siempre'),
   ),
   Caminar: a(
-    c('Mira por la ventana del salón', 'Estira las piernas', 'Pon tu canción favorita', 'Busca en el mapa un parque cercano', 'Ponte un zapato'),
+    c('Mira en el mapa una calle que no conoces', 'Estira cada pierna 5 veces', 'Pon tu canción favorita', 'Busca en el mapa un parque cercano', 'Ponte un zapato'),
     c('Sal hacia el lado contrario de la calle', 'Camina hasta la puerta de la calle', 'Ponte tus zapatillas favoritas', 'Escribe a una persona de confianza para pasear contigo', 'Ponte los zapatos'),
     c('Camina por una calle nueva', 'Da una vuelta a 2 manzanas', 'Camina con tu música favorita en los auriculares', 'Camina con una persona de confianza', 'Da una vuelta a la manzana'),
   ),
@@ -173,7 +173,7 @@ export const BANCO: Record<string, Acciones> = {
   ),
   Natación: a(
     c('Mira el horario de una piscina nueva', 'Lee 2 consejos de natación en el móvil', 'Coge tu toalla favorita', 'Mira cuántos largos nadaste la última vez', 'Coge el bañador'),
-    c('Prepara la mochila empezando por las chanclas', 'Mete 3 cosas de nadar en la mochila', 'Mete tu toalla favorita en la mochila', 'Escribe a una persona de confianza para ir a nadar', 'Mete el bañador en la mochila'),
+    c('Deja la mochila de nadar preparada junto a la puerta', 'Mete 3 cosas de nadar en la mochila', 'Mete tu toalla favorita en la mochila', 'Escribe a una persona de confianza para ir a nadar', 'Mete el bañador en la mochila'),
     c('Nada un largo en otro estilo', 'Nada 4 largos', 'Nada con tus gafas favoritas', 'Nada con una persona de confianza', 'Ve a la piscina'),
   ),
   Baile: a(
@@ -183,23 +183,23 @@ export const BANCO: Record<string, Acciones> = {
   ),
   Escalada: a(
     c('Mira el horario de un rocódromo nuevo', 'Estira los dedos de las manos 5 veces', 'Coge tu bolsa de magnesio favorita', 'Mira el vídeo de un bloque nuevo', 'Abre la mochila'),
-    c('Mete el material en la mochila empezando por el arnés', 'Mete 3 cosas de escalar en la mochila', 'Ponte tu ropa de escalar favorita', 'Escribe a una persona de confianza para ir a escalar', 'Mete los pies de gato en la mochila'),
+    c('Busca en el móvil un rocódromo que no conoces', 'Mete 3 cosas de escalar en la mochila', 'Ponte tu ropa de escalar favorita', 'Escribe a una persona de confianza para ir a escalar', 'Mete los pies de gato en la mochila'),
     c('Intenta un bloque de otro color', 'Intenta el mismo bloque 3 veces', 'Sube tu bloque favorito', 'Escala con una persona de confianza', 'Sal hacia el rocódromo'),
   ),
   'Deporte en equipo': a(
-    c('Mira el chat del equipo en el ordenador', 'Lee el último mensaje del chat del equipo', 'Coge tu camiseta del equipo favorita', 'Mira la clasificación de la liga', 'Coge la equipación'),
-    c('Prepara la bolsa empezando por las botas', 'Mete 3 cosas del equipo en la bolsa', 'Ponte tu equipación favorita', 'Escribe en el chat del equipo que vas', 'Mete la equipación en la bolsa'),
+    c('Busca un vídeo de una jugada nueva', 'Lee el último mensaje del chat del equipo', 'Coge tu camiseta del equipo favorita', 'Mira la clasificación de la liga', 'Coge la equipación'),
+    c('Prepara la bolsa con una lista en el móvil', 'Mete 3 cosas del equipo en la bolsa', 'Ponte tu equipación favorita', 'Escribe en el chat del equipo que vas', 'Mete la equipación en la bolsa'),
     c('Juega en una posición distinta', 'Calienta 3 ejercicios con el equipo', 'Juega con tus botas favoritas', 'Calienta con una persona del equipo', 'Ve al entrenamiento'),
   ),
 
   // ── Vida social ──
   'Quedar con amigos': a(
-    c('Abre el chat del grupo en el ordenador', 'Lee los 3 últimos mensajes del grupo', 'Abre el chat con tu canción favorita sonando', 'Mira la última foto que os hicisteis', 'Abre el chat del grupo'),
+    c('Busca la foto de vuestro último plan', 'Lee los 3 últimos mensajes del grupo', 'Abre el chat con tu canción favorita sonando', 'Mira la última foto que os hicisteis', 'Abre el chat del grupo'),
     c('Envía un audio al grupo en vez de un texto', 'Escribe «¿Quedamos esta semana?» en el chat', 'Envía una foto de un plan que te apetezca', 'Pregunta en el chat qué le apetece a cada persona', 'Envía «¿Quedamos?» al grupo'),
     c('Propón un plan que no habéis probado nunca', 'Envía un mensaje a 3 amistades', 'Propón un plan que te encante', 'Llama a una amistad para quedar', 'Escribe en el chat un día para quedar'),
   ),
   'Llamada social': a(
-    c('Mira su chat en el ordenador', 'Lee sus 3 últimos mensajes', 'Mira su foto de perfil favorita', 'Lee el último mensaje que te envió', 'Abre su chat'),
+    c('Busca una foto que quieras enseñarle', 'Lee sus 3 últimos mensajes', 'Mira su foto de perfil favorita', 'Lee el último mensaje que te envió', 'Abre su chat'),
     c('Envía un audio en vez de un texto', 'Envía un mensaje de 3 palabras', 'Envía una canción que te recuerde a esa persona', 'Pregúntale qué tal le va', 'Envía «Hola» en su chat'),
     c('Llama con videollamada en vez de voz', 'Escribe un mensaje de 3 frases', 'Llama mientras paseas por tu sitio favorito', 'Llama para preguntar por su semana', 'Llama a esa persona'),
   ),
@@ -209,22 +209,22 @@ export const BANCO: Record<string, Acciones> = {
     c('Graba un vídeo corto de felicitación', 'Escribe una felicitación de 3 frases', 'Envía una canción que os guste', 'Llama para felicitar', 'Compra el regalo'),
   ),
   Fiesta: a(
-    c('Mira la invitación en el ordenador', 'Lee la dirección de la fiesta', 'Abre el armario con tu canción favorita sonando', 'Mira quién más va a la fiesta', 'Abre la invitación'),
+    c('Busca en el armario una prenda para la fiesta', 'Lee la dirección de la fiesta', 'Abre el armario con tu canción favorita sonando', 'Mira quién más va a la fiesta', 'Abre la invitación'),
     c('Saca una prenda que no te pones nunca', 'Saca 3 opciones de ropa', 'Saca tu prenda favorita', 'Escribe a una persona de confianza para ir a la fiesta contigo', 'Confirma que vas'),
     c('Prueba un peinado distinto', 'Prepara 3 cosas para llevar', 'Vístete con tu ropa favorita', 'Sal hacia la fiesta con una persona de confianza', 'Vístete para la fiesta'),
   ),
   Familia: a(
-    c('Mira el chat familiar en el ordenador', 'Lee el último mensaje del chat familiar', 'Busca tu foto familiar favorita', 'Mira la última foto que enviaron', 'Abre el chat de la familia'),
+    c('Busca una foto familiar para enviar', 'Lee el último mensaje del chat familiar', 'Busca tu foto familiar favorita', 'Mira la última foto que enviaron', 'Abre el chat de la familia'),
     c('Envía un audio en vez de un texto', 'Envía «¿Qué tal?» con 3 emojis', 'Envía tu foto familiar favorita', 'Pregunta cómo les ha ido la semana', 'Envía «¿Qué tal?» en el chat'),
     c('Propón una visita a un sitio nuevo', 'Escribe en el chat la fecha de la visita', 'Propón la comida favorita de la familia', 'Llama para preguntar por la familia', 'Llama para confirmar el plan'),
   ),
   Cita: a(
-    c('Mira su chat en el ordenador', 'Lee su último mensaje', 'Abre su chat con tu canción favorita sonando', 'Mira su foto de perfil', 'Abre su chat'),
+    c('Busca en el mapa un sitio nuevo para quedar', 'Lee su último mensaje', 'Abre su chat con tu canción favorita sonando', 'Mira su foto de perfil', 'Abre su chat'),
     c('Envía un audio en vez de un texto', 'Escribe 2 planes posibles en una nota', 'Envía una foto de tu sitio favorito', 'Pregúntale qué plan le apetece', 'Escribe «¿Te apetece quedar?»'),
     c('Propón un sitio que no conocéis', 'Envía la propuesta de un día para quedar', 'Propón tu sitio favorito', 'Llama para quedar', 'Reserva el sitio'),
   ),
   'Chat de grupo': a(
-    c('Abre el chat del grupo en el ordenador', 'Lee el último mensaje del chat', 'Abre el chat con tu canción favorita sonando', 'Mira las fotos del chat', 'Abre el chat del grupo'),
+    c('Silencia los otros chats del móvil', 'Lee el último mensaje del chat', 'Abre el chat con tu canción favorita sonando', 'Mira las fotos del chat', 'Abre el chat del grupo'),
     c('Responde con un audio', 'Responde con un emoji', 'Envía una foto que te guste', 'Pregunta al grupo qué tal la semana', 'Responde a un mensaje'),
     c('Envía una foto de tu día', 'Responde a 3 mensajes', 'Envía una canción que te guste', 'Escribe una pregunta en el chat del grupo', 'Responde al mensaje más antiguo'),
   ),
@@ -251,17 +251,17 @@ export const BANCO: Record<string, Acciones> = {
     c('Añade un ingrediente nuevo a la receta', 'Prepara la receta con 5 ingredientes', 'Prepara tu postre favorito', 'Cocina la receta con una persona de casa', 'Prepara la receta'),
   ),
   Manualidades: a(
-    c('Abre la caja de material por el otro lado', 'Mira 3 fotos de piezas que te gustan', 'Coge tu material favorito', 'Mira una foto de la pieza terminada', 'Abre la caja de material'),
+    c('Busca en el móvil una idea nueva para la pieza', 'Mira 3 fotos de piezas que te gustan', 'Coge tu material favorito', 'Mira una foto de la pieza terminada', 'Abre la caja de material'),
     c('Pon el material en otro sitio de la casa', 'Corta 3 piezas', 'Corta la primera pieza con tu música favorita de fondo', 'Enseña el material a una persona de casa', 'Pon el material sobre la mesa'),
     c('Sigue un tutorial nuevo', 'Termina 3 filas de la pieza', 'Termina una fila con tu música favorita de fondo', 'Termina una fila con una persona de casa', 'Termina una fila de la pieza'),
   ),
   Instrumento: a(
-    c('Mira el instrumento desde otro sitio', 'Escucha 2 canciones que quieres tocar', 'Pon tu canción favorita para tocar', 'Escucha la canción que quieres aprender', 'Coge el instrumento'),
+    c('Escucha la canción en otra versión', 'Escucha 2 canciones que quieres tocar', 'Pon tu canción favorita para tocar', 'Escucha la canción que quieres aprender', 'Coge el instrumento'),
     c('Toca una nota que no usas nunca', 'Afina 3 cuerdas', 'Toca tu nota favorita', 'Toca una nota para una persona de casa', 'Toca una nota'),
     c('Toca la canción más despacio de lo normal', 'Toca la escala 3 veces', 'Toca tu canción favorita', 'Toca una canción para una persona de casa', 'Toca una canción'),
   ),
   Jardín: a(
-    c('Mira las plantas desde la ventana', 'Toca la tierra de una maceta', 'Coge tu regadera favorita', 'Busca una hoja nueva en una planta', 'Coge la regadera'),
+    c('Busca en el móvil el nombre de una planta', 'Toca la tierra de una maceta', 'Coge tu regadera favorita', 'Busca una hoja nueva en una planta', 'Coge la regadera'),
     c('Riega las plantas empezando por la más pequeña', 'Quita 3 hojas secas', 'Riega una planta con tu música favorita de fondo', 'Riega una planta con una persona de casa', 'Llena la regadera'),
     c('Cambia una planta de sitio', 'Riega 5 plantas', 'Riega las plantas con tu música favorita de fondo', 'Riega las plantas con una persona de casa', 'Riega todas las plantas'),
   ),
@@ -278,7 +278,7 @@ export const BANCO: Record<string, Acciones> = {
     c('Lee una página de un libro de papel en la cama', 'Apaga todas las pantallas de la casa', 'Métete en la cama con tu manta favorita', 'Escucha un cuento para dormir en el móvil', 'Métete en la cama'),
   ),
   Aseo: a(
-    c('Mira la puerta del baño desde la cama', 'Estira los brazos 3 veces en la cama', 'Coge tu toalla favorita', 'Mira tu gel favorito en la estantería', 'Coge la toalla'),
+    c('Coge una toalla distinta a la de siempre', 'Ponte las zapatillas sin mirar el móvil', 'Coge tu toalla favorita', 'Mira tu gel favorito en la estantería', 'Coge la toalla'),
     c('Lávate la cara con agua fría', 'Lávate los dientes contando hasta 30', 'Lávate la cara con tu jabón favorito', 'Escucha un pódcast curioso en el baño', 'Lávate la cara'),
     c('Dúchate con la luz baja', 'Lávate el pelo', 'Dúchate con tu música favorita', 'Prepara la ropa limpia con tu prenda favorita', 'Abre el grifo de la ducha'),
   ),
@@ -288,13 +288,13 @@ export const BANCO: Record<string, Acciones> = {
     c('Ponte una mascarilla nueva', 'Ponte 3 productos de tu rutina', 'Ponte una mascarilla con tu música favorita', 'Ponte una mascarilla con una persona de casa', 'Pasa el desmaquillante por la cara'),
   ),
   Comida: a(
-    c('Mira la nevera desde la puerta de la cocina', 'Coge 2 cosas de picar', 'Coge tu plato favorito', 'Mira qué hay en la nevera', 'Abre la nevera'),
-    c('Pon la mesa en otro sitio de la casa', 'Saca 2 alimentos de la nevera', 'Saca tu comida favorita de la nevera', 'Pregunta a una persona de casa qué le apetece', 'Calienta la comida'),
+    c('Busca en el móvil una receta de 3 ingredientes', 'Coge 2 cosas de picar', 'Coge tu plato favorito', 'Mira qué hay en la nevera', 'Abre la nevera'),
+    c('Sirve la comida en tu plato favorito', 'Saca 2 alimentos de la nevera', 'Saca tu comida favorita de la nevera', 'Pregunta a una persona de casa qué le apetece', 'Calienta la comida'),
     c('Come en un sitio nuevo de la casa', 'Prepara un plato con 3 alimentos', 'Prepara tu bocadillo favorito', 'Come con una persona de casa', 'Prepara un bocadillo en un plato'),
   ),
   Hidratación: a(
-    c('Bebe un sorbo de agua en otra taza', 'Bebe un sorbo de agua', 'Bebe un sorbo de tu bebida favorita sin azúcar', 'Mira cuánta agua queda en la botella', 'Coge la botella de agua'),
-    c('Llena una taza de agua en vez del vaso', 'Bebe medio vaso de agua', 'Bebe un vaso de agua con limón', 'Llena un vaso de agua para una persona de casa', 'Llena un vaso de agua'),
+    c('Bebe un sorbo de agua fría de la nevera', 'Bebe un sorbo de agua', 'Bebe un sorbo de tu bebida favorita sin azúcar', 'Mira cuánta agua queda en la botella', 'Coge la botella de agua'),
+    c('Llena una botella para llevarla contigo', 'Bebe medio vaso de agua', 'Bebe un vaso de agua con limón', 'Llena un vaso de agua para una persona de casa', 'Llena un vaso de agua'),
     c('Deja una botella llena en un sitio nuevo de la casa', 'Bebe 2 vasos de agua', 'Bebe un vaso de agua en tu taza favorita', 'Bebe un vaso de agua con una persona de casa', 'Bebe un vaso de agua entero'),
   ),
   Desconexión: a(

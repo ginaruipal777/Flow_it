@@ -193,7 +193,7 @@ const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 /** Participio de cada verbo de acción, para escribir el criterio de éxito («has abierto…»).
     `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
 export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
-  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' }, comparte: { part: 'compartido' }, pela: { part: 'pelado' }, echa: { part: 'echado' }, tómate: { part: 'tomado', pron: 'te' },
+  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' }, comparte: { part: 'compartido' }, pela: { part: 'pelado' }, activa: { part: 'activado' }, silencia: { part: 'silenciado' }, sirve: { part: 'servido' }, echa: { part: 'echado' }, tómate: { part: 'tomado', pron: 'te' },
   cuenta: { part: 'contado' }, dicta: { part: 'dictado' }, estudia: { part: 'estudiado' }, huele: { part: 'olido' },
   muévete: { part: 'movido', pron: 'te' }, queda: { part: 'quedado' }, separa: { part: 'separado' }, apaga: { part: 'apagado' },
   aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },

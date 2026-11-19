@@ -17,17 +17,49 @@
   width: min(100%, 380px);
   text-align: center;
 }
-.preparando__girando {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 6px solid color-mix(in srgb, var(--marca-lima) 25%, transparent);
-  border-top-color: var(--marca-lima);
-  animation: preparando-gira 900ms linear infinite;
+/* Baraja: las 5 cartas INCUP entran por la derecha, se paran un momento y salen por la izquierda */
+.preparando__baraja {
+  position: relative;
+  width: 100%;
+  height: clamp(96px, 16vh, 132px);
+  overflow: hidden;
 }
-@keyframes preparando-gira {
-  to {
-    transform: rotate(360deg);
+.preparando__carta {
+  --ancho: clamp(68px, 18vw, 92px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ancho);
+  height: calc(var(--ancho) * 1.33);
+  margin: calc(var(--ancho) * -0.665) 0 0 calc(var(--ancho) * -0.5);
+  border-radius: 14px;
+  border: 2px solid var(--marca-tinta);
+  background: var(--carta-fondo);
+  color: var(--carta-tinta);
+  box-shadow: 0 6px 0 var(--marca-tinta);
+  opacity: 0;
+  animation: preparando-carta 1.8s cubic-bezier(.2, .8, .2, 1) infinite;
+}
+@keyframes preparando-carta {
+  0% {
+    opacity: 0;
+    transform: translateX(170%) rotate(14deg);
+  }
+  18% {
+    opacity: 1;
+    transform: translateX(0) rotate(-3deg);
+  }
+  42% {
+    opacity: 1;
+    transform: translateX(-8%) rotate(2deg);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: translateX(-170%) rotate(-14deg);
   }
 }
 .preparando__titulo {
@@ -102,10 +134,18 @@
   cursor: pointer;
 }
 @media (prefers-reduced-motion: reduce) {
-  .preparando__girando,
   .preparando__paso[data-estado="ahora"] .preparando__marca {
     animation: none;
   }
+  /* Sin movimiento: las cartas quedan abiertas en abanico */
+  .preparando__carta {
+    animation: none;
+    opacity: 1;
+  }
+  .preparando__carta:nth-child(1) { transform: translateX(-110%) rotate(-10deg); }
+  .preparando__carta:nth-child(2) { transform: translateX(-55%) rotate(-5deg); }
+  .preparando__carta:nth-child(4) { transform: translateX(55%) rotate(5deg); }
+  .preparando__carta:nth-child(5) { transform: translateX(110%) rotate(10deg); }
 }
 
 /* Pregunta «¿De qué tipo es esta tarea?» */
@@ -148,7 +188,7 @@
 .preparando__caja {
   margin: auto 0;
 }
-.preparando[data-pregunta] .preparando__girando {
+.preparando[data-pregunta] .preparando__baraja {
   display: none;
 }
 .preparando[data-pregunta] .preparando__titulo {

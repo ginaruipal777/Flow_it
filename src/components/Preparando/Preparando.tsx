@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { Icono } from '../Icono/Icono'
+import { ICONOS_TIPO } from '../Icono/iconos'
+import type { TipoReto } from '../CartaReto/tipos'
 import './Preparando.css'
 
 /* Pantalla de carga mientras la app prepara los retos:
@@ -7,6 +10,9 @@ import './Preparando.css'
    3. mira cuánto le pesa a la persona,
    4. elige los retos.
    Cada paso enseña lo que ha encontrado. Mientras busca, se puede saltar la búsqueda. */
+
+/* Cartas que pasan rápido mientras se preparan los retos: una por factor INCUP */
+const BARAJA: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
 export type PasoPreparando = { titulo: string; detalle?: string }
 
@@ -34,7 +40,13 @@ export function Preparando({
   return (
     <div className="preparando" role="dialog" aria-modal="true" aria-labelledby="preparando-titulo" data-pregunta={pregunta ? '' : undefined}>
       <div className="preparando__caja">
-        <span className="preparando__girando" aria-hidden="true" />
+        <div className="preparando__baraja" aria-hidden="true">
+          {BARAJA.map((tipo, i) => (
+            <span key={tipo} className="preparando__carta" data-tipo={tipo} style={{ animationDelay: `${i * 0.36}s` }}>
+              <Icono svg={ICONOS_TIPO[tipo]} tamano={26} />
+            </span>
+          ))}
+        </div>
         <h2 id="preparando-titulo" ref={titulo} tabIndex={-1} className="t-titular-m preparando__titulo">
           Preparando tus retos
         </h2>
