@@ -70,13 +70,13 @@
   <p>La persona escribe una tarea («Responder el email de Carlos») y elige cuánto le pesa. La app hace esto:</p>
   <div class="flujo">
     <div class="paso"><b class="n">1</b><div><h4>Comprueba la tarea</h4><p>Si no es segura o no se entiende, lo dice con un mensaje amable y no crea retos.</p></div></div>
-    <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las 52 categorías. Si no encaja en ninguna, busca en internet el objeto con el que se hace (apartado 2).</p></div></div>
+    <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las 53 categorías. Si no encaja en ninguna, busca en internet el objeto con el que se hace (apartado 2).</p></div></div>
     <div class="paso"><b class="n">3</b><div><h4>El esfuerzo elige el tamaño (ley del esfuerzo inverso)</h4><p>Cuanto más pesa la tarea, más pequeña es la acción: Ligero, un trozo pequeño con final claro; Medio, el primer movimiento físico; Pesado, contacto mínimo que empieza por «Solo…». Apartado 3.</p></div></div>
     <div class="paso"><b class="n">4</b><div><h4>Reparte 5 cartas escritas a mano</h4><p>Una por factor INCUP. Cada carta cambia la acción (otro sitio, una meta pequeña, algo que te gusta, una persona, un plazo corto). La carta dice solo la acción, sin entradillas. Apartado 4.</p></div></div>
     <div class="paso"><b class="n">5</b><div><h4>Más mazos, siempre igual o más fáciles</h4><p>Si rechaza las 5, llega otro mazo de la misma tarea: primero el nivel elegido y después los niveles más ligeros. Apartado 5.</p></div></div>
     <div class="paso"><b class="n">6</b><div><h4>Detalle del reto aceptado</h4><p>La acción en la carta con su botón «Hecho», el criterio «Está hecho cuando…» sacado de la propia acción, una frase de permiso del nivel, «Escuchar» y un premio opcional.</p></div></div>
   </div>
-  <div class="nota"><strong>1310 retos distintos</strong> escritos a mano: 52 categorías × 3 niveles × 5 cartas, más los retos genéricos con el nombre de la tarea. Un script (<code>npm run validar</code>) comprueba que todos cumplen las reglas.</div>
+  <div class="nota"><strong>1335 retos distintos</strong> escritos a mano: 53 categorías × 3 niveles × 5 cartas, más los retos genéricos con el nombre de la tarea. Un script (<code>npm run validar</code>) comprueba que todos cumplen las reglas.</div>
 </section>
 
 <section class="salto">
@@ -274,17 +274,22 @@
     <tr><td><strong>Ligero</strong></td><td>Pide la compra por la web del súper</td><td>Escribe una lista con 10 productos</td><td>Sal a la tienda con tu música favorita en los auriculares</td><td>Sal a la tienda con una persona de casa</td><td>Coge las bolsas de la compra</td></tr><tr><td><strong>Medio</strong></td><td>Escribe la lista empezando por la despensa</td><td>Escribe 3 productos en la lista</td><td>Escribe la lista con tu bebida favorita al lado</td><td>Pregunta a una persona de casa qué falta</td><td>Escribe en la lista el producto que más falta</td></tr><tr><td><strong>Pesado</strong></td><td>Abre la app del súper en vez de la lista de papel</td><td>Mira la puerta de la nevera</td><td>Abre la nota de la compra con tu canción favorita sonando</td><td>Mira qué falta en la despensa</td><td>Abre la nota de la compra</td></tr></table>
   </div>
   <div class="regla">
-    <p class="regla__cab"><strong>Cocina</strong> <span class="peq">· icono Alimentación · palabras clave: cocinar, comida, cena, receta, café, cafe, preparar café, cafetera, té, infusión, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina</span></p>
+    <p class="regla__cab"><strong>Café</strong> <span class="peq">· icono Alimentación · palabras clave: café, cafe, preparar café, preparar cafe, hacerme un café, cafetera, té, hacerme un té, infusión, cappuccino, café con leche, cola cao, colacao, chocolate caliente</span></p>
+    <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
+    <tr><td><strong>Ligero</strong></td><td>Prepara el café con una receta nueva de un vídeo</td><td>Prepara 2 cafés en la cafetera</td><td>Tómate el café en tu sitio favorito de la casa</td><td>Tómate el café con una persona de casa</td><td>Pon la cafetera al fuego</td></tr><tr><td><strong>Medio</strong></td><td>Prepara el café en un vaso en vez de la taza</td><td>Echa 2 cucharadas de café en la cafetera</td><td>Pon tu canción favorita en la cocina mientras sale el café</td><td>Prepara un café para una persona de casa</td><td>Llena de agua la cafetera</td></tr><tr><td><strong>Pesado</strong></td><td>Coge una taza distinta a la de siempre</td><td>Coge 2 cucharadas de café</td><td>Coge tu taza favorita</td><td>Mira cuánto café queda en el bote</td><td>Coge la cafetera</td></tr></table>
+  </div>
+  <div class="regla">
+    <p class="regla__cab"><strong>Cocina</strong> <span class="peq">· icono Alimentación · palabras clave: cocinar, comida, cena, receta, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Cocina una receta que no has probado</td><td>Corta 3 verduras</td><td>Cocina con tu música favorita de fondo</td><td>Cocina con una persona de casa</td><td>Prepara un plato sencillo</td></tr><tr><td><strong>Medio</strong></td><td>Saca los ingredientes empezando por el último</td><td>Saca 3 ingredientes de la nevera</td><td>Saca los ingredientes con tu música favorita de fondo</td><td>Pide ayuda a una persona de casa para picar</td><td>Pon una olla con agua al fuego</td></tr><tr><td><strong>Pesado</strong></td><td>Abre una receta nueva en el móvil</td><td>Mira 3 ingredientes de la nevera</td><td>Pon tu canción favorita en la cocina</td><td>Busca en el móvil una receta con lo que tienes</td><td>Abre la nevera</td></tr></table>
   </div>
+    <h3>Ocio y entretenimiento</h3>
+    
   <div class="regla">
     <p class="regla__cab"><strong>Ropa</strong> <span class="peq">· icono Casa · palabras clave: ropa, lavar, tender, planchar, lavadora, colada, doblar, ropa sucia, secadora, ropa limpia, armario de ropa</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Dobla la ropa sobre la cama en vez de la mesa</td><td>Tiende 10 prendas</td><td>Tiende la ropa con tu música favorita de fondo</td><td>Tiende la ropa con una persona de casa</td><td>Pon una lavadora</td></tr><tr><td><strong>Medio</strong></td><td>Mete la ropa en la lavadora empezando por la oscura</td><td>Mete 5 prendas en la lavadora</td><td>Dobla una camiseta con tu música favorita de fondo</td><td>Dobla la ropa con una persona de casa</td><td>Abre la puerta de la lavadora</td></tr><tr><td><strong>Pesado</strong></td><td>Mira el cesto de la ropa desde la puerta</td><td>Coge una prenda del suelo</td><td>Pon tu canción favorita en el móvil</td><td>Busca la prenda que más te gusta del cesto</td><td>Toca el cesto de la ropa</td></tr></table>
   </div>
-    <h3>Ocio y entretenimiento</h3>
-    
   <div class="regla">
     <p class="regla__cab"><strong>Ver serie</strong> <span class="peq">· icono Autocuidado · palabras clave: serie, ver serie, netflix, capítulo, temporada, episodio, hbo, prime video, disney, ver un capítulo</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
@@ -315,13 +320,13 @@
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Escucha el episodio paseando por la calle</td><td>Apunta 3 ideas del episodio</td><td>Escucha el episodio con tu manta favorita encima</td><td>Escucha el episodio con una persona de casa</td><td>Escucha un episodio entero</td></tr><tr><td><strong>Medio</strong></td><td>Pon el episodio a otra velocidad</td><td>Escucha la presentación del episodio</td><td>Pon el episodio con tu bebida favorita al lado</td><td>Envía el episodio a una persona de confianza</td><td>Pulsa play en el episodio</td></tr><tr><td><strong>Pesado</strong></td><td>Abre la app de podcasts en el ordenador</td><td>Lee el título del episodio</td><td>Coge tus auriculares favoritos</td><td>Lee la descripción del episodio</td><td>Ponte los auriculares</td></tr></table>
   </div>
+    <h3>Deporte y movimiento</h3>
+    
   <div class="regla">
     <p class="regla__cab"><strong>Vídeo</strong> <span class="peq">· icono Autocuidado · palabras clave: youtube, vídeo, tutorial, video, ver un vídeo, curso online, clase online</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Copia en tu libreta el primer paso que enseña el vídeo</td><td>Apunta 3 cosas que enseña el vídeo</td><td>Mira el vídeo con tu manta favorita encima</td><td>Mira el vídeo con una persona de casa</td><td>Mira el vídeo entero</td></tr><tr><td><strong>Medio</strong></td><td>Pon el vídeo a pantalla completa</td><td>Mira 2 vídeos cortos del mismo tema</td><td>Pon el vídeo con tu bebida favorita al lado</td><td>Envía el vídeo a una persona de confianza</td><td>Pulsa play en el vídeo</td></tr><tr><td><strong>Pesado</strong></td><td>Abre el vídeo en el ordenador en vez del móvil</td><td>Lee el título del vídeo</td><td>Coge tus auriculares favoritos</td><td>Lee los comentarios del vídeo</td><td>Coge el móvil</td></tr></table>
   </div>
-    <h3>Deporte y movimiento</h3>
-    
   <div class="regla">
     <p class="regla__cab"><strong>Gimnasio</strong> <span class="peq">· icono Deporte · palabras clave: ejercicio, entrenar, gimnasio, pesas, gym, deporte, entrenamiento, rutina de ejercicio, abdominales, sentadillas, crossfit, pilates, hacer ejercicio</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
@@ -362,13 +367,13 @@
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Intenta un bloque de otro color</td><td>Intenta el mismo bloque 3 veces</td><td>Sube tu bloque favorito</td><td>Escala con una persona de confianza</td><td>Sal hacia el rocódromo</td></tr><tr><td><strong>Medio</strong></td><td>Mete el material en la mochila empezando por el arnés</td><td>Mete 3 cosas de escalar en la mochila</td><td>Ponte tu ropa de escalar favorita</td><td>Escribe a una persona de confianza para ir a escalar</td><td>Mete los pies de gato en la mochila</td></tr><tr><td><strong>Pesado</strong></td><td>Mira el horario de un rocódromo nuevo</td><td>Estira los dedos de las manos 5 veces</td><td>Coge tu bolsa de magnesio favorita</td><td>Mira el vídeo de un bloque nuevo</td><td>Abre la mochila</td></tr></table>
   </div>
+    <h3>Vida social</h3>
+    
   <div class="regla">
     <p class="regla__cab"><strong>Deporte en equipo</strong> <span class="peq">· icono Deporte · palabras clave: fútbol, baloncesto, deporte de equipo, pádel, padel, tenis, voleibol, balonmano, partido, entrenamiento de equipo, jugar al padel, jugar al pádel, jugar al tenis, jugar al fútbol, jugar al futbol</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Juega en una posición distinta</td><td>Calienta 3 ejercicios con el equipo</td><td>Juega con tus botas favoritas</td><td>Calienta con una persona del equipo</td><td>Ve al entrenamiento</td></tr><tr><td><strong>Medio</strong></td><td>Prepara la bolsa empezando por las botas</td><td>Mete 3 cosas del equipo en la bolsa</td><td>Ponte tu equipación favorita</td><td>Escribe en el chat del equipo que vas</td><td>Mete la equipación en la bolsa</td></tr><tr><td><strong>Pesado</strong></td><td>Mira el chat del equipo en el ordenador</td><td>Lee el último mensaje del chat del equipo</td><td>Coge tu camiseta del equipo favorita</td><td>Mira la clasificación de la liga</td><td>Coge la equipación</td></tr></table>
   </div>
-    <h3>Vida social</h3>
-    
   <div class="regla">
     <p class="regla__cab"><strong>Quedar con amigos</strong> <span class="peq">· icono Social · palabras clave: quedar, quedar con amigos, plan, salir, amigos, amigas, quedada, salir con, tomar algo, cervezas, café con</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
@@ -399,13 +404,13 @@
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Propón un sitio que no conocéis</td><td>Envía la propuesta de un día para quedar</td><td>Propón tu sitio favorito</td><td>Llama para quedar</td><td>Reserva el sitio</td></tr><tr><td><strong>Medio</strong></td><td>Envía un audio en vez de un texto</td><td>Escribe 2 planes posibles en una nota</td><td>Envía una foto de tu sitio favorito</td><td>Pregúntale qué plan le apetece</td><td>Escribe «¿Te apetece quedar?»</td></tr><tr><td><strong>Pesado</strong></td><td>Mira su chat en el ordenador</td><td>Lee su último mensaje</td><td>Abre su chat con tu canción favorita sonando</td><td>Mira su foto de perfil</td><td>Abre su chat</td></tr></table>
   </div>
+    <h3>Hobbies y creatividad</h3>
+    
   <div class="regla">
     <p class="regla__cab"><strong>Chat de grupo</strong> <span class="peq">· icono Social · palabras clave: grupo, chat, whatsapp de amigos, mensajes, grupo de whatsapp, telegram, contestar al grupo</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Envía una foto de tu día</td><td>Responde a 3 mensajes</td><td>Envía una canción que te guste</td><td>Escribe una pregunta en el chat del grupo</td><td>Responde al mensaje más antiguo</td></tr><tr><td><strong>Medio</strong></td><td>Responde con un audio</td><td>Responde con un emoji</td><td>Envía una foto que te guste</td><td>Pregunta al grupo qué tal la semana</td><td>Responde a un mensaje</td></tr><tr><td><strong>Pesado</strong></td><td>Abre el chat del grupo en el ordenador</td><td>Lee el último mensaje del chat</td><td>Abre el chat con tu canción favorita sonando</td><td>Mira las fotos del chat</td><td>Abre el chat del grupo</td></tr></table>
   </div>
-    <h3>Hobbies y creatividad</h3>
-    
   <div class="regla">
     <p class="regla__cab"><strong>Dibujo</strong> <span class="peq">· icono Autocuidado · palabras clave: dibujar, pintar, ilustrar, boceto, acuarela, sketch, dibujo, colorear</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
@@ -441,13 +446,13 @@
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Cambia una planta de sitio</td><td>Riega 5 plantas</td><td>Riega las plantas con tu música favorita de fondo</td><td>Riega las plantas con una persona de casa</td><td>Riega todas las plantas</td></tr><tr><td><strong>Medio</strong></td><td>Riega las plantas empezando por la más pequeña</td><td>Quita 3 hojas secas</td><td>Riega una planta con tu música favorita de fondo</td><td>Riega una planta con una persona de casa</td><td>Llena la regadera</td></tr><tr><td><strong>Pesado</strong></td><td>Mira las plantas desde la ventana</td><td>Toca la tierra de una maceta</td><td>Coge tu regadera favorita</td><td>Busca una hoja nueva en una planta</td><td>Coge la regadera</td></tr></table>
   </div>
+    <h3>Descanso y autocuidado</h3>
+    
   <div class="regla">
     <p class="regla__cab"><strong>Meditación</strong> <span class="peq">· icono Autocuidado · palabras clave: meditar, mindfulness, respirar, meditación, respiración, relajarme, calmarme</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Escucha una meditación guiada nueva</td><td>Respira hondo 10 veces</td><td>Medita con tu música tranquila favorita</td><td>Medita con una persona de casa</td><td>Escucha una meditación guiada entera</td></tr><tr><td><strong>Medio</strong></td><td>Siéntate en otra habitación con la espalda recta</td><td>Respira hondo 5 veces</td><td>Respira con tu olor favorito cerca</td><td>Escucha una meditación guiada en el móvil</td><td>Siéntate con la espalda recta</td></tr><tr><td><strong>Pesado</strong></td><td>Cierra los ojos en la cama</td><td>Respira hondo una vez</td><td>Pon tu música tranquila favorita</td><td>Escucha los sonidos de la habitación</td><td>Cierra los ojos</td></tr></table>
   </div>
-    <h3>Descanso y autocuidado</h3>
-    
   <div class="regla">
     <p class="regla__cab"><strong>Descanso</strong> <span class="peq">· icono Autocuidado · palabras clave: dormir, siesta, descansar, acostarme, irme a dormir, acostarse, sueño, cama, dormir pronto</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
@@ -473,13 +478,13 @@
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Deja una botella llena en un sitio nuevo de la casa</td><td>Bebe 2 vasos de agua</td><td>Bebe un vaso de agua en tu taza favorita</td><td>Bebe un vaso de agua con una persona de casa</td><td>Bebe un vaso de agua entero</td></tr><tr><td><strong>Medio</strong></td><td>Llena una taza de agua en vez del vaso</td><td>Bebe medio vaso de agua</td><td>Bebe un vaso de agua con limón</td><td>Llena un vaso de agua para una persona de casa</td><td>Llena un vaso de agua</td></tr><tr><td><strong>Pesado</strong></td><td>Bebe un sorbo de agua en otra taza</td><td>Bebe un sorbo de agua</td><td>Bebe un sorbo de tu bebida favorita sin azúcar</td><td>Mira cuánta agua queda en la botella</td><td>Coge la botella de agua</td></tr></table>
   </div>
+    <h3>Ampliación de la app</h3>
+    
   <div class="regla">
     <p class="regla__cab"><strong>Desconexión</strong> <span class="peq">· icono Autocuidado · palabras clave: desconectar, parar, no hacer nada, descanso de pantallas, sin móvil, apagar el móvil, relax</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>
     <tr><td><strong>Ligero</strong></td><td>Sal a pasear sin el móvil</td><td>Camina 2 manzanas sin el móvil</td><td>Escucha tu disco favorito con los ojos cerrados</td><td>Pasea con una persona de confianza sin el móvil</td><td>Coge un libro de papel</td></tr><tr><td><strong>Medio</strong></td><td>Asómate a la ventana de otra habitación</td><td>Respira hondo 5 veces</td><td>Túmbate en el sofá con tu manta favorita</td><td>Habla con una persona de casa sin pantallas</td><td>Túmbate en el sofá</td></tr><tr><td><strong>Pesado</strong></td><td>Deja el móvil en otra habitación</td><td>Deja el móvil boca abajo</td><td>Coge tu manta favorita</td><td>Escucha los sonidos de la calle</td><td>Cierra los ojos</td></tr></table>
   </div>
-    <h3>Ampliación de la app</h3>
-    
   <div class="regla">
     <p class="regla__cab"><strong>Pasear al perro</strong> <span class="peq">· icono Mascotas · palabras clave: perro, pasear al perro, sacar al perro, paseo del perro, sacar a la perra, perra, sacar al perrito</span></p>
     <table class="banco"><tr><th></th><th>Novedad</th><th>Desafío</th><th>Pasión</th><th>Interés</th><th>Urgencia</th></tr>

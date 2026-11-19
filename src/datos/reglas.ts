@@ -64,7 +64,8 @@ export const REGLAS: Regla[] = [
   // 2.2 Tareas del Hogar y Vida Cotidiana
   r('limpiar, ordenar, recoger, fregar, limpieza, cuarto, habitación, casa, piso, baño, polvo, aspirar, barrer, fregona, platos, lavavajillas, basura, armario, desorden, ordenar mi cuarto, hacer la cama, cambiar las sábanas, sábanas', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
   r('comprar, tienda, supermercado, compra, super, súper, mercado, lista de la compra, hacer la compra, comprar comida, pedido online', 'Compra', 'alimentacion', 'Escribe la lista de 3 cosas que necesitas', 'la lista tiene 3 cosas apuntadas'),
-  r('cocinar, comida, cena, receta, café, cafe, preparar café, cafetera, té, infusión, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina', 'Cocina', 'alimentacion', 'Abre la nevera y saca un ingrediente', 'hay un ingrediente fuera de la nevera'),
+  r('café, cafe, preparar café, preparar cafe, hacerme un café, cafetera, té, hacerme un té, infusión, cappuccino, café con leche, cola cao, colacao, chocolate caliente', 'Café', 'alimentacion', 'Coge la cafetera', 'has cogido la cafetera'),
+  r('cocinar, comida, cena, receta, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina', 'Cocina', 'alimentacion', 'Abre la nevera y saca un ingrediente', 'hay un ingrediente fuera de la nevera'),
   r('ropa, lavar, tender, planchar, lavadora, colada, doblar, ropa sucia, secadora, ropa limpia, armario de ropa', 'Ropa', 'casa', 'Coge una prenda y llévala al sitio', 'una prenda está en su sitio'),
 
   // 2.3 Ocio y Entretenimiento
@@ -192,7 +193,7 @@ const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 /** Participio de cada verbo de acción, para escribir el criterio de éxito («has abierto…»).
     `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
 export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
-  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' }, comparte: { part: 'compartido' }, pela: { part: 'pelado' },
+  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' }, comparte: { part: 'compartido' }, pela: { part: 'pelado' }, echa: { part: 'echado' }, tómate: { part: 'tomado', pron: 'te' },
   cuenta: { part: 'contado' }, dicta: { part: 'dictado' }, estudia: { part: 'estudiado' }, huele: { part: 'olido' },
   muévete: { part: 'movido', pron: 'te' }, queda: { part: 'quedado' }, separa: { part: 'separado' }, apaga: { part: 'apagado' },
   aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },

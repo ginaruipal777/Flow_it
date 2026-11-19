@@ -92,6 +92,11 @@ export const BANCO: Record<string, Acciones> = {
     c('Escribe la lista empezando por la despensa', 'Escribe 3 productos en la lista', 'Escribe la lista con tu bebida favorita al lado', 'Pregunta a una persona de casa qué falta', 'Escribe en la lista el producto que más falta'),
     c('Pide la compra por la web del súper', 'Escribe una lista con 10 productos', 'Sal a la tienda con tu música favorita en los auriculares', 'Sal a la tienda con una persona de casa', 'Coge las bolsas de la compra'),
   ),
+  Café: a(
+    c('Coge una taza distinta a la de siempre', 'Coge 2 cucharadas de café', 'Coge tu taza favorita', 'Mira cuánto café queda en el bote', 'Coge la cafetera'),
+    c('Prepara el café en un vaso en vez de la taza', 'Echa 2 cucharadas de café en la cafetera', 'Pon tu canción favorita en la cocina mientras sale el café', 'Prepara un café para una persona de casa', 'Llena de agua la cafetera'),
+    c('Prepara el café con una receta nueva de un vídeo', 'Prepara 2 cafés en la cafetera', 'Tómate el café en tu sitio favorito de la casa', 'Tómate el café con una persona de casa', 'Pon la cafetera al fuego'),
+  ),
   Cocina: a(
     c('Abre una receta nueva en el móvil', 'Mira 3 ingredientes de la nevera', 'Pon tu canción favorita en la cocina', 'Busca en el móvil una receta con lo que tienes', 'Abre la nevera'),
     c('Saca los ingredientes empezando por el último', 'Saca 3 ingredientes de la nevera', 'Saca los ingredientes con tu música favorita de fondo', 'Pide ayuda a una persona de casa para picar', 'Pon una olla con agua al fuego'),
