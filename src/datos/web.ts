@@ -16,7 +16,8 @@ type Respuesta =
       categoria: string
       objeto: string
       tipo_objeto: 'digital' | 'fisico'
-      origen: 'web' | 'respaldo' | 'emergencia'
+      origen: 'web' | 'oficial' | 'respaldo' | 'emergencia'
+      enlace?: string | null
       estrategia?: string | null
       fuente_estrategia?: string | null
     }
@@ -41,7 +42,7 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
     const datos = (await r.json()) as Respuesta
     if (datos.status !== 'success') return datos
     // Solo sirve si la web aportó algo: el respaldo del servidor ya lo tiene la app
-    if (datos.origen !== 'web') return { status: 'sin-conexion' }
+    if (datos.origen !== 'web' && datos.origen !== 'oficial') return { status: 'sin-conexion' }
     return {
       status: 'success',
       web: {
@@ -52,6 +53,7 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
         nivel: esfuerzo,
         ...(datos.estrategia && { estrategia: datos.estrategia }),
         ...(datos.fuente_estrategia && { fuenteEstrategia: datos.fuente_estrategia }),
+        ...(datos.enlace && { enlace: datos.enlace }),
       },
     }
   } catch {

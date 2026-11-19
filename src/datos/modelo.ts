@@ -35,6 +35,8 @@ export type MicroPasoWeb = {
   /** Consejo para arrancar sacado de understood.org (redactado por la app) */
   estrategia?: string
   fuenteEstrategia?: string
+  /** Web oficial del trámite (lista fija de api/micro_paso.py) */
+  enlace?: string
 }
 
 export type Reto = {

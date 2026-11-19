@@ -588,11 +588,81 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
     )
 
 
+# ── 4b. Trámites oficiales: lista fija, sin buscador ────────────
+#
+# Los buscadores gratuitos bloquean a menudo al servidor y devuelven páginas de otros países.
+# Para los trámites más comunes la web oficial es siempre la misma, así que se usa una lista
+# fija (enlaces comprobados): gratis, sin cuenta, al instante y siempre de España.
+
+
+@dataclass
+class Tramite:
+    patron: re.Pattern
+    objeto: str
+    url: str
+    nombre: str
+
+
+TRAMITES_OFICIALES = [
+    Tramite(re.compile(r"\b(dni|pasaporte|carnet de identidad|documento de identidad)\b"), "la web de cita previa del DNI y el pasaporte",
+            "https://www.citapreviadnie.es/", "Cita previa del DNI y el pasaporte (Policía Nacional)"),
+    Tramite(re.compile(r"\b(sepe|paro|desempleo|prestacion|subsidio)\b"), "la web de cita previa del SEPE",
+            "https://sede.sepe.gob.es/portalSede/procedimientos-y-servicios/personas/proteccion-por-desempleo/cita-previa.html",
+            "Cita previa del SEPE"),
+    Tramite(re.compile(r"\b(vida laboral|seguridad social|numero de afiliacion|importass)\b"), "el portal Importass de la Seguridad Social",
+            "https://portal.seg-social.gob.es/wps/portal/importass/importass", "Portal Importass de la Seguridad Social"),
+    Tramite(re.compile(r"\b(hacienda|agencia tributaria|irpf|borrador de la renta|modelo \d{3})\b"), "la sede de la Agencia Tributaria",
+            "https://sede.agenciatributaria.gob.es/", "Sede de la Agencia Tributaria"),
+    Tramite(re.compile(r"\b(dgt|multa|multas|itv|permiso de conducir|carnet de conducir|transferencia del coche)\b"), "la sede de la DGT",
+            "https://sede.dgt.gob.es/es/", "Sede electrónica de la DGT"),
+    Tramite(re.compile(r"\b(nie|tie|extranjeria|toma de huellas)\b"), "la web de cita previa de extranjería",
+            "https://icp.administracionelectronica.gob.es/icpplus/index.html", "Cita previa de extranjería"),
+    Tramite(re.compile(r"\b(clave pin|clave permanente|cl ve)\b"), "la web de Cl@ve", "https://clave.gob.es/", "Cl@ve"),
+]
+
+
+def tramite_oficial(tarea: str) -> Tramite | None:
+    texto = normalizar(tarea)
+    return next((t for t in TRAMITES_OFICIALES if t.patron.search(texto)), None)
+
+
+def buscar_guia(tarea: str) -> tuple[str, str, dict] | None:
+    """Solo understood.org (estrategia de arranque), con límite de tiempo."""
+    try:
+        return asyncio.run(asyncio.wait_for(_buscar_understood(tarea), timeout=20))
+    except Exception:
+        return None
+
+
+def micro_paso_tramite(tarea: str, esfuerzo: str, tramite: Tramite) -> dict:
+    o = tramite.objeto
+    paso = {"pesado": f"Solo abre {o}", "medio": f"Entra en {o}", "ligero": f"Lee la primera pantalla de {o}"}[esfuerzo]
+    guia = buscar_guia(tema_de(tarea))
+    texto_guia, url_guia, diag_guia = guia or ("", "", {"error": "sin resultados"})
+    contexto = Contexto(titulo=tramite.nombre, documentos=[], fuentes=[tramite.url], tipo_busqueda="Trámites",
+                        guia=texto_guia, url_guia=url_guia)
+    return respuesta(
+        "success",
+        tarea_original=tarea,
+        contexto=tramite.nombre,
+        micro_paso=f"{paso}.",
+        categoria="Trámites",
+        objeto=o,
+        tipo_objeto="digital",
+        origen="oficial",
+        enlace=tramite.url,
+        estrategia=elegir_estrategia(contexto),
+        fuente_estrategia=url_guia or None,
+        fuentes=[tramite.url] + ([url_guia] if url_guia else []),
+        diagnostico={"web": {"tipo": "Trámites", "lista_fija": tramite.nombre}, "understood": diag_guia},
+    )
+
+
 # ── 5. Orquestación ─────────────────────────────────────────────
 
 
 def procesar_tarea(tarea: str, esfuerzo: str = "medio") -> dict:
-    """Punto de entrada: seguridad → comprensión → búsqueda (≤ 30 s) → micro-paso."""
+    """Punto de entrada: seguridad → comprensión → trámite oficial o búsqueda (≤ 30 s) → micro-paso."""
     try:
         tarea = (tarea or "").strip()[:200]
         esfuerzo = esfuerzo if esfuerzo in NIVELES else "medio"
@@ -602,6 +672,9 @@ def procesar_tarea(tarea: str, esfuerzo: str = "medio") -> dict:
         error = comprobar_comprension(tarea)
         if error:
             return error
+        tramite = tramite_oficial(tarea)
+        if tramite:
+            return micro_paso_tramite(tarea, esfuerzo, tramite)
         contexto = buscar_contexto(tema_de(tarea))
         return generar_micro_paso(tarea, esfuerzo, contexto)
     except Exception:

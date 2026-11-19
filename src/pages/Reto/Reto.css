@@ -321,3 +321,19 @@
   color: var(--marca-violeta);
   font-weight: 700;
 }
+
+/* Enlace a la web oficial del trámite */
+.detalle__enlace {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+.detalle__enlace:active {
+  background: var(--marca-lima);
+}
