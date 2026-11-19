@@ -62,7 +62,7 @@ export const REGLAS: Regla[] = [
   r('ordenador, portátil, archivo, carpeta, móvil, fotos del móvil, escritorio del ordenador, descargas, backup, copia de seguridad, actualizar, contraseña, nube, drive', 'Digital', 'trabajo', 'Abre la carpeta y mira el primer archivo', 'has abierto el primer archivo de la carpeta'),
 
   // 2.2 Tareas del Hogar y Vida Cotidiana
-  r('limpiar, ordenar, recoger, fregar, limpieza, cuarto, habitación, casa, piso, baño, polvo, aspirar, barrer, fregona, platos, lavavajillas, basura, armario, desorden, ordenar mi cuarto, hacer la cama, cambiar las sábanas, sábanas', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
+  r('limpiar, ordenar, recoger, fregar, limpieza, cuarto, habitación, casa, piso, baño, polvo, aspirar, barrer, fregona, platos, lavavajillas, basura, armario, desorden, ordenar mi cuarto, hacer la cama, cambiar las sábanas, sábanas, descalcificar, descalcificar, desatascar, bombilla, cambiar la bombilla, mantenimiento, limpiar el horno, horno, descongelar, nevera, limpiar la nevera, limpiar el baño', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
   r('comprar, tienda, supermercado, compra, super, súper, mercado, lista de la compra, hacer la compra, comprar comida, pedido online', 'Compra', 'alimentacion', 'Escribe la lista de 3 cosas que necesitas', 'la lista tiene 3 cosas apuntadas'),
   r('café, cafe, preparar café, preparar cafe, hacerme un café, cafetera, té, hacerme un té, infusión, cappuccino, café con leche, cola cao, colacao, chocolate caliente', 'Café', 'alimentacion', 'Coge la cafetera', 'has cogido la cafetera'),
   r('cocinar, comida, cena, receta, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina', 'Cocina', 'alimentacion', 'Abre la nevera y saca un ingrediente', 'hay un ingrediente fuera de la nevera'),
@@ -370,7 +370,7 @@ export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?
   const analisis = analizarTarea(tarea)
   const categoria = categoriaDe(tarea, web)
   // 1) categoría por sus palabras; 2) categoría por lo que encontró la web; 3) herramienta concreta de la web; 4) respaldo
-  const propias = analisis.regla
+  let propias = analisis.regla
     ? analisis.acciones
     : categoria
       ? BANCO[categoria]
@@ -379,6 +379,13 @@ export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?
         : analisis.acciones
   const mazos = mazosDeTarea(tarea, esfuerzo, web)
   const fuente = mazos[mazo % mazos.length]
+  // Cuando la web encontró el primer paso real de esta tarea específica, la carta Urgencia
+  // usa ese paso en lugar del genérico de la categoría (ej: «Coge el descalcificador» para
+  // «descalcificar cafetera», no «Coge una prenda»)
+  if (web?.fiable && analisis.regla && !fuente.metodos?.includes('urgencia')) {
+    const pasoWeb = web.microPaso.replace(/^Solo /i, '').replace(/\.$/, '')
+    propias = { ...propias, [fuente.nivel]: { ...propias[fuente.nivel], urgencia: pasoWeb } }
+  }
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
   const actividad = actividadDe(tarea, esfuerzo, web)
   return ORDEN.map((tipo) => {

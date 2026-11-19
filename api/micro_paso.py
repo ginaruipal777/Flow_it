@@ -477,6 +477,8 @@ HERRAMIENTAS = [
     Herramienta(re.compile(r"\b(libro|manual|temario)\b"), "el libro de {tema}", "fisico", ESTUDIO),
     Herramienta(re.compile(r"\b(apuntes|cuaderno|libreta)\b"), "los apuntes de {tema}", "fisico", ESTUDIO),
     Herramienta(re.compile(r"\b(documento|pdf)\b"), "el documento de {tema}", "digital", DIGITALES),
+    Herramienta(re.compile(r"\b(descalcificad\w*)\b"), "el descalcificador", "fisico", CASA),
+    Herramienta(re.compile(r"\b(cafetera|cafeteras)\b"), "la cafetera", "fisico", CASA),
     Herramienta(re.compile(r"\b(desengrasante|quitagrasas)\b"), "el desengrasante", "fisico", CASA),
     Herramienta(re.compile(r"\b(fregona|fregar el suelo)\b"), "la fregona", "fisico", CASA),
     Herramienta(re.compile(r"\b(escoba|barrer)\b"), "la escoba", "fisico", CASA),
@@ -495,12 +497,18 @@ VERBO_FISICO = {
     "descargar": "Descarga", "descarga": "Descarga", "buscar": "Busca", "busca": "Busca", "coger": "Coge", "coge": "Coge",
     "leer": "Lee", "lee": "Lee", "rellenar": "Rellena", "rellena": "Rellena", "escribir": "Escribe", "escribe": "Escribe",
     "pedir": "Pide", "pide": "Pide", "llamar": "Llama a", "llama": "Llama a", "mojar": "Moja", "moja": "Moja",
+    "llenar": "Llena", "llena": "Llena", "vaciar": "Vacía", "vacia": "Vacía",
+    "verter": "Vierte", "vierte": "Vierte", "echar": "Echa", "echa": "Echa",
+    "añadir": "Añade", "anadir": "Añade", "añade": "Añade", "anadie": "Añade",
+    "meter": "Mete", "mete": "Mete", "sacar": "Saca", "saca": "Saca",
+    "encender": "Enciende", "enciende": "Enciende", "apagar": "Apaga", "apaga": "Apaga",
+    "poner": "Pon", "pon": "Pon", "insertar": "Mete", "inserta": "Mete",
 }
 PRIMER_PASO = re.compile(r"(primer paso|lo primero|paso 1|^\s*1[.)]\s)", re.M)
 CATEGORIAS = [
     ("Estudio", r"\b(examen|test|estudiar|temario|autoescuela|oposicion\w*|tema \d+|carnet)\b"),
     ("Trámites", r"\b(dni|pasaporte|hacienda|renta|cita previa|seguridad social|empadron\w*|tramite\w*|certificado|sepe|paro|prestacion|subsidio|nie|tarjeta sanitaria)\b"),
-    ("Casa", r"\b(limpiar|cocina|fregar|ropa|lavadora|barrer|ordenar|bano)\b"),
+    ("Casa", r"\b(limpiar|cocina|fregar|ropa|lavadora|barrer|ordenar|bano|descalcif\w*|mantenim\w*|desatascar|bombilla|horno|nevera)\b"),
     ("Salud", r"\b(medico|dentista|farmacia|receta|centro de salud|vacuna)\b"),
     ("Trabajo", r"\b(correo|email|informe|curriculum|cv|reunion|cliente|factura)\b"),
 ]
@@ -599,7 +607,7 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
     if tipo == "digital":
         validos = {"Abre", "Entra en", "Busca"} | ({"Descarga"} if "app" in objeto else set())
     else:
-        validos = {"Coge", "Abre", "Moja"}
+        validos = {"Coge", "Abre", "Moja", "Llena", "Vacía", "Echa", "Mete", "Saca", "Añade", "Pon", "Enciende"}
     verbo = verbo if verbo in validos else None
     if esfuerzo == "pesado":
         paso = f"Solo abre {objeto}" if tipo == "digital" else f"Solo toca {objeto}"
