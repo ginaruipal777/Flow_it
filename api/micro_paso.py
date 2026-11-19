@@ -233,8 +233,13 @@ def de_confianza(hit, tipo: str) -> bool:
 
 
 def _claves(tarea: str) -> tuple[list[str], int]:
-    claves = [p for p in normalizar(tarea).split() if len(p) >= 4] or normalizar(tarea).split()
+    nombre = normalizar(nombre_de(tarea))
+    claves = [p for p in nombre.split() if len(p) >= 4 and p not in PALABRAS_ES] or nombre.split()
     return claves, max(1, (len(claves) + 1) // 2)
+
+
+# Trámites: resultados de España (no de otros países hispanohablantes)
+OTRO_PAIS = re.compile(r"(estadounidense|americano|eeuu|estados unidos|mexic\w*|argentin\w*|colombia\w*|chile\w*|peru\w*|\.gov/|\.gob\.mx|\.gob\.ar|\.gov\.co)")
 
 
 def habla_de(hit, claves: list[str], necesarias: int) -> bool:
@@ -275,19 +280,23 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
     """Web general: de qué va la tarea y con qué herramienta se hace. Fuentes de confianza primero."""
     claves, necesarias = _claves(tarea)
     regla = FUENTES_CONFIANZA.get(tipo, {})
-    consultas = [_consultar(f"cómo {tarea} primer paso", limit=10, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=12.0)]
+    pais = " España" if tipo == "Trámites" else ""
+    consultas = [_consultar(f"cómo {tarea}{pais} primer paso", limit=10, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=12.0)]
     if regla.get("dominios"):
-        consultas.append(_consultar(f"{tarea}", limit=8, allowed_domains=regla["dominios"], timeout=12.0))
+        # «site:» en la consulta: así el buscador ya devuelve páginas de las sedes oficiales
+        sitios = " OR ".join(f"site:{d}" for d in regla["dominios"])
+        consultas.append(_consultar(f"{tarea} ({sitios})", limit=10, allowed_domains=regla["dominios"], timeout=12.0))
     respuestas = await asyncio.gather(*consultas)
 
     vistos, confianza, resto = set(), [], []
-    descartes = {"repetido": 0, "bloqueado": 0, "idioma": 0, "no_habla_de_la_tarea": 0}
+    descartes = {"repetido": 0, "bloqueado": 0, "idioma": 0, "otro_pais": 0, "no_habla_de_la_tarea": 0}
     for hits, _ in reversed(respuestas):  # primero la búsqueda en dominios de confianza
         for h in hits:
             motivo = (
                 "repetido" if h.url in vistos
                 else "bloqueado" if bloqueado(h.url)
                 else "idioma" if not en_espanol(h)
+                else "otro_pais" if tipo == "Trámites" and OTRO_PAIS.search(h.url.lower() + " " + normalizar(f"{h.title} {h.snippet or ''}"))
                 else "no_habla_de_la_tarea" if not habla_de(h, claves, necesarias)
                 else None
             )
@@ -341,6 +350,7 @@ async def _buscar_understood(tarea: str) -> tuple[str, str, dict] | None:
     if not url:  # portada en español: se elige un artículo sobre empezar tareas o función ejecutiva
         portada, _ = await _leer(PORTADA_UNDERSTOOD, completa=True)
         enlaces = [e for e in dict.fromkeys(ENLACE_UNDERSTOOD.findall(portada)) if sobre_arranque(e)]
+        enlaces.sort(key=lambda e: "/articles/" not in e)
         if enlaces:
             url, diagnostico["via"] = enlaces[0], "portada"
     if not url:
