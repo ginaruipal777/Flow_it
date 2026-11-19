@@ -145,10 +145,19 @@ class Contexto:
 async def _buscar(tarea: str) -> Contexto:
     from webless import fetch, search  # importación tardía: si falta la librería, salta el respaldo
 
-    resultado = await search(f"{tarea} primer paso cómo empezar", limit=3, timeout=12.0)
-    hits = list(resultado.hits)[:3]
+    resultado = await search(f"cómo {tarea} primer paso", limit=8, timeout=12.0)
+    # Solo cuentan los resultados que hablan de la tarea: al menos la mitad de sus palabras
+    # importantes en el título o el resumen («test autoescuela» no es «Speedtest»)
+    claves = [p for p in normalizar(tarea).split() if len(p) >= 4] or normalizar(tarea).split()
+    necesarias = max(1, (len(claves) + 1) // 2)
+
+    def relevante(h) -> bool:
+        texto = f" {normalizar(f'{h.title} {h.snippet or ''}')} "
+        return sum(f" {c}" in texto for c in claves) >= necesarias
+
+    hits = [h for h in resultado.hits if relevante(h)][:3]
     if not hits:
-        raise LookupError("La búsqueda no devolvió resultados")
+        raise LookupError("La búsqueda no devolvió resultados sobre la tarea")
     snippets = "\n".join(f"{h.title}. {h.snippet or ''}" for h in hits)
     try:
         pagina = await fetch(hits[0].url, format="markdown", max_chars=MAX_CARACTERES_PAGINA)
