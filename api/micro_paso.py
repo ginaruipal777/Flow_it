@@ -166,7 +166,10 @@ PORTADA_UNDERSTOOD = "https://www.understood.org/es-mx"
 
 # Fuentes de confianza por tipo de tarea
 FUENTES_CONFIANZA: dict[str, dict] = {
-    "Trámites": {"dominios": ["dgt.es", "sede.gob.es", "administracion.gob.es", "inclusion.gob.es"]},
+    "Trámites": {
+        "dominios": ["dgt.es", "sede.gob.es", "administracion.gob.es", "inclusion.gob.es",
+                     "interior.gob.es", "policia.es", "sepe.es", "seg-social.es", "agenciatributaria.gob.es"]
+    },
     # Estudio de autoescuela: la DGT y webs de autoescuelas
     "Autoescuela": {"dominios": ["dgt.es"], "host_contiene": ["autoescuel", "autoescola"]},
     # Casa: guías de limpieza
@@ -278,9 +281,18 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
     respuestas = await asyncio.gather(*consultas)
 
     vistos, confianza, resto = set(), [], []
+    descartes = {"repetido": 0, "bloqueado": 0, "idioma": 0, "no_habla_de_la_tarea": 0}
     for hits, _ in reversed(respuestas):  # primero la búsqueda en dominios de confianza
         for h in hits:
-            if h.url in vistos or bloqueado(h.url) or not en_espanol(h) or not habla_de(h, claves, necesarias):
+            motivo = (
+                "repetido" if h.url in vistos
+                else "bloqueado" if bloqueado(h.url)
+                else "idioma" if not en_espanol(h)
+                else "no_habla_de_la_tarea" if not habla_de(h, claves, necesarias)
+                else None
+            )
+            if motivo:
+                descartes[motivo] += 1
                 continue
             vistos.add(h.url)
             (confianza if de_confianza(h, tipo) else resto).append(h)
@@ -291,9 +303,10 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
         "confianza": respuestas[1][1] if len(respuestas) > 1 else None,
         "validos": len(confianza) + len(resto),
         "de_confianza": len(confianza),
+        "descartes": descartes,
     }
     if not elegidos:
-        return None
+        return "", [], [], diagnostico
 
     # Se leen hasta 3 páginas a la vez: cada una es un documento independiente
     paginas = await asyncio.gather(*(_leer(h.url) for h in elegidos[:3]))
@@ -303,7 +316,14 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
 
 
 ENLACE_UNDERSTOOD = re.compile(r"https://www\.understood\.org/es-mx/[a-z0-9/\-]+")
-TEMAS_ARRANQUE = re.compile(r"(empez|comenzar|tarea|funcion-ejecutiva|procrastin|motiva|organiz|concentr|tdah|atencion)")
+TEMAS_ARRANQUE = re.compile(r"(empez|comenzar|tarea|funcion.ejecutiva|executive.function|procrastin|motiva|organiz|concentr|tdah|adhd|atencion)")
+# understood.org habla mucho de crianza: esos artículos no sirven para arrancar una tarea propia
+TEMAS_CRIANZA = re.compile(r"(hijo|hija|preescolar|kinder|bebe|nino|nina|maestro|escuela primaria)")
+
+
+def sobre_arranque(texto: str) -> bool:
+    t = normalizar(texto.replace("-", " "))
+    return bool(TEMAS_ARRANQUE.search(t)) and not TEMAS_CRIANZA.search(t)
 
 
 async def _buscar_understood(tarea: str) -> tuple[str, str, dict] | None:
@@ -314,13 +334,13 @@ async def _buscar_understood(tarea: str) -> tuple[str, str, dict] | None:
     for consulta in (f"site:{UNDERSTOOD_ES} cómo empezar {tarea}", f"site:{UNDERSTOOD_ES} cómo empezar una tarea TDAH"):
         hits, diag = await _consultar(consulta, limit=8, allowed_domains=[UNDERSTOOD], timeout=10.0)
         diagnostico["busquedas"].append(diag)
-        hits = [h for h in hits if "/es-mx/" in h.url]
+        hits = [h for h in hits if "/es-mx/" in h.url and sobre_arranque(h.url + " " + h.title)]
         if hits:
             url, diagnostico["via"] = hits[0].url, "busqueda"
             break
     if not url:  # portada en español: se elige un artículo sobre empezar tareas o función ejecutiva
         portada, _ = await _leer(PORTADA_UNDERSTOOD, completa=True)
-        enlaces = [e for e in dict.fromkeys(ENLACE_UNDERSTOOD.findall(portada)) if TEMAS_ARRANQUE.search(e)]
+        enlaces = [e for e in dict.fromkeys(ENLACE_UNDERSTOOD.findall(portada)) if sobre_arranque(e)]
         if enlaces:
             url, diagnostico["via"] = enlaces[0], "portada"
     if not url:
@@ -339,6 +359,7 @@ async def _buscar(tarea: str) -> Contexto:
     vacio_general = ("", [], [], {"tipo": tipo, "error": error_general})
     vacio_guia = ("", "", {"error": error_guia})
     titulo, documentos, fuentes, diag_general = general if general and not isinstance(general, BaseException) else vacio_general
+    fuentes = fuentes if documentos else []
     texto_guia, url_guia, diag_guia = guia if guia and not isinstance(guia, BaseException) else vacio_guia
     return Contexto(
         titulo=titulo,
@@ -428,7 +449,7 @@ VERBO_FISICO = {
 PRIMER_PASO = re.compile(r"(primer paso|lo primero|paso 1|^\s*1[.)]\s)", re.M)
 CATEGORIAS = [
     ("Estudio", r"\b(examen|test|estudiar|temario|autoescuela|oposicion\w*|tema \d+|carnet)\b"),
-    ("Trámites", r"\b(dni|pasaporte|hacienda|renta|cita previa|seguridad social|empadron\w*|tramite\w*|certificado)\b"),
+    ("Trámites", r"\b(dni|pasaporte|hacienda|renta|cita previa|seguridad social|empadron\w*|tramite\w*|certificado|sepe|paro|prestacion|subsidio|nie|tarjeta sanitaria)\b"),
     ("Casa", r"\b(limpiar|cocina|fregar|ropa|lavadora|barrer|ordenar|bano)\b"),
     ("Salud", r"\b(medico|dentista|farmacia|receta|centro de salud|vacuna)\b"),
     ("Trabajo", r"\b(correo|email|informe|curriculum|cv|reunion|cliente|factura)\b"),
