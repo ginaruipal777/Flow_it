@@ -24,6 +24,7 @@ type Respuesta =
       resumen?: string
       estrategia?: string | null
       fuente_estrategia?: string | null
+      verbo_tarea?: string | null
     }
   | Exclude<Filtro, { status: 'ok' }>
 
@@ -62,13 +63,41 @@ function guardar(clave: string, r: Guardada['r']) {
   }
 }
 
+/* Vocabulario acumulado: aprende de búsquedas anteriores y mejora los retos con el tiempo.
+   Indexado por tarea normalizada y por verbo (descalcificar, limpiar…). 30 días, 200 entradas. */
+const CLAVE_VOC = 'flowit:vocabulario:v1'
+const DURACION_VOC_MS = 30 * 24 * 3600_000
+const MAX_VOC = 200
+type EntradaVoc = { t: number; objeto: string; microPaso: string; tipo: 'digital' | 'fisico'; verboTarea?: string }
+
+function guardarVocabulario(tarea: string, web: MicroPasoWeb): void {
+  if (!web.fiable) return
+  try {
+    const store = JSON.parse(localStorage.getItem(CLAVE_VOC) ?? '{}') as Record<string, EntradaVoc>
+    const entrada: EntradaVoc = { t: Date.now(), objeto: web.objeto, microPaso: web.microPaso, tipo: web.tipo, ...(web.verboTarea && { verboTarea: web.verboTarea }) }
+    store[`t:${claveDe(tarea, web.nivel)}`] = entrada
+    if (web.verboTarea) {
+      const cv = `v:${web.verboTarea.toLowerCase()}`
+      if (!store[cv] || entrada.t > store[cv].t) store[cv] = entrada
+    }
+    const limpio = Object.entries(store)
+      .filter(([, v]) => Date.now() - v.t < DURACION_VOC_MS)
+      .sort(([, a], [, b]) => b.t - a.t)
+      .slice(0, MAX_VOC)
+    localStorage.setItem(CLAVE_VOC, JSON.stringify(Object.fromEntries(limpio)))
+  } catch {}
+}
+
 /** Busca cómo se hace la tarea (o usa la búsqueda guardada si se hizo hace menos de 7 días) */
 export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal): Promise<ResultadoWeb> {
   const clave = claveDe(tarea, esfuerzo)
   const guardada = leerGuardadas()[clave]
   if (guardada && Date.now() - guardada.t < DURACION_MS) return guardada.r
   const resultado = await buscarEnServidor(tarea, esfuerzo, senal)
-  if (resultado.status === 'success') guardar(clave, resultado)
+  if (resultado.status === 'success') {
+    guardar(clave, resultado)
+    guardarVocabulario(tarea, resultado.web)
+  }
   return resultado
 }
 
@@ -103,6 +132,7 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
         objeto: datos.objeto,
         tipo: datos.tipo_objeto,
         nivel: esfuerzo,
+        ...(datos.verbo_tarea && { verboTarea: datos.verbo_tarea }),
         ...(datos.estrategia && { estrategia: datos.estrategia }),
         ...(datos.fuente_estrategia && { fuenteEstrategia: datos.fuente_estrategia }),
         ...(datos.enlace && { enlace: datos.enlace }),

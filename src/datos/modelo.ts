@@ -41,6 +41,8 @@ export type MicroPasoWeb = {
   fiable?: boolean
   /** Categoría de la app reconocida con lo que encontró la búsqueda («Cocina») */
   categoria?: string
+  /** Verbo principal de la tarea («descalcificar», «limpiar», «estudiar»…) */
+  verboTarea?: string
 }
 
 export type Reto = {

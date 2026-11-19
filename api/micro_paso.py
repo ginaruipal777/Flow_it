@@ -561,6 +561,18 @@ def elegir_herramienta(tarea: str, contexto: Contexto) -> tuple[Herramienta | No
     return mejor, recuento
 
 
+def verbo_de_tarea(tarea: str) -> str | None:
+    """«descalcificar cafetera» → «descalcificar»; «limpiar el horno» → «limpiar»."""
+    texto = normalizar(tarea.strip())
+    texto = ABSTRACTOS.sub("", texto)
+    for p in texto.split()[:2]:
+        if p in VERBOS_CORTOS:
+            return p
+        if p not in NO_VERBOS and VERBO.match(p):
+            return re.sub(r"(me|te|se|lo|la|le|los|las|les|nos)$", "", p) or None
+    return None
+
+
 def verbo_del_primer_paso(contexto: Contexto) -> str | None:
     """Busca la frase del primer paso en la guía y se queda solo con su verbo físico."""
     if not contexto.documentos:
@@ -631,6 +643,7 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         # «web» solo si la búsqueda encontró una herramienta concreta en 2 resultados (o en la tarea):
         # nunca se inventa «la web de café» para algo que se hace con las manos
         origen="web" if contexto.documentos and herramienta else "respaldo",
+        verbo_tarea=verbo_de_tarea(tarea),
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=contexto.url_guia or None,
         fuentes=contexto.fuentes,
@@ -711,6 +724,7 @@ def micro_paso_tramite(tarea: str, esfuerzo: str, tramite: Tramite) -> dict:
         tipo_objeto="digital",
         origen="oficial",
         enlace=tramite.url,
+        verbo_tarea=verbo_de_tarea(tarea),
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=url_guia or None,
         fuentes=[tramite.url] + ([url_guia] if url_guia else []),

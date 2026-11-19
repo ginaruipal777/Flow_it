@@ -159,11 +159,34 @@ export const RESPALDO = (t: string): Acciones => ({
 /* Retos con lo que encontró la búsqueda web (api/micro_paso.py): el objeto concreto
    («la app de test autoescuela») sustituye al texto de la tarea, y el micro-paso de la web
    es la carta Urgencia de su nivel. */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string }
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string }
 
 export function accionesWeb(w: DatosWeb): Acciones {
   const o = w.objeto
-  const base: Acciones =
+  // microPaso sin «Solo» ni punto: acción concreta que el servidor calculó para w.nivel
+  const pasoBase = w.microPaso.replace(/^Solo /i, '').replace(/\.$/, '')
+  const vT = w.verboTarea  // «descalcificar», «limpiar»… (puede ser undefined)
+
+  // Bloque específico: usa el microPaso real como acción base con variantes INCUP
+  const especifico =
+    w.tipo === 'digital'
+      ? {
+          novedad: `${pasoBase} en el ordenador`,
+          desafio: `${pasoBase} y completa el paso siguiente`,
+          pasion: `${pasoBase} con tu música favorita de fondo`,
+          interes: `${pasoBase} con alguien de casa cerca`,
+          urgencia: pasoBase,
+        }
+      : {
+          novedad: `${pasoBase} desde otro sitio de la habitación`,
+          desafio: `${pasoBase} y prepara lo que necesitas para el paso siguiente`,
+          pasion: `${pasoBase} con tu música favorita de fondo`,
+          interes: `${pasoBase} con alguien de casa cerca`,
+          urgencia: pasoBase,
+        }
+
+  // Plantillas para los niveles sin microPaso propio (mejores que antes gracias a verboTarea)
+  const plantillas: Acciones =
     w.tipo === 'digital'
       ? {
           pesado: { novedad: `Abre ${o} con la pantalla en modo oscuro`, desafio: `Mira 2 pantallas de ${o}`, pasion: `Abre ${o} con tu canción favorita sonando`, interes: `Mira el menú de ${o}`, urgencia: `Abre ${o}` },
@@ -171,12 +194,25 @@ export function accionesWeb(w: DatosWeb): Acciones {
           ligero: { novedad: `Lee la primera pantalla de ${o} desde el ordenador`, desafio: `Rellena la primera casilla de ${o}`, pasion: `Lee la primera pantalla de ${o} con tu música favorita de fondo`, interes: `Apunta en tu libreta lo que pide ${o}`, urgencia: `Lee la primera pantalla de ${o}` },
         }
       : {
-          pesado: { novedad: `Mira ${o} desde otro sitio de la habitación`, desafio: `Toca ${o} 2 veces`, pasion: `Toca ${o} con tu canción favorita sonando`, interes: `Señala ${o} a una persona de casa`, urgencia: `Toca ${o}` },
+          pesado: {
+            novedad: vT ? `Busca en el móvil cómo ${vT}` : `Mira ${o} desde otro sitio de la habitación`,
+            desafio: `Saca ${o} y ponlo donde lo puedas ver`,
+            pasion: `Saca ${o} con tu canción favorita sonando`,
+            interes: vT ? `Dile a alguien de casa que vas a ${vT}` : `Señala ${o} a una persona de casa`,
+            urgencia: `Toca ${o}`,
+          },
           medio: { novedad: `Pon ${o} en un sitio distinto de la mesa`, desafio: `Pon ${o} junto a 2 cosas que vas a usar`, pasion: `Coge ${o} con tu música favorita de fondo`, interes: `Enséñale ${o} a una persona de casa`, urgencia: `Coge ${o}` },
-          ligero: { novedad: `Usa ${o} empezando por el lado contrario`, desafio: `Usa ${o} 3 veces`, pasion: `Usa ${o} con tu música favorita de fondo`, interes: `Usa ${o} con una persona de casa cerca`, urgencia: `Usa ${o} una vez` },
+          ligero: {
+            novedad: `Usa ${o} empezando por el lado contrario`,
+            desafio: `Usa ${o} hasta terminar todo el proceso`,
+            pasion: `Usa ${o} con tu música favorita de fondo`,
+            interes: `Usa ${o} con alguien de casa cerca`,
+            urgencia: `Usa ${o}`,
+          },
         }
-  const propia = w.microPaso.replace(/^Solo /, '').replace(/[.]$/, '')
-  return { ...base, [w.nivel]: { ...base[w.nivel], urgencia: propia.charAt(0).toUpperCase() + propia.slice(1) } }
+
+  // El nivel del servidor usa el bloque específico; el resto usa las plantillas
+  return { ...plantillas, [w.nivel]: especifico }
 }
 
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
