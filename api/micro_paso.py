@@ -434,6 +434,7 @@ HERRAMIENTAS = [
     Herramienta(re.compile(r"\bsede electronica\b"), "la sede electrónica de {tema}", "digital", DIGITALES),
     Herramienta(re.compile(r"\bcita previa\b"), "la web de cita previa", "digital", DIGITALES),
     Herramienta(re.compile(r"\b(formulario|impreso|solicitud|modelo \d{3})\b"), "el formulario de {tema}", "digital", DIGITALES),
+    Herramienta(re.compile(r"\b(instrucciones|manual de instrucciones|manual de montaje|folleto de montaje)\b"), "las instrucciones de {tema}", "fisico"),
     Herramienta(re.compile(r"\b(libro|manual|temario)\b"), "el libro de {tema}", "fisico", ESTUDIO),
     Herramienta(re.compile(r"\b(apuntes|cuaderno|libreta)\b"), "los apuntes de {tema}", "fisico", ESTUDIO),
     Herramienta(re.compile(r"\b(documento|pdf)\b"), "el documento de {tema}", "digital", DIGITALES),
