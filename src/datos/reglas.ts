@@ -1,6 +1,8 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
 import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
+import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, METODOS, type Actividad } from './metodos.ts'
+import { leerSituacion, type Fuente } from './situacion.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -190,7 +192,9 @@ const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 /** Participio de cada verbo de acción, para escribir el criterio de éxito («has abierto…»).
     `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
 export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
-  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, apaga: { part: 'apagado' },
+  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' },
+  cuenta: { part: 'contado' }, dicta: { part: 'dictado' }, estudia: { part: 'estudiado' }, huele: { part: 'olido' },
+  muévete: { part: 'movido', pron: 'te' }, queda: { part: 'quedado' }, separa: { part: 'separado' }, apaga: { part: 'apagado' },
   aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },
   baila: { part: 'bailado' }, baja: { part: 'bajado' }, bebe: { part: 'bebido' }, busca: { part: 'buscado' },
   calienta: { part: 'calentado' }, camina: { part: 'caminado' }, cambia: { part: 'cambiado' },
@@ -291,40 +295,80 @@ export function analizarTarea(tarea: string): Resultado {
 }
 
 /* ── 6. Los retos de una tarea y sus mazos ─────────────────────
-   Una carta por factor INCUP, escrita a mano para la categoría y el nivel (banco.ts).
-   Si se rechazan las 5 cartas llega otro mazo de la MISMA tarea, siempre igual o más fácil
-   (ley del esfuerzo inverso): primero el nivel elegido, después los niveles más ligeros
-   y, al final, retos genéricos con el nombre de la tarea. */
+   Una carta por factor INCUP, escrita a mano para la categoría y el nivel (banco.ts),
+   mezclada con MÉTODOS sacados de webs de consejos para TDAH (metodos.ts):
+   - Mazo 1 (nivel elegido): Novedad y Desafío son métodos («Por categorías», «Búsqueda
+     del tesoro»…); Pasión, Interés y Urgencia, retos del banco.
+   - Mazo 2 (nivel elegido): al revés, para que se vean todos.
+   - Después, siempre igual o más fácil (ley del esfuerzo inverso): los niveles más ligeros
+     y, al final, retos genéricos con el nombre de la tarea.
+   Las actividades sin métodos (ocio, hobbies) se quedan con un mazo por nivel. */
 
-export type RetoCarta = { tipo: TipoReto; titulo: string; pasos: string[]; hecho: string; permiso: string }
+export type RetoCarta = {
+  tipo: TipoReto
+  titulo: string
+  pasos: string[]
+  hecho: string
+  permiso: string
+  /** Si el reto es un método para TDAH: su nombre y la web de la que sale */
+  metodo?: { nombre: string; fuente: Fuente }
+}
 
 export const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
-type FuenteMazo = { nivel: Nivel; generico?: boolean }
+type FuenteMazo = { nivel: Nivel; generico?: boolean; metodos?: TipoReto[] }
 
-export function mazosDe(esfuerzo: Nivel, conCategoria: boolean): FuenteMazo[] {
+const METODOS_MAZO_1: TipoReto[] = ['novedad', 'desafio']
+const METODOS_MAZO_2: TipoReto[] = ['pasion', 'interes', 'urgencia']
+
+export function mazosDe(esfuerzo: Nivel, conCategoria: boolean, conMetodos = false): FuenteMazo[] {
+  const elegido: FuenteMazo[] = conMetodos
+    ? [
+        { nivel: esfuerzo, metodos: METODOS_MAZO_1 },
+        { nivel: esfuerzo, metodos: METODOS_MAZO_2 },
+      ]
+    : [{ nivel: esfuerzo }]
   const extra = (nivel: Nivel): FuenteMazo[] => (conCategoria ? [{ nivel, generico: true }] : [])
-  if (esfuerzo === 'pesado') return [{ nivel: 'pesado' }, ...extra('pesado')]
-  if (esfuerzo === 'medio') return [{ nivel: 'medio' }, { nivel: 'pesado' }, ...extra('medio')]
-  return [{ nivel: 'ligero' }, { nivel: 'medio' }, { nivel: 'pesado' }]
+  if (esfuerzo === 'pesado') return [...elegido, ...extra('pesado')]
+  if (esfuerzo === 'medio') return [...elegido, { nivel: 'pesado' }, ...extra('medio')]
+  return [...elegido, { nivel: 'medio' }, { nivel: 'pesado' }]
 }
 
-/** Número de mazos distintos que tiene una tarea (depende del esfuerzo y de si tiene categoría). */
-export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb): number {
+/** Tipo de actividad de la tarea, para elegir sus métodos (o nada si no tiene) */
+export function actividadDe(tarea: string, esfuerzo: Nivel = 'medio'): Actividad | undefined {
+  const { regla } = analizarTarea(tarea)
+  if (regla) return ACTIVIDAD_DE_CATEGORIA[regla.categoria]
+  return ACTIVIDAD_DE_SITUACION[leerSituacion(tarea, esfuerzo).id]
+}
+
+function mazosDeTarea(tarea: string, esfuerzo: Nivel, web?: DatosWeb) {
   const conCategoria = Boolean(analizarTarea(tarea).regla) || Boolean(web)
-  return mazosDe(esfuerzo, conCategoria).length
+  return mazosDe(esfuerzo, conCategoria, Boolean(actividadDe(tarea, esfuerzo)))
+}
+
+/** Número de mazos distintos que tiene una tarea (depende del esfuerzo, de la categoría y de si tiene métodos). */
+export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb): number {
+  return mazosDeTarea(tarea, esfuerzo, web).length
 }
 
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
   const analisis = analizarTarea(tarea)
   const propias = !analisis.regla && web ? accionesWeb(web) : analisis.acciones
-  const conCategoria = Boolean(analisis.regla) || Boolean(web)
-  const mazos = mazosDe(esfuerzo, conCategoria)
+  const mazos = mazosDeTarea(tarea, esfuerzo, web)
   const fuente = mazos[mazo % mazos.length]
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
+  const actividad = actividadDe(tarea, esfuerzo)
   return ORDEN.map((tipo) => {
-    const accion = acciones[fuente.nivel][tipo]
+    const metodo = actividad && fuente.metodos?.includes(tipo) ? METODOS[actividad][tipo] : undefined
+    const accion = metodo ? metodo.retos[fuente.nivel] : acciones[fuente.nivel][tipo]
     const frase = fraseReto(accion, fuente.nivel, tipo)
-    return { tipo, titulo: `${frase}.`, pasos: [frase], hecho: hechoDe(accion), permiso: PERMISO[fuente.nivel] }
+    return {
+      tipo,
+      titulo: `${frase}.`,
+      pasos: [frase],
+      hecho: hechoDe(accion),
+      permiso: PERMISO[fuente.nivel],
+      ...(metodo && { metodo: { nombre: metodo.nombre, fuente: metodo.fuente } }),
+    }
   })
 }

@@ -1,9 +1,11 @@
 /* Comprueba que las webs de psicología en las que se basa la lectura de la situación
-   (src/datos/situacion.ts) siguen abiertas. Uso: npm run fuentes */
+   (src/datos/situacion.ts) y los métodos para TDAH (src/datos/metodos.ts) siguen abiertas. Uso: npm run fuentes */
 import { FUENTES } from '../src/datos/situacion.ts'
+import { FUENTES_METODOS } from '../src/datos/metodos.ts'
 
 let fallos = 0
-for (const f of Object.values(FUENTES)) {
+const todas = new Map([...Object.values(FUENTES), ...Object.values(FUENTES_METODOS)].map((f) => [f.url, f]))
+for (const f of todas.values()) {
   try {
     const r = await fetch(f.url, { redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36' } })
     // 403: la web bloquea a los programas que comprueban enlaces, pero abre bien en un navegador

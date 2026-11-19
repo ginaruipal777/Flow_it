@@ -49,6 +49,8 @@ export type Reto = {
   hecho: string
   /** Frase de permiso del nivel («Con eso ya cuenta.») */
   permiso?: string
+  /** Si el reto es un método para TDAH: su nombre y la web de la que sale */
+  metodo?: { nombre: string; fuente: { nombre: string; url: string } }
 }
 
 export type Mazo = {

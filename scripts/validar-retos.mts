@@ -3,6 +3,7 @@
    Uso: npm run validar */
 import { BANCO, PLAZO, type Acciones, type Nivel } from '../src/datos/banco.ts'
 import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, hechoDe, numMazos, retosDe } from '../src/datos/reglas.ts'
+import { METODOS } from '../src/datos/metodos.ts'
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 
@@ -56,6 +57,14 @@ function revisarAcciones(origen: string, acciones: Acciones) {
 // 1. Banco: cada categoría con sus 15 retos (3 niveles × 5 cartas)
 for (const [categoria, acciones] of Object.entries(BANCO)) revisarAcciones(categoria, acciones)
 for (const regla of REGLAS) if (!BANCO[regla.categoria]) errores.push(`Sin banco: ${regla.categoria}`)
+
+// 2b. Métodos para TDAH (metodos.ts)
+for (const [actividad, porTipo] of Object.entries(METODOS))
+  for (const [tipo, metodo] of Object.entries(porTipo))
+    for (const n of NIVELES) {
+      revisarAccion(`Método ${actividad}/${tipo}/${n} («${metodo.nombre}»)`, metodo.retos[n])
+      if (n === 'pesado' && /(^|s)sol[oa](s|$)/i.test(metodo.retos[n])) errores.push(`Método ${actividad}/${tipo}: repite «solo» → «${metodo.retos[n]}»`)
+    }
 
 // 2. Respaldo y retos con datos de la web
 revisarAcciones('Respaldo', RESPALDO('arreglar la persiana'))

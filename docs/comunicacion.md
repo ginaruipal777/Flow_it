@@ -74,6 +74,24 @@ La app apunta, solo en el móvil, qué tipo de carta se rechaza, se acepta, se c
 - El orden se fija al empezar cada mazo, para que las cartas no cambien mientras se miran.
 - En el perfil, la pestaña «Te funciona» enseña qué cartas le activan más («Te activan más las cartas de Pasión: juntarlo con algo que te gusta. Aceptas el 70 %.») y deja borrar lo aprendido.
 
+## 5d. Métodos para TDAH
+
+Además de los retos del banco, las cartas proponen **formas distintas de abordar la tarea**, sacadas de webs de consejos para TDAH ([src/datos/metodos.ts](../src/datos/metodos.ts)). Cada tipo de actividad tiene un método por carta:
+
+| Actividad | Novedad | Desafío | Pasión | Interés | Urgencia |
+|---|---|---|---|---|---|
+| Ordenar y limpiar | Por categorías | Búsqueda del tesoro | Con tu música | En compañía (body doubling) | La bolsa de ida y vuelta |
+| Estudiar | Explicarlo en voz alta | Tarjetas de repaso | Estudiar en movimiento | Estudiar en compañía | Un bloque corto |
+| Escribir | Empezar por el medio | Borrador feo a propósito | Dictar en voz alta | Contárselo a alguien | Escribir sin parar |
+| Llamar | Otro canal | Un guion | Desde tu sitio favorito | Escalera de llamadas | Llamar antes de darle vueltas |
+| Papeleo | Partirlo en pasos | Un lote de papeles | Con premio al lado | Papeleo en compañía | Solo el primer paso |
+| Moverse | Otra forma de moverte | Solo vestirte | Música que te anima | Moverte en compañía | Lo mínimo para arrancar |
+| Cuidarse | La versión mínima | Por pasos contados | Con algo agradable | Con alguien que te acompañe | Lo mínimo para cuidarte |
+
+- En el primer mazo, Novedad y Desafío son métodos (por ejemplo, para «Ordenar mi cuarto»: «Recoge solo la basura que veas» y «Busca 5 cosas que van en otra habitación»). En el segundo, lo son Pasión, Interés y Urgencia.
+- El detalle del reto dice qué método es y enlaza su fuente.
+- Fuentes: [Inflow (5 cosas)](https://getinflow.io/post/cleaning-tips-for-adhd-adults), [ADHD New Zealand (búsqueda del tesoro)](https://adhd.org.nz/home-neat-home.html), [ADHD Women (cesto)](https://medium.com/adhd-women/adhd-tool-the-tidy-up-basket-600e79dee395), [Life Skills Advocate (estudio)](https://lifeskillsadvocate.com/blog/study-tips-for-adhd-students/), [Talkspace (estudio)](https://www.talkspace.com/mental-health/conditions/articles/how-to-study-with-adhd/), [Spokenly (dictar)](https://spokenly.app/blog/dictation-for-adhd), [Jane Friedman (escribir)](https://janefriedman.com/why-adhd-writers-brains-are-like-lions-and-how-to-harness-their-power/), [Inflow (llamadas)](https://www.getinflow.io/post/phone-anxiety-and-adhd), [ADDitude (papeleo)](https://www.additudemag.com/how-to-organize-paperwork-adhd-adults/), [ADDA (ejercicio)](https://add.org/exercising-your-adhd/), [Life Skills Advocate (higiene)](https://lifeskillsadvocate.com/blog/adhd-hygiene/) y [CHADD (cuidado personal)](https://chadd.org/adhd-news/adhd-news-adults/attention-adhd-and-personal-care/).
+
 ## 6. Ley del esfuerzo inverso
 
 Cuanto más pesa la tarea, más pequeña es la acción (nivel elegido en «¿Cuánto te pesa?»):

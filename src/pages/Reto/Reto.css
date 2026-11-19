@@ -333,3 +333,16 @@
 .detalle__enlace:active {
   background: var(--marca-lima);
 }
+
+/* Método para TDAH del reto (metodos.ts) */
+.detalle__metodo {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 2px solid var(--marca-tinta);
+  background: var(--superficie-blanco);
+  color: var(--marca-tinta);
+}
+.detalle__metodo a {
+  color: var(--marca-violeta);
+  font-weight: 700;
+}

@@ -54,6 +54,7 @@ Siguen la «Regla de oro: la ley del esfuerzo inverso» y la «Matriz de combina
 4. Si no hay categoría, se usa un respaldo con el texto de la tarea.
 5. La **lectura de la situación** ([src/datos/situacion.ts](src/datos/situacion.ts)) deduce qué puede estar frenando (plazo, hablar con otras personas, miedo a hacerlo mal…) a partir de la tarea y el esfuerzo, con reglas sacadas de webs de psicología (`npm run fuentes` comprueba los enlaces).
 6. El **aprendizaje** ([src/datos/aprendizaje.ts](src/datos/aprendizaje.ts)) apunta qué cartas se aceptan, rechazan y consiguen, y ordena los mazos siguientes. Se ve en Perfil → «Te funciona».
+7. Los **métodos para TDAH** ([src/datos/metodos.ts](src/datos/metodos.ts)) dan formas distintas de abordar cada tipo de actividad («Por categorías», «Búsqueda del tesoro», «Borrador feo a propósito»…), con su fuente. Se mezclan con los retos del banco en los dos primeros mazos.
 
 La carta dice solo la acción, sin entradillas: verbo físico primero (nunca «hacer»), un objeto concreto, una sola acción (sin «y» ni «o») y sin la palabra «tarea». El detalle añade «Está hecho cuando…» sacado de la acción y una frase de permiso del nivel. El prompt para un futuro generador con IA está en [docs/prompt-generador-ia.md](docs/prompt-generador-ia.md). Compruébalo con `npm run validar`. El PDF explicativo se genera con `npm run documento` (docs/sistema-de-retos.pdf).
 

@@ -170,6 +170,14 @@ export function Detalle() {
           hecho={{ marcado, onCambiar: () => setHechoEn(marcado ? null : reto.tipo) }}
         />
         <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} marcado={marcado} permiso={reto.permiso} />
+        {reto.metodo && (
+          <p className="detalle__metodo t-texto-cuerpo">
+            <strong>Método para TDAH: {reto.metodo.nombre}.</strong>{' '}
+            <a href={reto.metodo.fuente.url} target="_blank" rel="noopener noreferrer">
+              Fuente: {reto.metodo.fuente.nombre.split(' · ')[0]}
+            </a>
+          </p>
+        )}
         {tarea.web?.enlace && (
           <a className="detalle__enlace t-texto-control" href={tarea.web.enlace} target="_blank" rel="noopener noreferrer">
             Abrir la web oficial: {tarea.web.contexto}

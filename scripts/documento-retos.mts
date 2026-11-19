@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { BANCO, PERMISO, PLAZO, type Nivel } from '../src/datos/banco.ts'
 import { analizarTarea, numMazos, REGLAS, RESPALDO, retosDe, type Regla } from '../src/datos/reglas.ts'
 import { leerSituacion, POR_ESFUERZO_DOC, SITUACIONES_DOC } from '../src/datos/situacion.ts'
+import { METODOS } from '../src/datos/metodos.ts'
 
 type Tipo = 'novedad' | 'desafio' | 'pasion' | 'interes' | 'urgencia'
 
@@ -252,13 +253,23 @@ const html = `<!doctype html>
 </section>
 
 <section class="salto">
+  <h2>4c. Métodos para TDAH</h2>
+  <p>Además de los retos del banco, las cartas proponen <strong>formas distintas de abordar la tarea</strong>, sacadas de webs de consejos para TDAH. Cada tipo de actividad tiene un método por carta. En el primer mazo, Novedad y Desafío son métodos; en el segundo, Pasión, Interés y Urgencia. El detalle del reto dice qué método es y enlaza su fuente.</p>
+  ${Object.entries(METODOS).map(([act, porTipo]) => `
+  <h3>${({ orden: 'Ordenar y limpiar', estudio: 'Estudiar', escritura: 'Escribir', llamadas: 'Llamar', papeleo: 'Papeleo', ejercicio: 'Moverse', cuidado: 'Cuidarse' } as Record<string, string>)[act]}</h3>
+  <table class="banco"><tr><th>Carta</th><th>Método</th><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
+  ${CARTAS.map((c) => { const mt = porTipo[c.tipo]; return `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td><strong>${esc(mt.nombre)}</strong><br><span class="peq">${esc(mt.fuente.nombre)}</span></td><td>${esc(mt.retos.pesado)}</td><td>${esc(mt.retos.medio)}</td><td>${esc(mt.retos.ligero)}</td></tr>` }).join('')}
+  </table>`).join('')}
+</section>
+
+<section class="salto">
   <h2>5. Cuando se acaba el mazo: más retos de la misma tarea</h2>
   <p>Si se rechazan las 5 cartas, la app reparte otro mazo de la <strong>misma tarea</strong>, siempre igual o más fácil:</p>
   <table>
     <tr><th>Esfuerzo elegido</th><th>Mazos</th></tr>
-    <tr><td>Ligero</td><td>Ligero → Medio → Pesado (15 retos)</td></tr>
-    <tr><td>Medio</td><td>Medio → Pesado → retos genéricos con el nombre de la tarea (15 retos)</td></tr>
-    <tr><td>Pesado</td><td>Pesado → retos genéricos con el nombre de la tarea (10 retos)</td></tr>
+    <tr><td>Ligero</td><td>Ligero con métodos (2 mazos) → Medio → Pesado</td></tr>
+    <tr><td>Medio</td><td>Medio con métodos (2 mazos) → Pesado → retos genéricos con el nombre de la tarea</td></tr>
+    <tr><td>Pesado</td><td>Pesado con métodos (2 mazos) → retos genéricos con el nombre de la tarea</td></tr>
   </table>
   ${ejemploCompleto('Responder el email de Carlos', 'pesado', 1)}
   <div class="nota">Al terminar los mazos aparece «Has visto los N retos», con tres opciones: escribir la tarea de otra forma (más pequeña o más concreta), volver al primer mazo o ver otro mazo.</div>
