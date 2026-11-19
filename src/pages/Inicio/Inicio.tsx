@@ -8,7 +8,10 @@ import { useFlow } from '../../estado/FlowEstado'
 import { filtrarTarea, type Filtro } from '../../datos/filtros'
 import { analizarTarea } from '../../datos/reglas'
 import { buscarMicroPaso } from '../../datos/web'
-import { Preparando, type PasoPreparando } from '../../components/Preparando/Preparando'
+import { Preparando, type PasoPreparando, type PreguntaTipo } from '../../components/Preparando/Preparando'
+import { TIPOS_TAREA } from '../../datos/tipos-tarea'
+import type { Categoria } from '../../components/Icono/iconos'
+import type { MicroPasoWeb } from '../../datos/modelo'
 import { leerSituacion } from '../../datos/situacion'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import './Inicio.css'
@@ -43,7 +46,12 @@ export default function Inicio() {
   /** Aviso de seguridad o de texto que no se entiende */
   const [aviso, setAviso] = useState<Exclude<Filtro, { status: 'ok' }> | null>(null)
   /** Preparación de los retos en curso (pantalla de carga): paso actual, lo encontrado y cómo cancelar la búsqueda */
-  const [preparando, setPreparando] = useState<{ actual: number; pasos: PasoPreparando[]; control: AbortController } | null>(null)
+  const [preparando, setPreparando] = useState<{
+    actual: number
+    pasos: PasoPreparando[]
+    control: AbortController
+    pregunta?: PreguntaTipo
+  } | null>(null)
   const buscando = preparando
   const campo = useRef<HTMLInputElement>(null)
 
@@ -97,12 +105,31 @@ export default function Inicio() {
     paso(1)
     await pausa(500)
 
-    // 2. Reconocer la tarea (por sus palabras o por lo que encontró la búsqueda)
-    const categoria = regla?.categoria ?? web?.categoria
+    // 2. Reconocer la tarea (por sus palabras o por lo que encontró la búsqueda).
+    //    Si no hay forma de saber cómo se hace, se pregunta de qué tipo es: nada de retos genéricos.
+    let web2: MicroPasoWeb | undefined = web
+    let icono: Categoria | undefined = resultado.status === 'success' ? resultado.icono : undefined
+    let categoria = regla?.categoria ?? web?.categoria
+    if (!categoria && !web?.fiable) {
+      const elegido = await new Promise<number | null>((responder) =>
+        setPreparando({
+          actual: 1,
+          pasos: [...pasos],
+          control,
+          pregunta: { opciones: TIPOS_TAREA, onElegir: (i) => responder(i), onSaltar: () => responder(null) },
+        }),
+      )
+      if (elegido !== null) {
+        const tipo = TIPOS_TAREA[elegido]
+        categoria = tipo.categoria
+        icono = tipo.icono
+        web2 = { ...(web ?? { contexto: texto, microPaso: '', objeto: '', tipo: 'fisico', nivel: estado.esfuerzo }), categoria, fiable: false }
+      }
+    }
     pasos[1].detalle = categoria
-      ? `${categoria}${!regla && web?.categoria ? ' (según lo encontrado)' : ''}`
-      : resultado.status === 'success' && web?.fiable
-        ? `Tarea nueva: con ${web.objeto}`
+      ? `${categoria}${!regla && web?.categoria ? ' (según lo encontrado)' : !regla ? ' (lo has elegido tú)' : ''}`
+      : web2?.fiable
+        ? `Tarea nueva: con ${web2.objeto}`
         : 'Tarea nueva'
     paso(2)
     await pausa(500)
@@ -114,12 +141,11 @@ export default function Inicio() {
     await pausa(450)
 
     // 4. Retos
-    const icono = resultado.status === 'success' ? resultado.icono : undefined
     const iconoFinal = icono ?? regla?.icono
     pasos[3].detalle = iconoFinal ? `Mazo de ${NOMBRE_CATEGORIA[iconoFinal]}` : undefined
     paso(4)
     await pausa(300)
-    despachar({ tipo: 'nueva-tarea', texto, web, ...(icono && { icono }) })
+    despachar({ tipo: 'nueva-tarea', texto, web: web2, ...(icono && { icono }) })
     setPreparando(null)
     navegar('/reto')
   }
@@ -247,6 +273,7 @@ export default function Inicio() {
           pasos={preparando.pasos}
           actual={preparando.actual}
           onSaltar={preparando.actual === 0 ? () => preparando.control.abort() : undefined}
+          pregunta={preparando.pregunta}
         />
       )}
     </Pantalla>

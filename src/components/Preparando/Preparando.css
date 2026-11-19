@@ -107,3 +107,50 @@
     animation: none;
   }
 }
+
+/* Pregunta «¿De qué tipo es esta tarea?» */
+.preparando__pregunta {
+  margin-top: 18px;
+  width: 100%;
+}
+.preparando__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.preparando__opcion {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--superficie-crema);
+  border-radius: 999px;
+  background: none;
+  color: var(--superficie-crema);
+  cursor: pointer;
+}
+.preparando__opcion:active,
+.preparando__opcion:hover {
+  background: var(--marca-lima);
+  border-color: var(--marca-lima);
+  color: var(--marca-tinta);
+}
+.preparando__opcion:focus-visible {
+  outline: 3px solid var(--marca-lima);
+  outline-offset: 2px;
+}
+/* Con la pregunta, la caja puede ser más alta que la pantalla: se centra con margin auto
+   (no con align-items) para que se pueda llegar arriba con el scroll */
+.preparando {
+  overflow-y: auto;
+  align-items: flex-start;
+}
+.preparando__caja {
+  margin: auto 0;
+}
+.preparando[data-pregunta] .preparando__girando {
+  display: none;
+}
+.preparando[data-pregunta] .preparando__titulo {
+  margin-top: 0;
+}

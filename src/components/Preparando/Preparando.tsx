@@ -10,11 +10,15 @@ import './Preparando.css'
 
 export type PasoPreparando = { titulo: string; detalle?: string }
 
+/** Pregunta cuando no se encuentra cómo se hace la tarea: «¿De qué tipo es?» */
+export type PreguntaTipo = { opciones: { texto: string }[]; onElegir: (indice: number) => void; onSaltar: () => void }
+
 export function Preparando({
   tarea,
   pasos,
   actual,
   onSaltar,
+  pregunta,
 }: {
   tarea: string
   pasos: PasoPreparando[]
@@ -22,12 +26,13 @@ export function Preparando({
   actual: number
   /** Solo durante la búsqueda */
   onSaltar?: () => void
+  pregunta?: PreguntaTipo
 }) {
   const titulo = useRef<HTMLHeadingElement>(null)
   useEffect(() => titulo.current?.focus(), [])
 
   return (
-    <div className="preparando" role="dialog" aria-modal="true" aria-labelledby="preparando-titulo">
+    <div className="preparando" role="dialog" aria-modal="true" aria-labelledby="preparando-titulo" data-pregunta={pregunta ? '' : undefined}>
       <div className="preparando__caja">
         <span className="preparando__girando" aria-hidden="true" />
         <h2 id="preparando-titulo" ref={titulo} tabIndex={-1} className="t-titular-m preparando__titulo">
@@ -51,6 +56,24 @@ export function Preparando({
             )
           })}
         </ol>
+
+        {pregunta && (
+          <div className="preparando__pregunta" role="group" aria-labelledby="preparando-pregunta">
+            <p id="preparando-pregunta" className="t-texto-cuerpo">
+              No he encontrado cómo se hace. <strong>¿De qué tipo es esta tarea?</strong>
+            </p>
+            <div className="preparando__opciones">
+              {pregunta.opciones.map((o, i) => (
+                <button key={o.texto} type="button" className="preparando__opcion t-texto-control" onClick={() => pregunta.onElegir(i)}>
+                  {o.texto}
+                </button>
+              ))}
+            </div>
+            <button type="button" className="preparando__saltar t-texto-control" onClick={pregunta.onSaltar}>
+              Ninguna de estas
+            </button>
+          </div>
+        )}
 
         {onSaltar && (
           <button type="button" className="preparando__saltar t-texto-control" onClick={onSaltar}>

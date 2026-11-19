@@ -329,13 +329,14 @@ export function mazosDe(esfuerzo: Nivel, conCategoria: boolean, conMetodos = fal
         { nivel: esfuerzo, metodos: METODOS_MAZO_2 },
       ]
     : [{ nivel: esfuerzo }]
-  const extra = (nivel: Nivel): FuenteMazo[] => (conCategoria ? [{ nivel, generico: true }] : [])
-  if (esfuerzo === 'pesado') return [...elegido, ...extra('pesado')]
-  if (esfuerzo === 'medio') return [...elegido, { nivel: 'pesado' }, ...extra('medio')]
+  // Sin mazos genéricos con el nombre de la tarea: siempre retos de su categoría o sus métodos.
+  // Con el aviso cada 9 rechazos los mazos vuelven a empezar, así que no hacen falta más.
+  void conCategoria
+  if (esfuerzo === 'pesado') return elegido
+  if (esfuerzo === 'medio') return [...elegido, { nivel: 'pesado' }]
   return [...elegido, { nivel: 'medio' }, { nivel: 'pesado' }]
 }
 
-/** Tipo de actividad de la tarea, para elegir sus métodos (o nada si no tiene) */
 /** Categoría de la tarea: por sus palabras o, si no, por lo que encontró la búsqueda web */
 export function categoriaDe(tarea: string, web?: DatosWeb): string | undefined {
   return analizarTarea(tarea).regla?.categoria ?? (web?.categoria && BANCO[web.categoria] ? web.categoria : undefined)
