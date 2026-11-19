@@ -5,10 +5,10 @@ import { analizarTarea, retosDe } from './reglas'
 /* Los retos salen de la matriz de combinación (ver reglas.ts y banco.ts):
    acción del banco según el nivel de esfuerzo + modificador INCUP de cada carta. */
 
-export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo'>>, mazo = 0): Reto[] {
+export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web'>>, mazo = 0): Reto[] {
   // Un reto distinto por carta INCUP (ver retosDe en reglas.ts).
   // Cada mazo nuevo de la misma tarea sigue la numeración: 01–05, 06–10…
-  return retosDe(tarea.texto, tarea.esfuerzo, mazo).map((r, i) => ({
+  return retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web).map((r, i) => ({
     ...r,
     numero: String(mazo * 5 + i + 1).padStart(2, '0'),
   }))

@@ -1,13 +1,13 @@
 /* Comprueba que todos los retos que puede generar la app cumplen la «ley del esfuerzo inverso».
    Uso: npm run validar */
 import { BANCO, FAMILIA, type Nivel } from '../src/datos/banco.ts'
-import { NUM_MAZOS, REGLAS, analizarTarea, retosDe } from '../src/datos/reglas.ts'
+import { NUM_MAZOS, REGLAS, accionesWeb, analizarTarea, retosDe } from '../src/datos/reglas.ts'
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 
 /* Verbos físicos con los que puede empezar una acción */
 const VERBOS =
-  /^(Solo )?(abre|añade|afina|aprende|arrastra|asómate|avanza|baila|barre|bebe|busca|calienta|calienta|cambia|carga|cepilla|cierra|cocina|coge|come|confirma|copia|corre|corta|crea|da|deja|desmaquíllate|dibuja|dobla|dúchate|edita|empieza|encien?de|enciende|entra|envía|escanea|escribe|escucha|estira|extiende|guarda|infla|intenta|juega|lanza|lava|lávate|lee|lleva|limpia|llama|llena|marca|medita|mete|mira|mueve|nada|pasa|pasea|pesa|pide|pon|ponle|ponte|pregúntale|prepara|prueba|pulsa|quita|recoge|rellena|repite|reserva|respira|responde|riega|saca|sal|sigue|siéntate|sube|subraya|supera|tápate|termina|tiende|tira|toca|túmbate|vacía|ve|vístete|acuéstate|apaga|camina|apunta|compra|propón|mírate|baja|completa|contesta|fotografía|métete|repasa)\b/i
+  /^(Solo )?(abre|añade|afina|aprende|arrastra|asómate|avanza|baila|barre|bebe|busca|calienta|calienta|cambia|carga|cepilla|cierra|cocina|coge|come|confirma|copia|corre|corta|crea|da|deja|desmaquíllate|dibuja|dobla|dúchate|edita|empieza|encien?de|enciende|entra|envía|escanea|escribe|escucha|estira|extiende|guarda|infla|intenta|juega|lanza|lava|lávate|lee|lleva|limpia|llama|llena|marca|medita|mete|mira|mueve|nada|pasa|pasea|pesa|pide|pon|ponle|ponte|pregúntale|prepara|prueba|pulsa|quita|recoge|rellena|repite|reserva|respira|responde|riega|saca|sal|sigue|siéntate|sube|subraya|supera|tápate|termina|tiende|tira|toca|túmbate|vacía|ve|vístete|acuéstate|apaga|camina|apunta|compra|propón|mírate|baja|completa|contesta|fotografía|métete|repasa|señala|usa|descarga|moja)\b/i
 
 const PROHIBIDO: [RegExp, string][] = [
   [/\sy\s/i, 'usa «y» (más de una acción)'],
@@ -57,6 +57,20 @@ for (const tarea of tareas) {
         if (analizarTarea(tarea).regla) unicos.add(r.titulo)
       }
     }
+  }
+}
+
+// 3. Retos con el paso encontrado en internet (api/micro_paso.py), con objetos de ejemplo
+const EJEMPLOS_WEB = [
+  { objeto: 'la app de test autoescuela', tipo: 'digital' as const, paso: { pesado: 'Solo abre la app de test autoescuela', medio: 'Descarga la app de test autoescuela', ligero: 'Lee la primera pantalla de la app de test autoescuela' } },
+  { objeto: 'la fregona', tipo: 'fisico' as const, paso: { pesado: 'Solo toca la fregona', medio: 'Moja la fregona', ligero: 'Pon la fregona sobre la mesa' } },
+]
+for (const e of EJEMPLOS_WEB) {
+  for (const n of NIVELES) {
+    const web = { objeto: e.objeto, tipo: e.tipo, microPaso: e.paso[n], nivel: n }
+    for (const a of accionesWeb(web)[n]) revisar(`web «${e.objeto}»/${n}`, a)
+    for (let m = 0; m < NUM_MAZOS; m++)
+      for (const r of retosDe('arreglar la persiana', n, m, web)) r.pasos.forEach((p) => revisar(`web «${e.objeto}»/${n}/mazo ${m + 1}`, p))
   }
 }
 

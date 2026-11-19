@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
-import { NOMBRE_CATEGORIA, type Esfuerzo, type Mazo, type Tarea } from '../datos/modelo'
+import { NOMBRE_CATEGORIA, type Esfuerzo, type Mazo, type MicroPasoWeb, type Tarea } from '../datos/modelo'
 import { detectarCategoria } from '../datos/retos'
 import { NUM_MAZOS } from '../datos/reglas'
 
@@ -28,7 +28,7 @@ type Estado = {
 type Accion =
   | { tipo: 'onboarding-visto' }
   | { tipo: 'esfuerzo'; esfuerzo: Esfuerzo }
-  | { tipo: 'nueva-tarea'; texto: string }
+  | { tipo: 'nueva-tarea'; texto: string; web?: MicroPasoWeb }
   | { tipo: 'retomar'; id: string }
   | { tipo: 'cambiar-categoria'; categoria: Categoria }
   | { tipo: 'siguiente-reto' }
@@ -78,6 +78,7 @@ function reductor(e: Estado, a: Accion): Estado {
         estado: 'en-curso',
         ultimoTipo: 'novedad',
         actualizada: Date.now(),
+        ...(a.web && { web: a.web }),
       }
       return { ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null }
     }

@@ -6,6 +6,9 @@ import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_CATEGORIA, ICONOS_UI } from '../../components/Icono/iconos'
 import { ContadorRetos, Logotipo, Pantalla, SelectorEsfuerzo } from '../../components/UI/UI'
 import { useFlow } from '../../estado/FlowEstado'
+import { filtrarTarea, type Filtro } from '../../datos/filtros'
+import { analizarTarea } from '../../datos/reglas'
+import { buscarMicroPaso } from '../../datos/web'
 import './Inicio.css'
 
 /* 01 · Inicio y 02 · Inicio · escribiendo (Figma 2108:7545 y 2250:3782).
@@ -31,18 +34,43 @@ export default function Inicio() {
   const [texto, setTexto] = useState('')
   const [foco, setFoco] = useState(false)
   const [dictando, setDictando] = useState(false)
+  /** Aviso de seguridad o de texto que no se entiende */
+  const [aviso, setAviso] = useState<Exclude<Filtro, { status: 'ok' }> | null>(null)
+  /** Búsqueda web en curso (solo tareas sin categoría): se puede saltar */
+  const [buscando, setBuscando] = useState<AbortController | null>(null)
   const campo = useRef<HTMLInputElement>(null)
 
   const abierto = foco || texto.length > 0
   const historial = estado.tareas.filter((t) => t.estado === 'a-medias').slice(0, 3)
 
-  const empezar = (e?: FormEvent) => {
+  const empezar = async (e?: FormEvent) => {
     e?.preventDefault()
+    if (buscando) return
     if (!texto.trim()) {
       campo.current?.focus()
       return
     }
-    despachar({ tipo: 'nueva-tarea', texto })
+    const { regla } = analizarTarea(texto)
+    const filtro = filtrarTarea(texto, Boolean(regla))
+    if (filtro.status !== 'ok') {
+      setAviso(filtro)
+      return
+    }
+    if (regla) {
+      despachar({ tipo: 'nueva-tarea', texto })
+      navegar('/reto')
+      return
+    }
+    // Sin categoría: se busca en internet el primer paso (máximo 30 s, se puede saltar)
+    const control = new AbortController()
+    setBuscando(control)
+    const resultado = await buscarMicroPaso(texto, estado.esfuerzo, control.signal)
+    setBuscando(null)
+    if (resultado.status === 'blocked' || resultado.status === 'incomprehensible') {
+      setAviso(resultado)
+      return
+    }
+    despachar({ tipo: 'nueva-tarea', texto, web: resultado.status === 'success' ? resultado.web : undefined })
     navegar('/reto')
   }
 
@@ -82,7 +110,10 @@ export default function Inicio() {
                 ref={campo}
                 className="t-texto-cuerpo"
                 value={texto}
-                onChange={(e) => setTexto(e.target.value)}
+                onChange={(e) => {
+                  setTexto(e.target.value)
+                  setAviso(null)
+                }}
                 onFocus={() => setFoco(true)}
                 onBlur={() => setFoco(false)}
                 placeholder="Escribe una tarea…"
@@ -132,9 +163,30 @@ export default function Inicio() {
             <SelectorEsfuerzo valor={estado.esfuerzo} onCambio={(e) => despachar({ tipo: 'esfuerzo', esfuerzo: e })} />
           </div>
 
-          <Boton type="submit" className="boton--ancho" onMouseDown={(e) => e.preventDefault()}>
-            ¡Vamos!
+          {aviso && (
+            <div className="inicio__aviso" role="alert" data-tipo={aviso.status}>
+              <p className="t-texto-cuerpo">{aviso.mensaje}</p>
+              {aviso.status === 'blocked' && aviso.ayuda && <p className="t-texto-cuerpo inicio__ayuda">{aviso.ayuda}</p>}
+            </div>
+          )}
+
+          <Boton
+            type="submit"
+            className="boton--ancho"
+            onMouseDown={(e) => e.preventDefault()}
+            disabled={Boolean(buscando)}
+            conIcono={!buscando}
+          >
+            {buscando ? 'Buscando el primer paso…' : '¡Vamos!'}
           </Boton>
+          {buscando && (
+            <p className="inicio__buscando t-texto-cuerpo-s" aria-live="polite">
+              Estoy mirando en internet cómo se empieza.{' '}
+              <button type="button" className="inicio__saltar" onClick={() => buscando.abort()}>
+                Saltar la búsqueda
+              </button>
+            </p>
+          )}
         </form>
       </main>
       <BarraNav />

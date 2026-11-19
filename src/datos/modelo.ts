@@ -18,6 +18,20 @@ export type Tarea = {
   actualizada: number
   /** Premio que la persona elige para cuando consiga el reto (método RAN: Recompensa). */
   premio?: string
+  /** Primer paso encontrado en internet (solo tareas sin categoría; ver api/micro_paso.py). */
+  web?: MicroPasoWeb
+}
+
+export type MicroPasoWeb = {
+  /** «Examen teórico de la DGT» */
+  contexto: string
+  /** «Solo abre la app de test autoescuela» (sin punto final) */
+  microPaso: string
+  /** «la app de test autoescuela» */
+  objeto: string
+  tipo: 'digital' | 'fisico'
+  /** Nivel de esfuerzo para el que se calculó el micro-paso */
+  nivel: Esfuerzo
 }
 
 export type Reto = {

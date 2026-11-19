@@ -134,6 +134,30 @@ export const RESPALDO = (t: string): Acciones => ({
   ligero: [`Completa la primera página de «${t}»`, `Escribe en tu libreta 3 pasos de «${t}»`, `Lee en el móvil la información de «${t}»`],
 })
 
+/* Respaldo con lo que encontró la búsqueda web (api/micro_paso.py): el objeto concreto
+   («la app de test autoescuela») sustituye al texto de la tarea, y el micro-paso de la web
+   es la primera acción de su nivel. */
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel }
+
+export function accionesWeb(w: DatosWeb): Acciones {
+  const o = w.objeto
+  const base: Acciones =
+    w.tipo === 'digital'
+      ? {
+          pesado: [`Abre ${o}`, `Coge el móvil con ${o}`, `Mira la primera pantalla de ${o}`],
+          medio: [`Entra en ${o}`, `Lee el título de ${o}`, `Pulsa el primer botón de ${o}`],
+          ligero: [`Lee la primera pantalla de ${o}`, `Rellena la primera casilla de ${o}`, `Apunta en tu libreta lo que pide ${o}`],
+        }
+      : {
+          pesado: [`Toca ${o}`, `Mira ${o}`, `Señala ${o} con el dedo`],
+          medio: [`Coge ${o}`, `Pon ${o} sobre la mesa`, `Abre ${o}`],
+          ligero: [`Usa ${o} una vez`, `Lee la primera página de ${o}`, `Deja ${o} preparado en la mesa`],
+        }
+  const propia = w.microPaso.replace(/^Solo /, '')
+  const lista = [propia.charAt(0).toUpperCase() + propia.slice(1), ...base[w.nivel].filter((x) => x.toLowerCase() !== propia.toLowerCase())]
+  return { ...base, [w.nivel]: lista.slice(0, 3) }
+}
+
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
    Pautas para personas neurodivergentes (docs/comunicacion.md) + «Ley del esfuerzo inverso»:
    - La acción va primero, empieza por un verbo físico y es UNA sola (sin «y», «o», «luego»).
@@ -248,8 +272,10 @@ export function accionConModificador(accion: string, mod: string, nivel: Nivel) 
   return `${nivel === 'pesado' ? `Solo ${minuscula(A)}` : mayuscula(A)}, ${mod}`
 }
 
-export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0): RetoCarta[] {
-  const { acciones, categoria } = analizarTarea(tarea)
+export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
+  const analisis = analizarTarea(tarea)
+  const { categoria } = analisis
+  const acciones = !analisis.regla && web ? accionesWeb(web) : analisis.acciones
   const lista = acciones[esfuerzo]
   return ORDEN.map((tipo, k) => {
     const accion = lista[(mazo + k) % lista.length]

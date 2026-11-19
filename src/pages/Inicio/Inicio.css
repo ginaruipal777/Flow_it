@@ -155,3 +155,38 @@
     transform: translateY(8px);
   }
 }
+
+/* Aviso de tarea que no se entiende o que no es segura */
+.inicio__aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 2px solid var(--marca-tinta);
+  background: var(--superficie-crema);
+  color: var(--marca-tinta);
+}
+.inicio__aviso[data-tipo="blocked"] {
+  background: var(--superficie-lienzo);
+}
+.inicio__ayuda {
+  font-weight: 800;
+}
+
+/* Búsqueda web en curso */
+.inicio__buscando {
+  margin-top: -8px;
+  text-align: center;
+  color: var(--superficie-crema);
+}
+.inicio__saltar {
+  border: 0;
+  padding: 4px 2px;
+  background: none;
+  color: var(--marca-lima);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
