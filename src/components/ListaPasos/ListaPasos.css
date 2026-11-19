@@ -171,3 +171,10 @@
     transform: translateY(8px);
   }
 }
+
+/* Permiso del nivel: baja la exigencia sin juzgar */
+.lista-pasos__permiso {
+  display: block;
+  margin-top: 4px;
+  font-weight: 700;
+}

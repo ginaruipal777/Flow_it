@@ -13,6 +13,7 @@ export function ListaPasos({
   pasos,
   hecho,
   marcado,
+  permiso,
 }: {
   /** Texto de la carta: se lee antes de los pasos. */
   titulo: string
@@ -21,6 +22,8 @@ export function ListaPasos({
   hecho: string
   /** Si llega, el botón «Hecho» está en la carta: aquí solo quedan Escuchar y el criterio de éxito. */
   marcado?: boolean
+  /** Frase de permiso del nivel («No tiene que quedar perfecto.») */
+  permiso?: string
 }) {
   // Un paso cada vez (Sanitas: dar las instrucciones de una en una): solo se ve el paso actual.
   const [hechos, setHechos] = useState(0)
@@ -43,6 +46,7 @@ export function ListaPasos({
       titulo,
       ...pasos.map((p, i) => `Paso ${i + 1}: ${p}.`),
       `Está hecho cuando ${hecho}.`,
+      permiso ?? '',
     ].join(' ')
     const frase = new SpeechSynthesisUtterance(texto)
     frase.lang = 'es-ES'
@@ -104,7 +108,7 @@ export function ListaPasos({
       )}
 
       <p className="lista-pasos__hecho">
-        <strong>Está hecho cuando</strong> {hecho}.
+        <strong>Está hecho cuando</strong> {hecho}.{permiso && <span className="lista-pasos__permiso">{permiso}</span>}
       </p>
 
       <p className="lista-pasos__aviso" aria-live="polite">

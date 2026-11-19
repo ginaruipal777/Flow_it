@@ -1,80 +1,96 @@
-/* Comprueba que todos los retos que puede generar la app cumplen la «ley del esfuerzo inverso».
+/* Comprueba que todos los retos que puede generar la app cumplen las reglas de redacción
+   (ley del esfuerzo inverso + investigación de docs/comunicacion.md).
    Uso: npm run validar */
-import { BANCO, FAMILIA, type Nivel } from '../src/datos/banco.ts'
-import { NUM_MAZOS, REGLAS, accionesWeb, analizarTarea, retosDe } from '../src/datos/reglas.ts'
+import { BANCO, PLAZO, type Acciones, type Nivel } from '../src/datos/banco.ts'
+import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, hechoDe, numMazos, retosDe } from '../src/datos/reglas.ts'
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
-
-/* Verbos físicos con los que puede empezar una acción */
-const VERBOS =
-  /^(Solo )?(abre|añade|afina|aprende|arrastra|asómate|avanza|baila|barre|bebe|busca|calienta|calienta|cambia|carga|cepilla|cierra|cocina|coge|come|confirma|copia|corre|corta|crea|da|deja|desmaquíllate|dibuja|dobla|dúchate|edita|empieza|encien?de|enciende|entra|envía|escanea|escribe|escucha|estira|extiende|guarda|infla|intenta|juega|lanza|lava|lávate|lee|lleva|limpia|llama|llena|marca|medita|mete|mira|mueve|nada|pasa|pasea|pesa|pide|pon|ponle|ponte|pregúntale|prepara|prueba|pulsa|quita|recoge|rellena|repite|reserva|respira|responde|riega|saca|sal|sigue|siéntate|sube|subraya|supera|tápate|termina|tiende|tira|toca|túmbate|vacía|ve|vístete|acuéstate|apaga|camina|apunta|compra|propón|mírate|baja|completa|contesta|fotografía|métete|repasa|señala|usa|descarga|moja)\b/i
 
 const PROHIBIDO: [RegExp, string][] = [
   [/\sy\s/i, 'usa «y» (más de una acción)'],
   [/\so\s/i, 'usa «o» (da opciones)'],
-  [/\b(luego|después|y luego)\b/i, 'encadena acciones'],
+  [/\b(luego|después)\b/i, 'encadena acciones'],
   [/\btareas?\b/i, 'usa la palabra «tarea»'],
-  [/\b(minutos?|segundos?|horas?|rápido|deprisa|temporizador|cronómetro)\b/i, 'pone tiempos o prisa'],
-  [/(¡hazlo ya!|ya mismo|sin excusas|venga ya)/i, 'imperativo agresivo'],
-  [/\b(piensa|decide|organiza|planifica|elige)\b/i, 'pide pensar o decidir'],
   [/(^|\s)(haz|hazlo|hacer|hace|haga|hagas)(\s|$)/i, 'usa el verbo «hacer» (abstracto)'],
+  [/\b(rápido|deprisa|ya mismo|sin excusas)\b|¡hazlo ya!/i, 'mete prisa o presiona'],
+  [/\b(piensa|decide|organiza|planifica|elige)\b/i, 'pide pensar o decidir'],
   [/(primera parte|una parte|la parte|lo primero|primer movimiento|(^|\s)algo(\s|$)|(^|\s)esto(\s|$))/i, 'no dice un objeto concreto'],
-  [/(mano que no usas|mano izquierda|mano no dominante|de una forma distinta)/i, 'fricción artificial en vez de enfoque'],
+  [/(mano que no usas|mano izquierda|mano no dominante|de una forma distinta)/i, 'fricción artificial'],
+  [/\b(tumbad[oa]|sentad[oa]|junt[oa]s|cansad[oa]|solit[oa])\b/i, 'tiene género gramatical para la persona'],
+  [/(¡plan nuevo!|mini reto|modo disfrute|ponle interés|hazlo interesante|¿te apuntas\?)/i, 'lleva entradilla'],
 ]
+const TIEMPO = /\b(minutos?|segundos?|horas?|temporizador|cronómetro)\b/i
 
 const errores: string[] = []
-const unicos = new Set<string>()
+const titulos = new Set<string>()
 
-const revisar = (origen: string, accion: string) => {
-  if (accion.replace(/^Solo /, '').split(/\s+/).length < 3) errores.push(`${origen}: sin objeto concreto (muy corta) → «${accion}»`)
-  if (!VERBOS.test(accion)) errores.push(`${origen}: no empieza por verbo físico → «${accion}»`)
+/** Una acción del banco (antes de añadir «Solo» o el plazo) */
+function revisarAccion(origen: string, accion: string) {
+  const verbo = accion.split(' ')[0].toLowerCase()
+  if (!PARTICIPIOS[verbo]) errores.push(`${origen}: el verbo «${verbo}» no está en la lista de verbos físicos → «${accion}»`)
+  if (accion.split(/\s+/).length < 3) errores.push(`${origen}: sin objeto concreto (muy corta) → «${accion}»`)
+  if (TIEMPO.test(accion)) errores.push(`${origen}: pone tiempos (solo la carta Urgencia lleva plazo) → «${accion}»`)
   for (const [re, motivo] of PROHIBIDO) if (re.test(accion)) errores.push(`${origen}: ${motivo} → «${accion}»`)
+  if (hechoDe(accion).startsWith('lo has conseguido')) errores.push(`${origen}: no se puede escribir su «Está hecho cuando» → «${accion}»`)
 }
 
-// 1. Banco: cada categoría con 3 acciones por nivel
-for (const [categoria, acciones] of Object.entries(BANCO)) {
+function revisarAcciones(origen: string, acciones: Acciones) {
   for (const n of NIVELES) {
-    if (acciones[n].length < 3) errores.push(`${categoria}/${n}: menos de 3 acciones`)
-    acciones[n].forEach((a) => revisar(`${categoria}/${n}`, a))
+    const vistas = new Set<string>()
+    for (const tipo of ORDEN) {
+      const accion = acciones[n][tipo]
+      if (!accion) {
+        errores.push(`${origen}/${n}/${tipo}: falta el reto`)
+        continue
+      }
+      revisarAccion(`${origen}/${n}/${tipo}`, accion)
+      if (n === 'pesado' && /(^|\s)sol[oa](\s|$)/i.test(accion)) errores.push(`${origen}/${n}/${tipo}: repite «solo» (la app ya añade «Solo…») → «${accion}»`)
+      if (vistas.has(accion)) errores.push(`${origen}/${n}: reto repetido en el mismo nivel → «${accion}»`)
+      vistas.add(accion)
+    }
   }
 }
-for (const regla of REGLAS) if (!BANCO[regla.categoria]) errores.push(`Sin banco: ${regla.categoria}`)
-for (const c of Object.keys(BANCO)) if (!FAMILIA[c]) errores.push(`Sin familia de modificadores: ${c}`)
 
-// 2. Retos generados: cada regla (y el respaldo) × nivel × mazo
-const tareas = [...REGLAS.map((r) => r.palabras[0]), 'buscar piso', 'arreglar la persiana', 'Hacer la declaración trimestral']
-for (const tarea of tareas) {
+// 1. Banco: cada categoría con sus 15 retos (3 niveles × 5 cartas)
+for (const [categoria, acciones] of Object.entries(BANCO)) revisarAcciones(categoria, acciones)
+for (const regla of REGLAS) if (!BANCO[regla.categoria]) errores.push(`Sin banco: ${regla.categoria}`)
+
+// 2. Respaldo y retos con datos de la web
+revisarAcciones('Respaldo', RESPALDO('arreglar la persiana'))
+const WEB = [
+  { objeto: 'la app de test autoescuela', tipo: 'digital' as const },
+  { objeto: 'la web de cita previa del SEPE', tipo: 'digital' as const },
+  { objeto: 'el desengrasante', tipo: 'fisico' as const },
+]
+for (const w of WEB)
   for (const n of NIVELES) {
+    const web = { ...w, microPaso: n === 'pesado' ? `Solo abre ${w.objeto}` : `Coge ${w.objeto}`, nivel: n }
+    revisarAcciones(`Web «${w.objeto}» (${n})`, accionesWeb(web))
+  }
+
+// 3. Retos tal como se ven en la app: todos los mazos de cada tarea
+const tareas = [...REGLAS.map((r) => r.palabras[0]), 'buscar piso', 'arreglar la persiana']
+for (const tarea of tareas) {
+  for (const esfuerzo of NIVELES) {
     const vistos = new Set<string>()
-    for (let m = 0; m < NUM_MAZOS; m++) {
-      for (const r of retosDe(tarea, n, m)) {
-        const origen = `«${tarea}»/${n}/mazo ${m + 1}/${r.tipo}`
-        r.pasos.forEach((p) => revisar(origen, p))
-        if (/(^|\s)(haz|hazlo|hacer)(\s|$)/i.test(r.titulo)) errores.push(`${origen}: el titular usa «hacer» → «${r.titulo}»`)
-        if (n === 'pesado' && !r.pasos[0].startsWith('Solo ')) errores.push(`${origen}: Pesado sin «Solo»`)
-        if (vistos.has(r.titulo)) errores.push(`${origen}: reto repetido → «${r.titulo}»`)
+    for (let m = 0; m < numMazos(tarea, esfuerzo); m++) {
+      for (const r of retosDe(tarea, esfuerzo, m)) {
+        const origen = `«${tarea}»/${esfuerzo}/mazo ${m + 1}/${r.tipo}`
+        if (vistos.has(r.titulo)) errores.push(`${origen}: reto repetido en la misma tarea → «${r.titulo}»`)
         vistos.add(r.titulo)
-        if (analizarTarea(tarea).regla) unicos.add(r.titulo)
+        titulos.add(r.titulo)
+        const plazo = Object.values(PLAZO).find((p) => r.titulo.includes(p))
+        if (r.tipo === 'urgencia' && !plazo) errores.push(`${origen}: Urgencia sin plazo → «${r.titulo}»`)
+        if (r.tipo !== 'urgencia' && TIEMPO.test(r.titulo)) errores.push(`${origen}: tiempo fuera de Urgencia → «${r.titulo}»`)
+        if (r.titulo.startsWith('Solo ') !== r.permiso.startsWith('Con eso'))
+          errores.push(`${origen}: «Solo…» solo en el nivel Pesado → «${r.titulo}»`)
+        if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo para la carta (${r.titulo.length}) → «${r.titulo}»`)
       }
     }
   }
 }
 
-// 3. Retos con el paso encontrado en internet (api/micro_paso.py), con objetos de ejemplo
-const EJEMPLOS_WEB = [
-  { objeto: 'la app de test autoescuela', tipo: 'digital' as const, paso: { pesado: 'Solo abre la app de test autoescuela', medio: 'Descarga la app de test autoescuela', ligero: 'Lee la primera pantalla de la app de test autoescuela' } },
-  { objeto: 'la fregona', tipo: 'fisico' as const, paso: { pesado: 'Solo toca la fregona', medio: 'Moja la fregona', ligero: 'Pon la fregona sobre la mesa' } },
-]
-for (const e of EJEMPLOS_WEB) {
-  for (const n of NIVELES) {
-    const web = { objeto: e.objeto, tipo: e.tipo, microPaso: e.paso[n], nivel: n }
-    for (const a of accionesWeb(web)[n]) revisar(`web «${e.objeto}»/${n}`, a)
-    for (let m = 0; m < NUM_MAZOS; m++)
-      for (const r of retosDe('arreglar la persiana', n, m, web)) r.pasos.forEach((p) => revisar(`web «${e.objeto}»/${n}/mazo ${m + 1}`, p))
-  }
-}
-
-console.log(`Retos distintos generados (categorías × niveles × ${NUM_MAZOS} mazos × 5 cartas): ${unicos.size}`)
+console.log(`Retos distintos que puede mostrar la app: ${titulos.size}`)
 if (errores.length) {
   console.error(`\n${errores.length} problemas:\n` + errores.join('\n'))
   process.exit(1)

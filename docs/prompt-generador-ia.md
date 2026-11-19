@@ -1,6 +1,6 @@
 # Prompt para generar retos con IA
 
-Hoy la app no usa IA: los retos salen del banco de acciones y la matriz de combinación ([src/datos/banco.ts](../src/datos/banco.ts) y [src/datos/reglas.ts](../src/datos/reglas.ts)). Si más adelante se conecta un modelo (Claude, Gemini…) para tareas que no encajan en ninguna categoría, este es el *system prompt* que debe recibir. Las mismas reglas las comprueba `npm run validar`.
+Hoy la app no usa IA: los retos salen del banco de retos escritos a mano ([src/datos/banco.ts](../src/datos/banco.ts) y [src/datos/reglas.ts](../src/datos/reglas.ts)). Si más adelante se conecta un modelo (Claude, Gemini…) para tareas que no encajan en ninguna categoría, este es el *system prompt* que debe recibir. Las mismas reglas las comprueba `npm run validar`.
 
 ```text
 Eres el generador de retos de Flow It. El usuario te da una tarea. Tu trabajo es dividirla en el paso físico más pequeño posible para vencer el bloqueo.

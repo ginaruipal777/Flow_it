@@ -3,7 +3,7 @@ import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
 import { NOMBRE_CATEGORIA, type Esfuerzo, type Mazo, type MicroPasoWeb, type Tarea } from '../datos/modelo'
 import { detectarCategoria } from '../datos/retos'
-import { NUM_MAZOS } from '../datos/reglas'
+import { numMazos } from '../datos/reglas'
 
 /* Estado de la app guardado en el navegador (localStorage).
    Más adelante se cambiará por una base de datos con cuentas. */
@@ -56,6 +56,12 @@ const INICIAL: Estado = {
   mazos: [],
 }
 
+/** Mazos distintos de la tarea actual (dependen del esfuerzo y de si tiene categoría) */
+function mazosDeTarea(e: Estado) {
+  const t = e.tareas.find((x) => x.id === e.tareaActual)
+  return t ? numMazos(t.texto, t.esfuerzo, t.web) : 1
+}
+
 function cambiarTarea(e: Estado, cambio: (t: Tarea) => Tarea): Estado {
   return { ...e, tareas: e.tareas.map((t) => (t.id === e.tareaActual ? { ...cambio(t), actualizada: Date.now() } : t)) }
 }
@@ -93,14 +99,15 @@ function reductor(e: Estado, a: Accion): Estado {
       }
     case 'cambiar-categoria':
       return cambiarTarea(e, (t) => ({ ...t, categoria: a.categoria }))
-    case 'siguiente-reto':
+    case 'siguiente-reto': {
       // Al pasar la última carta llega un mazo nuevo de la misma tarea; tras el último, «agotado» (5)
-      if (e.indiceReto >= 4 && (e.mazo ?? 0) < NUM_MAZOS - 1) return { ...e, indiceReto: 0, mazo: (e.mazo ?? 0) + 1 }
+      if (e.indiceReto >= 4 && (e.mazo ?? 0) < mazosDeTarea(e) - 1) return { ...e, indiceReto: 0, mazo: (e.mazo ?? 0) + 1 }
       return { ...e, indiceReto: Math.min(e.indiceReto + 1, 5) }
+    }
     case 'reiniciar-mazo':
       return { ...e, indiceReto: 0, mazo: 0 }
     case 'mazo-siguiente':
-      return { ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % NUM_MAZOS }
+      return { ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e) }
     case 'aceptar-reto':
       return { ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto }
     case 'reto-conseguido': {

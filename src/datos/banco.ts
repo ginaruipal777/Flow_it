@@ -1,416 +1,329 @@
 /* ─────────────────────────────────────────────────────────────
-   Banco de acciones por categoría y nivel de esfuerzo
-   («Regla de oro: la ley del esfuerzo inverso»).
+   Banco de retos escritos a mano: categoría × nivel de esfuerzo × carta INCUP.
 
-   - Ligero  (ganas, solo falta un empujón): 1–3 min, puede tener algo de sustancia.
-   - Medio   (pereza o resistencia):         30–60 s, física, mecánica y acotada.
-   - Pesado  (bloqueo total):                5–10 s, casi ridícula. Prueba: «¿se podría
-                                             hacer tumbado en la cama sin levantarse?».
-
-   Reglas de cada acción (las comprueba scripts/validar-retos.mts):
-   1. Empieza por un verbo de acción física (Abre, Coge, Escribe, Ponte, Toca, Mira…).
-   2. Cero carga cognitiva: no pide pensar, decidir, organizar ni planificar.
-   3. Una sola acción: sin «y», «luego», «después» ni opciones con «o».
-   4. Sin tiempos ni prisas («en 2 minutos», «rápido», «tómate 5 minutos»).
-   5. Sin la palabra «tarea».
+   Cómo se escribe cada reto (investigación: Goblin Tools, Tiimo, Finch, guías de
+   inicio de tareas con TDAH y de comunicación para personas autistas; ver docs/comunicacion.md):
+   - La carta dice SOLO la acción: una frase, verbo físico primero, objeto concreto.
+     Sin entradillas («¡Plan nuevo!») ni coletillas pegadas con coma.
+   - El tipo de carta cambia la ACCIÓN, no le añade una coletilla:
+       Novedad  → otro sitio, otro orden u otra herramienta.
+       Desafío  → una meta pequeña que se puede contar («3 prendas», «a la primera»).
+       Pasión   → junto a algo que te gusta.
+       Interés  → con una persona o con un dato curioso.
+       Urgencia → la acción más directa; la app le añade un plazo corto (PLAZO).
+   - Nivel (ley del esfuerzo inverso):
+       Pesado → contacto mínimo; la app añade «Solo…». Se puede hacer sin levantarse de la cama.
+       Medio  → el primer movimiento físico.
+       Ligero → un trozo pequeño con final claro.
+   - Una sola acción (sin «y» ni «o»), sin «hacer», sin la palabra «tarea», sin juicios
+     y sin género gramatical para la persona.
+   Lo comprueba scripts/validar-retos.mts.
    ───────────────────────────────────────────────────────────── */
 
 import type { TipoReto } from '../components/CartaReto/tipos'
 
 export type Nivel = 'ligero' | 'medio' | 'pesado'
-export type Acciones = Record<Nivel, string[]>
+export type Cartas = Record<TipoReto, string>
+export type Acciones = Record<Nivel, Cartas>
 
-const a = (pesado: string[], medio: string[], ligero: string[]): Acciones => ({ pesado, medio, ligero })
+/** Orden de los argumentos: Novedad, Desafío, Pasión, Interés, Urgencia */
+const c = (novedad: string, desafio: string, pasion: string, interes: string, urgencia: string): Cartas => ({
+  novedad,
+  desafio,
+  pasion,
+  interes,
+  urgencia,
+})
+const a = (pesado: Cartas, medio: Cartas, ligero: Cartas): Acciones => ({ pesado, medio, ligero })
 
 export const BANCO: Record<string, Acciones> = {
   // ── Trabajo, administración y estudio ──
   Comunicación: a(
-    ['Abre la aplicación de correo', 'Pon las manos sobre el teclado', 'Mira el asunto del correo que tienes que responder'],
-    ['Pulsa «Responder» en ese correo', 'Escribe solo el saludo del correo', 'Escribe el nombre de la persona en el destinatario'],
-    ['Escribe la primera frase de la respuesta', 'Lee entero el correo que te han enviado', 'Busca el archivo adjunto que tienes que enviar'],
+    c('Abre el correo en el móvil en vez del ordenador', 'Lee el asunto del correo', 'Abre el correo con tu canción favorita sonando', 'Mira quién te ha escrito el correo', 'Abre la app de correo'),
+    c('Escribe el saludo del correo desde el móvil', 'Escribe un saludo de 5 palabras', 'Escribe el saludo con tu bebida favorita al lado', 'Copia en un pósit la pregunta del correo', 'Pulsa «Responder» en el correo'),
+    c('Escribe la respuesta en una nota del móvil', 'Escribe la respuesta en 3 frases', 'Escribe la respuesta con tu música favorita de fondo', 'Lee el correo en voz alta a una persona de confianza', 'Escribe la primera frase de la respuesta'),
   ),
   Administrativo: a(
-    ['Abre la web del trámite', 'Coge la carpeta de los papeles', 'Mira la primera casilla del formulario'],
-    ['Escribe tu nombre en la primera casilla', 'Saca tu DNI de la cartera', 'Pon el documento en pantalla completa'],
-    ['Rellena la primera sección del formulario', 'Lee la primera página del documento', 'Escanea con el móvil el primer papel que necesitas'],
+    c('Abre el documento en el móvil en vez del ordenador', 'Lee el título del documento', 'Abre el documento con tu canción favorita sonando', 'Mira la fecha límite del documento', 'Abre la web del trámite'),
+    c('Pon los papeles del trámite en otra mesa', 'Saca 3 papeles de la carpeta', 'Saca tu DNI con tu bebida favorita al lado', 'Envía una foto del papel a una persona de confianza', 'Escribe tu nombre en la primera casilla'),
+    c('Rellena el formulario empezando por la última casilla', 'Rellena 5 casillas del formulario', 'Rellena el formulario con tu música favorita de fondo', 'Rellena el formulario con una persona de confianza al lado', 'Rellena la primera sección del formulario'),
   ),
   Académico: a(
-    ['Abre el libro por la página del tema', 'Lee el título del tema', 'Mira el índice del libro'],
-    ['Lee la primera línea del tema', 'Subraya una palabra del primer párrafo', 'Escribe el título del tema en una hoja'],
-    ['Lee el primer párrafo en voz alta', 'Copia la primera definición del tema en una hoja', 'Escribe 3 palabras clave del primer párrafo'],
+    c('Abre los apuntes por la última página', 'Lee el título del tema', 'Abre el libro con tu bebida favorita al lado', 'Busca la palabra más rara del índice', 'Abre el libro por la página del tema'),
+    c('Lee la primera línea del tema en voz alta', 'Subraya 3 palabras del primer párrafo', 'Lee la primera línea con tu música tranquila de fondo', 'Envía a alguien de clase el título del tema', 'Escribe el título del tema en una hoja'),
+    c('Lee el primer párrafo empezando por la última frase', 'Escribe 3 palabras clave del primer párrafo', 'Lee el primer párrafo con tu bebida favorita al lado', 'Explica el primer párrafo a una persona de casa', 'Copia la primera definición del tema en una hoja'),
   ),
   Llamadas: a(
-    ['Coge el móvil con la mano', 'Abre la agenda del móvil', 'Busca el número en la agenda'],
-    ['Marca el número sin pulsar llamar', 'Pon el móvil delante de ti con el número en pantalla', 'Abre la web de citas de ese sitio'],
-    ['Pulsa el botón de llamar', 'Pide la cita en la web', 'Envía un mensaje para pedir la cita'],
+    c('Busca el número en el historial de llamadas', 'Busca el número a la primera', 'Coge el móvil con tu canción favorita sonando', 'Mira el horario de atención en su web', 'Coge el móvil'),
+    c('Marca el número desde otra habitación', 'Marca el número sin pulsar llamar', 'Marca el número con tu bebida favorita al lado', 'Escribe en un pósit tu pregunta para la llamada', 'Abre la web de citas de ese sitio'),
+    c('Pide la cita por la web en vez de llamar', 'Pulsa el botón de llamar a la primera', 'Pulsa el botón de llamar con tu bebida favorita al lado', 'Pulsa el botón de llamar con una persona de confianza al lado', 'Pulsa el botón de llamar'),
   ),
   Decisión: a(
-    ['Coge un papel', 'Coge un bolígrafo', 'Abre la aplicación de notas'],
-    ['Escribe arriba del papel lo que tienes que decidir', 'Escribe la primera opción en el papel', 'Dibuja una línea en medio del papel'],
-    ['Escribe las 2 opciones en el papel', 'Escribe una ventaja de la primera opción', 'Lanza una moneda entre las 2 opciones'],
+    c('Abre una nota nueva en el móvil', 'Escribe una palabra sobre la decisión', 'Coge tu boli favorito', 'Escribe a una persona de confianza «Tengo que decidir»', 'Coge un papel'),
+    c('Escribe las opciones en un pósit', 'Escribe 2 opciones en el papel', 'Escribe las opciones con tu boli favorito', 'Envía las opciones a una persona de confianza', 'Escribe arriba del papel lo que tienes que decidir'),
+    c('Dibuja las opciones en 2 columnas', 'Escribe 3 ventajas de la primera opción', 'Escribe las opciones con tu música favorita de fondo', 'Pregunta a una persona de confianza qué opción ve mejor', 'Lanza una moneda entre las 2 opciones'),
   ),
   Creativo: a(
-    ['Abre el documento del proyecto', 'Coge el lápiz', 'Mira la última página que hiciste'],
-    ['Escribe el título del proyecto', 'Escribe una palabra en el documento', 'Dibuja un garabato en una esquina de la hoja'],
-    ['Escribe una frase en el documento', 'Dibuja en el cuaderno un boceto de tu idea', 'Escribe 3 ideas en una lista'],
+    c('Abre el proyecto en el móvil en vez del ordenador', 'Mira la última página del proyecto', 'Abre el proyecto con tu canción favorita sonando', 'Mira una imagen que te inspire', 'Abre el documento del proyecto'),
+    c('Escribe una palabra en una hoja suelta', 'Escribe 3 palabras sobre el proyecto', 'Escribe el título con tu bebida favorita al lado', 'Envía a una persona de confianza una idea del proyecto', 'Escribe el título del proyecto'),
+    c('Dibuja un boceto en una hoja de otro color', 'Escribe 3 ideas en una lista', 'Escribe una frase con tu música favorita de fondo', 'Enseña el boceto a una persona de confianza', 'Escribe una frase en el documento'),
   ),
   Digital: a(
-    ['Abre la carpeta', 'Toca el ratón', 'Mira el primer archivo de la carpeta'],
-    ['Abre el primer archivo de la carpeta', 'Arrastra un archivo a la papelera', 'Cambia el nombre de un archivo'],
-    ['Mueve 5 archivos a su carpeta', 'Crea una carpeta nueva con un nombre claro', 'Vacía la papelera del ordenador'],
+    c('Abre la carpeta desde el móvil', 'Mira el primer archivo de la carpeta', 'Abre la carpeta con tu canción favorita sonando', 'Mira el archivo más antiguo de la carpeta', 'Abre la carpeta'),
+    c('Ordena la carpeta por fecha', 'Arrastra 3 archivos a la papelera', 'Cambia el nombre de un archivo con tu música favorita de fondo', 'Busca el archivo más pesado de la carpeta', 'Abre el primer archivo de la carpeta'),
+    c('Crea una carpeta nueva con un nombre claro', 'Mueve 5 archivos a su carpeta', 'Mueve archivos con tu música favorita de fondo', 'Enseña la carpeta ordenada a una persona de casa', 'Vacía la papelera del ordenador'),
+  ),
+  Test: a(
+    c('Abre la app del test en modo oscuro', 'Lee la primera pregunta del test', 'Abre la app del test con tu canción favorita sonando', 'Mira cuántos tests llevas en la app', 'Abre la app del test'),
+    c('Contesta la última pregunta del test', 'Contesta 3 preguntas del test', 'Contesta una pregunta con tu bebida favorita al lado', 'Envía a una persona de confianza una pregunta difícil del test', 'Contesta la primera pregunta del test'),
+    c('Contesta un test empezando por el final', 'Contesta 10 preguntas del test', 'Contesta un test con tu música favorita de fondo', 'Repasa con una persona de confianza las preguntas falladas', 'Contesta un test completo en la app'),
   ),
 
   // ── Hogar y vida cotidiana ──
   Doméstico: a(
-    ['Tira un papel a la papelera', 'Coge un trapo', 'Recoge una sola cosa del suelo'],
-    ['Recoge 5 cosas de la mesa', 'Limpia una esquina de la mesa', 'Vacía la papelera de la habitación'],
-    ['Recoge toda la mesa', 'Pasa el trapo por la mesa entera', 'Barre el suelo de la habitación'],
+    c('Mira la habitación desde la puerta', 'Tira un papel a la papelera', 'Pon tu canción favorita en el móvil', 'Busca el objeto que más tiempo lleva fuera de su sitio', 'Coge un trapo'),
+    c('Recoge la mesa empezando por la esquina contraria', 'Recoge 5 cosas de la mesa', 'Recoge la mesa con tu música favorita de fondo', 'Recoge la mesa con una persona de casa', 'Recoge una cosa del suelo'),
+    c('Limpia la habitación en un orden distinto al de siempre', 'Recoge 10 cosas de la habitación', 'Pasa el trapo con tu música favorita de fondo', 'Pasa el trapo con una persona de casa', 'Pasa el trapo por la mesa entera'),
   ),
   Compra: a(
-    ['Abre la aplicación de notas', 'Coge un papel', 'Mira la puerta de la nevera'],
-    ['Escribe en la lista el producto que falta en la nevera', 'Abre la nevera', 'Coge las bolsas de la compra'],
-    ['Escribe la lista con 5 cosas', 'Pulsa «Pedir» en la web del súper', 'Sal a la tienda con la lista'],
+    c('Abre la app del súper en vez de la lista de papel', 'Mira la puerta de la nevera', 'Abre la nota de la compra con tu canción favorita sonando', 'Mira qué falta en la despensa', 'Abre la nota de la compra'),
+    c('Escribe la lista empezando por la despensa', 'Escribe 3 productos en la lista', 'Escribe la lista con tu bebida favorita al lado', 'Pregunta a una persona de casa qué falta', 'Escribe en la lista el producto que más falta'),
+    c('Pide la compra por la web del súper', 'Escribe una lista con 10 productos', 'Sal a la tienda con tu música favorita en los auriculares', 'Sal a la tienda con una persona de casa', 'Coge las bolsas de la compra'),
   ),
   Cocina: a(
-    ['Mira la nevera', 'Coge una sartén', 'Lávate las manos'],
-    ['Saca un ingrediente de la nevera', 'Pon una olla con agua al fuego', 'Corta una verdura'],
-    ['Prepara un plato sencillo', 'Pon la mesa', 'Cocina la receta que tenías pensada'],
+    c('Abre una receta nueva en el móvil', 'Mira 3 ingredientes de la nevera', 'Pon tu canción favorita en la cocina', 'Busca en el móvil una receta con lo que tienes', 'Abre la nevera'),
+    c('Saca los ingredientes empezando por el último', 'Saca 3 ingredientes de la nevera', 'Saca los ingredientes con tu música favorita de fondo', 'Pide ayuda a una persona de casa para picar', 'Pon una olla con agua al fuego'),
+    c('Cocina una receta que no has probado', 'Corta 3 verduras', 'Cocina con tu música favorita de fondo', 'Cocina con una persona de casa', 'Prepara un plato sencillo'),
   ),
   Ropa: a(
-    ['Coge una prenda del suelo', 'Toca el cesto de la ropa', 'Abre la puerta de la lavadora'],
-    ['Mete 5 prendas en la lavadora', 'Dobla una camiseta', 'Tiende 3 prendas'],
-    ['Pon una lavadora', 'Tiende toda la colada', 'Guarda la ropa limpia en el armario'],
+    c('Mira el cesto de la ropa desde la puerta', 'Coge una prenda del suelo', 'Pon tu canción favorita en el móvil', 'Busca la prenda que más te gusta del cesto', 'Toca el cesto de la ropa'),
+    c('Mete la ropa en la lavadora empezando por la oscura', 'Mete 5 prendas en la lavadora', 'Dobla una camiseta con tu música favorita de fondo', 'Dobla la ropa con una persona de casa', 'Abre la puerta de la lavadora'),
+    c('Dobla la ropa sobre la cama en vez de la mesa', 'Tiende 10 prendas', 'Tiende la ropa con tu música favorita de fondo', 'Tiende la ropa con una persona de casa', 'Pon una lavadora'),
   ),
 
   // ── Ocio y entretenimiento ──
   'Ver serie': a(
-    ['Coge el mando', 'Abre la aplicación de la serie', 'Siéntate en el sofá'],
-    ['Pon el capítulo', 'Busca la serie en la aplicación', 'Pon un cuenco de picoteo junto al sofá'],
-    ['Mira un capítulo entero', 'Deja el móvil en otra habitación', 'Pon el siguiente capítulo'],
+    c('Abre la app de la serie en otra pantalla', 'Busca la serie a la primera', 'Coge una manta para el sofá', 'Mira el tráiler del siguiente capítulo', 'Coge el mando'),
+    c('Siéntate en un sitio distinto del sofá', 'Pon el capítulo sin mirar el móvil', 'Pon un cuenco de picoteo junto al sofá', 'Escribe a una persona de confianza para ver el capítulo a la vez', 'Pon el capítulo'),
+    c('Mira el capítulo con la luz apagada', 'Mira un capítulo entero sin mirar el móvil', 'Mira el capítulo con tu manta favorita', 'Mira el capítulo con una persona de casa', 'Pon el siguiente capítulo'),
   ),
   'Ver película': a(
-    ['Coge el mando', 'Abre la plataforma', 'Siéntate en el sofá'],
-    ['Busca una película en la plataforma', 'Mira el tráiler de una película', 'Pon la primera película de tu lista'],
-    ['Pon la película', 'Mira la película entera', 'Mete las palomitas en el microondas'],
+    c('Abre una plataforma que no sueles usar', 'Mira 3 carátulas de películas', 'Coge una manta para el sofá', 'Mira el tráiler de una película', 'Coge el mando'),
+    c('Busca una película de otro país', 'Pon la primera película de tu lista', 'Mete las palomitas en el microondas', 'Pregunta a una persona de casa qué película le apetece', 'Pon la película'),
+    c('Mira la película con la luz apagada', 'Mira la película entera sin mirar el móvil', 'Mira la película con tu manta favorita', 'Mira la película con una persona de casa', 'Pulsa play en la película'),
   ),
   Lectura: a(
-    ['Coge el libro', 'Abre el libro por el marcapáginas', 'Lee el título del capítulo'],
-    ['Lee una página del libro', 'Lee el primer párrafo en voz alta', 'Subraya una frase que te guste'],
-    ['Lee 5 páginas', 'Lee hasta el final del capítulo', 'Lee una página entera en voz alta'],
+    c('Abre el libro por una página al azar', 'Lee el título del capítulo', 'Coge el libro con tu bebida favorita al lado', 'Lee la última frase del capítulo', 'Coge el libro'),
+    c('Lee una página en voz alta', 'Lee 2 páginas del libro', 'Lee una página con tu bebida favorita al lado', 'Lee una frase bonita a una persona de casa', 'Abre el libro por el marcapáginas'),
+    c('Lee en un sitio de la casa distinto al de siempre', 'Lee 10 páginas del libro', 'Lee con tu manta favorita encima', 'Envía tu frase favorita del capítulo a una persona de confianza', 'Lee hasta el final del capítulo'),
   ),
   Videojuego: a(
-    ['Coge el mando', 'Enciende la consola', 'Abre el juego'],
-    ['Carga tu última partida', 'Entra en el primer nivel', 'Juega una partida corta'],
-    ['Supera un nivel', 'Juega una partida entera', 'Prueba un modo que no hayas usado'],
+    c('Enciende la consola desde el mando', 'Coge el mando a la primera', 'Pon la banda sonora del juego', 'Mira el último logro que conseguiste', 'Coge el mando'),
+    c('Prueba un modo de juego nuevo', 'Supera un nivel a la primera', 'Juega con tu bebida favorita al lado', 'Juega una partida con una persona de casa', 'Carga tu última partida'),
+    c('Juega con otro personaje', 'Supera 3 niveles', 'Juega con tu manta favorita encima', 'Juega en línea con una persona de confianza', 'Juega una partida entera'),
   ),
   Música: a(
-    ['Coge los auriculares', 'Abre la aplicación de música', 'Pulsa el botón de play'],
-    ['Pon una canción que te guste', 'Busca un disco que te guste', 'Sube el volumen'],
-    ['Guarda 5 canciones en una lista nueva', 'Escucha un disco entero', 'Pon un artista que no conozcas'],
+    c('Abre la app de música en otro dispositivo', 'Pulsa el botón de play', 'Coge tus auriculares favoritos', 'Mira qué canción es la más escuchada esta semana', 'Coge los auriculares'),
+    c('Pon un disco antiguo que tenías olvidado', 'Guarda 3 canciones en una lista nueva', 'Pon tu canción favorita a todo volumen', 'Envía una canción a una persona de confianza', 'Pon una canción'),
+    c('Escucha un disco entero de un artista nuevo', 'Guarda 10 canciones en una lista nueva', 'Escucha tu disco favorito entero', 'Escucha un disco con una persona de casa', 'Escucha un disco entero'),
   ),
   Podcast: a(
-    ['Ponte los auriculares', 'Abre la aplicación de podcasts', 'Pulsa play en el último episodio'],
-    ['Pon el episodio', 'Busca el podcast', 'Escucha la presentación del episodio'],
-    ['Escucha un episodio entero', 'Apunta una idea del episodio', 'Escucha el episodio paseando'],
+    c('Abre la app de podcasts en el ordenador', 'Lee el título del episodio', 'Coge tus auriculares favoritos', 'Lee la descripción del episodio', 'Ponte los auriculares'),
+    c('Pon el episodio a otra velocidad', 'Escucha la presentación del episodio', 'Pon el episodio con tu bebida favorita al lado', 'Envía el episodio a una persona de confianza', 'Pulsa play en el episodio'),
+    c('Escucha el episodio paseando por la calle', 'Apunta 3 ideas del episodio', 'Escucha el episodio con tu manta favorita encima', 'Escucha el episodio con una persona de casa', 'Escucha un episodio entero'),
   ),
   Vídeo: a(
-    ['Abre la aplicación de vídeos', 'Ponte los auriculares', 'Coge el móvil'],
-    ['Busca el vídeo', 'Pulsa play en el vídeo', 'Guarda el vídeo en tu lista'],
-    ['Mira el vídeo entero', 'Copia en tu libreta el primer paso que enseña el vídeo', 'Apunta una cosa que aprendas del vídeo'],
+    c('Abre el vídeo en el ordenador en vez del móvil', 'Lee el título del vídeo', 'Coge tus auriculares favoritos', 'Lee los comentarios del vídeo', 'Coge el móvil'),
+    c('Pon el vídeo a pantalla completa', 'Busca el vídeo a la primera', 'Pon el vídeo con tu bebida favorita al lado', 'Envía el vídeo a una persona de confianza', 'Pulsa play en el vídeo'),
+    c('Copia en tu libreta el primer paso que enseña el vídeo', 'Apunta 3 cosas que enseña el vídeo', 'Mira el vídeo con tu manta favorita encima', 'Mira el vídeo con una persona de casa', 'Mira el vídeo entero'),
   ),
 
   // ── Deporte y movimiento ──
   Gimnasio: a(
-    ['Estira los brazos hacia arriba', 'Mira la mochila del gimnasio', 'Ponte una zapatilla'],
-    ['Ponte la ropa de deporte', 'Baja 5 veces en sentadilla junto a una silla', 'Llena la botella de agua'],
-    ['Coge las pesas para una serie de tu ejercicio favorito', 'Sal hacia el gimnasio', 'Completa 3 ejercicios de la tabla de tu rutina'],
+    c('Mira la mochila del gimnasio desde la cama', 'Estira los brazos hacia arriba', 'Pon tu canción de entrenar favorita', 'Mira el horario de clases del gimnasio', 'Ponte una zapatilla'),
+    c('Ponte la ropa de deporte empezando por los calcetines', 'Baja 5 veces en sentadilla junto a una silla', 'Ponte tu ropa de deporte favorita', 'Escribe a una persona de confianza que vas al gimnasio', 'Llena la botella de agua'),
+    c('Prueba una máquina que no has usado', 'Completa 3 ejercicios de tu rutina', 'Entrena con tu música favorita en los auriculares', 'Entrena con una persona de confianza', 'Sal hacia el gimnasio'),
   ),
   Correr: a(
-    ['Ponte una zapatilla', 'Coge los auriculares', 'Estira las piernas'],
-    ['Ponte las zapatillas', 'Ponte la ropa de correr', 'Sal a la puerta de casa'],
-    ['Corre hasta la siguiente esquina', 'Sal a correr por tu ruta de siempre', 'Corre por una calle nueva'],
+    c('Mira una ruta nueva en el mapa', 'Estira las piernas', 'Pon tu canción de correr favorita', 'Mira cuántos kilómetros corriste la última vez', 'Ponte una zapatilla'),
+    c('Ponte la ropa de correr empezando por las zapatillas', 'Ponte la ropa de correr sin sentarte', 'Ponte tu ropa de correr favorita', 'Escribe a una persona de confianza que sales a correr', 'Ponte las zapatillas'),
+    c('Corre por una calle nueva', 'Corre hasta la tercera esquina', 'Corre con tu música favorita en los auriculares', 'Corre con una persona de confianza', 'Sal a correr por tu ruta de siempre'),
   ),
   Caminar: a(
-    ['Mira por la ventana', 'Ponte un zapato', 'Estira las piernas'],
-    ['Ponte los zapatos', 'Sal al portal', 'Camina hasta la puerta de la calle'],
-    ['Camina hasta el final de la calle', 'Da una vuelta a la manzana', 'Camina por una calle nueva'],
+    c('Mira por la ventana del salón', 'Estira las piernas', 'Pon tu canción favorita', 'Busca en el mapa un parque cercano', 'Ponte un zapato'),
+    c('Sal por la puerta de atrás del edificio', 'Camina hasta la puerta de la calle', 'Ponte tus zapatillas favoritas', 'Escribe a una persona de confianza para pasear contigo', 'Ponte los zapatos'),
+    c('Camina por una calle nueva', 'Da una vuelta a 2 manzanas', 'Camina con tu música favorita en los auriculares', 'Camina con una persona de confianza', 'Da una vuelta a la manzana'),
   ),
   Yoga: a(
-    ['Estira los brazos hacia arriba', 'Siéntate en el suelo', 'Coge la esterilla'],
-    ['Extiende la esterilla', 'Ponte en la esterilla en la postura del niño', 'Pon un vídeo de yoga'],
-    ['Sigue 3 posturas del vídeo de yoga', 'Sigue una clase de yoga en vídeo', 'Estira las piernas sobre la esterilla'],
+    c('Estira los brazos en la cama', 'Respira hondo 3 veces', 'Pon tu música tranquila favorita', 'Busca el nombre de una postura nueva', 'Coge la esterilla'),
+    c('Extiende la esterilla en otra habitación', 'Ponte en la postura del niño a la primera', 'Ponte en la esterilla con tu música tranquila favorita', 'Ponte en la esterilla con una persona de casa', 'Extiende la esterilla'),
+    c('Sigue un vídeo de yoga nuevo', 'Sigue 3 posturas del vídeo de yoga', 'Sigue una clase con tu música tranquila favorita', 'Sigue una clase con una persona de casa', 'Sigue una clase de yoga en vídeo'),
   ),
   Bici: a(
-    ['Coge el casco', 'Coge las llaves del candado', 'Mira la bici'],
-    ['Saca la bici a la calle', 'Ponte el casco', 'Infla las ruedas'],
-    ['Da una vuelta a la manzana en bici', 'Ve en bici a un sitio cercano', 'Sal a dar un paseo en bici'],
+    c('Mira una ruta nueva en el mapa', 'Coge las llaves del candado a la primera', 'Coge tus guantes favoritos', 'Mira cuántos kilómetros recorriste la última vez', 'Coge el casco'),
+    c('Saca la bici por otra puerta', 'Infla las 2 ruedas', 'Ponte tu ropa favorita para la bici', 'Escribe a una persona de confianza para salir en bici', 'Saca la bici a la calle'),
+    c('Pedalea por una calle nueva', 'Pedalea hasta el tercer cruce', 'Pedalea con tu música favorita a bajo volumen', 'Pedalea con una persona de confianza', 'Da una vuelta a la manzana en bici'),
   ),
   Natación: a(
-    ['Coge el bañador', 'Coge la toalla', 'Abre la mochila'],
-    ['Mete el bañador en la mochila', 'Mete la toalla en la mochila', 'Busca el horario de la piscina'],
-    ['Ve a la piscina', 'Nada 4 largos', 'Nada un largo en otro estilo'],
+    c('Mira el horario de una piscina nueva', 'Coge el bañador a la primera', 'Coge tu toalla favorita', 'Mira cuántos largos nadaste la última vez', 'Coge el bañador'),
+    c('Prepara la mochila empezando por las chanclas', 'Mete 3 cosas de nadar en la mochila', 'Mete tu toalla favorita en la mochila', 'Escribe a una persona de confianza para ir a nadar', 'Mete el bañador en la mochila'),
+    c('Nada un largo en otro estilo', 'Nada 4 largos', 'Nada con tus gafas favoritas', 'Nada con una persona de confianza', 'Ve a la piscina'),
   ),
   Baile: a(
-    ['Pon una canción', 'Mueve los hombros', 'Mueve los pies al ritmo'],
-    ['Baila el estribillo de una canción', 'Pon tu canción favorita', 'Mueve los brazos al ritmo'],
-    ['Baila una canción entera', 'Aprende un paso nuevo con un vídeo', 'Repite la coreografía una vez'],
+    c('Pon una canción de un estilo nuevo', 'Mueve los hombros 5 veces', 'Pon tu canción de bailar favorita', 'Busca un paso de baile nuevo en un vídeo', 'Pon una canción'),
+    c('Baila el estribillo en otra habitación', 'Baila el estribillo entero', 'Baila tu canción favorita', 'Baila el estribillo con una persona de casa', 'Baila el estribillo de una canción'),
+    c('Aprende un paso nuevo con un vídeo', 'Repite la coreografía 3 veces', 'Baila 3 canciones que te encanten', 'Baila con una persona de casa', 'Baila una canción entera'),
   ),
   Escalada: a(
-    ['Coge los pies de gato', 'Coge la bolsa de magnesio', 'Abre la mochila'],
-    ['Mete el material en la mochila', 'Sal hacia el rocódromo', 'Estira los brazos'],
-    ['Sube tu bloque favorito', 'Intenta un bloque nuevo', 'Intenta el mismo bloque 3 veces'],
+    c('Mira el horario de un rocódromo nuevo', 'Coge los pies de gato a la primera', 'Coge tu bolsa de magnesio favorita', 'Mira el vídeo de un bloque nuevo', 'Abre la mochila'),
+    c('Mete el material en la mochila empezando por el arnés', 'Mete 3 cosas de escalar en la mochila', 'Ponte tu ropa de escalar favorita', 'Escribe a una persona de confianza para ir a escalar', 'Mete los pies de gato en la mochila'),
+    c('Intenta un bloque de otro color', 'Intenta el mismo bloque 3 veces', 'Sube tu bloque favorito', 'Escala con una persona de confianza', 'Sal hacia el rocódromo'),
   ),
   'Deporte en equipo': a(
-    ['Coge la equipación', 'Abre el chat del equipo', 'Ponte una zapatilla'],
-    ['Mete la equipación en la bolsa', 'Escribe en el chat que vas', 'Ponte la equipación'],
-    ['Ve al entrenamiento', 'Juega el partido', 'Calienta con el equipo'],
+    c('Mira el chat del equipo en el ordenador', 'Lee el último mensaje del chat del equipo', 'Coge tu camiseta del equipo favorita', 'Mira la clasificación de la liga', 'Coge la equipación'),
+    c('Prepara la bolsa empezando por las botas', 'Mete 3 cosas del equipo en la bolsa', 'Ponte tu equipación favorita', 'Escribe en el chat del equipo que vas', 'Mete la equipación en la bolsa'),
+    c('Juega en una posición distinta', 'Calienta 3 ejercicios con el equipo', 'Juega con tus botas favoritas', 'Calienta con una persona del equipo', 'Ve al entrenamiento'),
   ),
 
   // ── Vida social ──
   'Quedar con amigos': a(
-    ['Coge el móvil', 'Abre el chat del grupo', 'Busca el contacto de tu amigo'],
-    ['Escribe «¿Quedamos esta semana?»', 'Envía un emoji al chat', 'Escribe un día que te venga bien'],
-    ['Escribe en el chat un día para quedar','Llama a un amigo para quedar', 'Envía un mensaje a 3 amigos'],
+    c('Abre el chat del grupo en el ordenador', 'Busca el chat del grupo a la primera', 'Abre el chat con tu canción favorita sonando', 'Mira la última foto que os hicisteis', 'Abre el chat del grupo'),
+    c('Envía un audio al grupo en vez de un texto', 'Escribe «¿Quedamos esta semana?» en el chat', 'Envía una foto de un plan que te apetezca', 'Pregunta en el chat qué le apetece a cada persona', 'Envía «¿Quedamos?» al grupo'),
+    c('Propón un plan que no habéis probado nunca', 'Envía un mensaje a 3 amistades', 'Propón un plan que te encante', 'Llama a una amistad para quedar', 'Escribe en el chat un día para quedar'),
   ),
   'Llamada social': a(
-    ['Busca el contacto', 'Abre el chat de esa persona', 'Mira su foto de perfil'],
-    ['Envía «Hola» en su chat', 'Envía un audio corto', 'Envía un emoji'],
-    ['Llama a esa persona', 'Escribe un mensaje de dos líneas', 'Pregúntale qué tal está'],
+    c('Mira su chat en el ordenador', 'Busca el contacto a la primera', 'Mira su foto de perfil favorita', 'Lee el último mensaje que te envió', 'Abre su chat'),
+    c('Envía un audio en vez de un texto', 'Envía un mensaje de 3 palabras', 'Envía una canción que te recuerde a esa persona', 'Pregúntale qué tal le va', 'Envía «Hola» en su chat'),
+    c('Llama con videollamada en vez de voz', 'Escribe un mensaje de 3 frases', 'Llama mientras paseas por tu sitio favorito', 'Llama para preguntar por su semana', 'Llama a esa persona'),
   ),
   Cumpleaños: a(
-    ['Abre el chat de esa persona', 'Busca una foto en la que salgáis juntos', 'Escribe la palabra «Felicidades»'],
-    ['Envía «¡Felicidades!» en su chat', 'Envía una foto en la que salgáis juntos', 'Envía un audio cantando «Cumpleaños feliz»'],
-    ['Escribe una felicitación de tres frases', 'Llama para felicitar', 'Compra el regalo'],
+    c('Busca una foto antigua en la que salgáis', 'Escribe «Felicidades» en su chat sin enviarlo', 'Abre su chat con tu canción favorita sonando', 'Mira qué edad cumple', 'Abre su chat'),
+    c('Envía un audio cantando «Cumpleaños feliz»', 'Envía «¡Felicidades!» con 3 emojis', 'Envía la foto en la que salís mejor', 'Pregúntale qué plan tiene para su cumpleaños', 'Envía «¡Felicidades!» en su chat'),
+    c('Graba un vídeo corto de felicitación', 'Escribe una felicitación de 3 frases', 'Envía una canción que os guste', 'Llama para felicitar', 'Compra el regalo'),
   ),
   Fiesta: a(
-    ['Abre la invitación', 'Mira la dirección de la fiesta', 'Abre el armario'],
-    ['Confirma que vas', 'Saca la ropa que te vas a poner', 'Escribe a alguien para ir juntos'],
-    ['Prepara lo que vas a llevar', 'Vístete para la fiesta', 'Sal hacia la fiesta'],
+    c('Mira la invitación en el ordenador', 'Lee la dirección de la fiesta', 'Abre el armario con tu canción favorita sonando', 'Mira quién más va a la fiesta', 'Abre la invitación'),
+    c('Saca una prenda que no te pones nunca', 'Saca 3 opciones de ropa', 'Saca tu prenda favorita', 'Escribe a una persona de confianza para ir a la fiesta contigo', 'Confirma que vas'),
+    c('Prueba un peinado distinto', 'Prepara 3 cosas para llevar', 'Vístete con tu ropa favorita', 'Sal hacia la fiesta con una persona de confianza', 'Vístete para la fiesta'),
   ),
   Familia: a(
-    ['Coge el móvil', 'Abre el chat de la familia', 'Busca el contacto'],
-    ['Envía «¿Qué tal?»', 'Escribe el día de la visita', 'Envía una foto'],
-    ['Llama para confirmar el plan', 'Escribe en el chat la fecha de la visita','Prepara lo que vas a llevar'],
+    c('Mira el chat familiar en el ordenador', 'Lee el último mensaje del chat familiar', 'Busca tu foto familiar favorita', 'Mira la última foto que enviaron', 'Abre el chat de la familia'),
+    c('Envía un audio en vez de un texto', 'Envía «¿Qué tal?» con 3 emojis', 'Envía tu foto familiar favorita', 'Pregunta cómo les ha ido la semana', 'Envía «¿Qué tal?» en el chat'),
+    c('Propón una visita a un sitio nuevo', 'Escribe en el chat la fecha de la visita', 'Propón la comida favorita de la familia', 'Llama para preguntar por la familia', 'Llama para confirmar el plan'),
   ),
   Cita: a(
-    ['Coge el móvil', 'Abre el chat de esa persona', 'Mira el último mensaje'],
-    ['Escribe «¿Te apetece quedar?»', 'Escribe «¿Te viene bien este finde?»', 'Busca un sitio en el mapa'],
-    ['Envía la propuesta de un día para quedar','Llama para quedar', 'Reserva el sitio'],
+    c('Mira su chat en el ordenador', 'Lee su último mensaje', 'Abre su chat con tu canción favorita sonando', 'Mira su foto de perfil', 'Abre su chat'),
+    c('Envía un audio en vez de un texto', 'Escribe «¿Te apetece quedar?» a la primera', 'Envía una foto de tu sitio favorito', 'Pregúntale qué plan le apetece', 'Escribe «¿Te apetece quedar?»'),
+    c('Propón un sitio que no conocéis', 'Envía la propuesta de un día para quedar', 'Propón tu sitio favorito', 'Llama para quedar', 'Reserva el sitio'),
   ),
   'Chat de grupo': a(
-    ['Abre el chat del grupo', 'Lee el último mensaje', 'Mira las fotos del chat'],
-    ['Responde con un emoji', 'Responde a un mensaje', 'Envía una foto'],
-    ['Responde a 3 mensajes', 'Escribe una pregunta en el chat del grupo', 'Envía un audio al grupo'],
+    c('Abre el chat del grupo en el ordenador', 'Lee el último mensaje del chat', 'Abre el chat con tu canción favorita sonando', 'Mira las fotos del chat', 'Abre el chat del grupo'),
+    c('Responde con un audio', 'Responde con un emoji', 'Envía una foto que te guste', 'Pregunta al grupo qué tal la semana', 'Responde a un mensaje'),
+    c('Envía una foto de tu día', 'Responde a 3 mensajes', 'Envía una canción que te guste', 'Escribe una pregunta en el chat del grupo', 'Responde al mensaje más antiguo'),
   ),
 
   // ── Hobbies y creatividad ──
   Dibujo: a(
-    ['Coge un lápiz', 'Pon un papel en la mesa', 'Abre el cuaderno'],
-    ['Dibuja un círculo', 'Dibuja una línea', 'Dibuja la taza que tengas en la mesa'],
-    ['Dibuja en el cuaderno tu objeto favorito', 'Dibuja en el cuaderno la vista de tu ventana', 'Llena una página de garabatos'],
+    c('Coge un rotulador en vez del lápiz', 'Coge un lápiz a la primera', 'Coge tu lápiz favorito', 'Mira un dibujo que te inspire', 'Abre el cuaderno'),
+    c('Dibuja con un color que no usas', 'Dibuja 3 círculos', 'Dibuja tu objeto favorito', 'Dibuja la taza que tengas en la mesa', 'Dibuja una línea'),
+    c('Dibuja la vista de tu ventana', 'Llena una página de garabatos', 'Dibuja en el cuaderno tu objeto favorito', 'Dibuja a una persona de casa', 'Dibuja en el cuaderno un boceto de tu idea'),
   ),
   Escritura: a(
-    ['Abre el cuaderno', 'Coge el bolígrafo', 'Abre el documento'],
-    ['Escribe la fecha', 'Escribe una palabra', 'Escribe el título'],
-    ['Escribe una frase', 'Escribe un párrafo', 'Escribe en el cuaderno una cosa que te ha pasado hoy'],
+    c('Abre una nota nueva en el móvil', 'Coge el bolígrafo a la primera', 'Coge tu bolígrafo favorito', 'Lee la última frase que escribiste', 'Abre el cuaderno'),
+    c('Escribe con un boli de otro color', 'Escribe 3 palabras', 'Escribe con tu bebida favorita al lado', 'Escribe una palabra que te guste', 'Escribe la fecha'),
+    c('Escribe en una hoja suelta', 'Escribe un párrafo de 5 líneas', 'Escribe con tu música favorita de fondo', 'Escribe en el cuaderno una cosa que te ha pasado hoy', 'Escribe una frase'),
   ),
   Fotografía: a(
-    ['Coge la cámara', 'Abre la cámara del móvil', 'Mira por la ventana'],
-    ['Pulsa el disparador de la cámara', 'Fotografía con el móvil un objeto rojo de tu casa', 'Limpia el objetivo'],
-    ['Saca 5 fotos con la cámara', 'Edita una foto', 'Sal a la calle con la cámara colgada'],
+    c('Abre la cámara en modo monocromo', 'Abre la cámara a la primera', 'Coge tu cámara favorita', 'Mira tu foto favorita de la galería', 'Abre la cámara del móvil'),
+    c('Pulsa el disparador desde un ángulo nuevo', 'Saca 3 fotos de tu habitación', 'Fotografía tu objeto favorito', 'Fotografía con el móvil un objeto rojo de tu casa', 'Pulsa el disparador de la cámara'),
+    c('Sal a la calle con la cámara colgada', 'Saca 10 fotos en la calle', 'Fotografía tu sitio favorito del barrio', 'Saca fotos con una persona de confianza', 'Saca 5 fotos con la cámara'),
   ),
   'Cocina creativa': a(
-    ['Abre el libro de recetas', 'Coge un delantal', 'Mira la nevera'],
-    ['Saca los ingredientes de la receta', 'Lava un ingrediente', 'Pesa un ingrediente'],
-    ['Prepara la receta', 'Añade un ingrediente nuevo', 'Prepara el postre'],
+    c('Busca una receta de otro país', 'Lee los ingredientes de la receta', 'Abre tu libro de recetas favorito', 'Mira una foto de la receta', 'Abre el libro de recetas'),
+    c('Saca los ingredientes empezando por las especias', 'Pesa 3 ingredientes', 'Ponte tu delantal favorito', 'Pide ayuda a una persona de casa para lavar los ingredientes', 'Saca los ingredientes de la receta'),
+    c('Añade un ingrediente nuevo a la receta', 'Prepara la receta con 5 ingredientes', 'Prepara tu postre favorito', 'Cocina la receta con una persona de casa', 'Prepara la receta'),
   ),
   Manualidades: a(
-    ['Coge el material', 'Abre la caja de material', 'Toca el material'],
-    ['Pon el material sobre la mesa', 'Corta la primera pieza', 'Da la primera puntada'],
-    ['Termina una fila de la pieza', 'Sigue un tutorial', 'Empieza una pieza nueva'],
+    c('Abre la caja de material por el otro lado', 'Coge el material a la primera', 'Coge tu material favorito', 'Mira una foto de la pieza terminada', 'Abre la caja de material'),
+    c('Pon el material en otra mesa', 'Corta 3 piezas', 'Corta la primera pieza con tu música favorita de fondo', 'Enseña el material a una persona de casa', 'Pon el material sobre la mesa'),
+    c('Sigue un tutorial nuevo', 'Termina 3 filas de la pieza', 'Termina una fila con tu música favorita de fondo', 'Termina una fila con una persona de casa', 'Termina una fila de la pieza'),
   ),
   Instrumento: a(
-    ['Mira el instrumento', 'Coge el instrumento', 'Abre la funda'],
-    ['Toca una nota', 'Afina una cuerda', 'Toca una escala'],
-    ['Toca una canción', 'Toca tu canción favorita', 'Repite el ejercicio de la última clase'],
+    c('Mira el instrumento desde otro sitio', 'Abre la funda a la primera', 'Pon tu canción favorita para tocar', 'Escucha la canción que quieres aprender', 'Coge el instrumento'),
+    c('Toca una nota que no usas nunca', 'Afina 3 cuerdas', 'Toca tu nota favorita', 'Toca una nota para una persona de casa', 'Toca una nota'),
+    c('Toca la canción más despacio de lo normal', 'Toca la escala 3 veces', 'Toca tu canción favorita', 'Toca una canción para una persona de casa', 'Toca una canción'),
   ),
   Jardín: a(
-    ['Coge la regadera', 'Mira las plantas', 'Toca la tierra de una maceta'],
-    ['Llena la regadera', 'Riega una planta', 'Quita una hoja seca'],
-    ['Riega todas las plantas', 'Cambia una planta de maceta', 'Quita las hojas secas de todas las plantas'],
+    c('Mira las plantas desde la ventana', 'Toca la tierra de una maceta', 'Coge tu regadera favorita', 'Busca una hoja nueva en una planta', 'Coge la regadera'),
+    c('Riega las plantas empezando por la más pequeña', 'Quita 3 hojas secas', 'Riega una planta con tu música favorita de fondo', 'Riega una planta con una persona de casa', 'Llena la regadera'),
+    c('Cambia una planta de sitio', 'Riega 5 plantas', 'Riega las plantas con tu música favorita de fondo', 'Riega las plantas con una persona de casa', 'Riega todas las plantas'),
   ),
   Meditación: a(
-    ['Cierra los ojos', 'Respira hondo una vez', 'Pon las manos sobre las rodillas'],
-    ['Respira hondo 3 veces', 'Pon una meditación guiada', 'Siéntate con la espalda recta'],
-    ['Escucha una meditación guiada en el móvil', 'Respira hondo 10 veces', 'Siéntate en un cojín con los ojos cerrados'],
+    c('Cierra los ojos en la cama', 'Respira hondo una vez', 'Pon tu música tranquila favorita', 'Escucha los sonidos de la habitación', 'Cierra los ojos'),
+    c('Siéntate en un cojín en otra habitación', 'Respira hondo 5 veces', 'Respira con tu olor favorito cerca', 'Escucha una meditación guiada en el móvil', 'Siéntate con la espalda recta'),
+    c('Escucha una meditación guiada nueva', 'Respira hondo 10 veces', 'Medita con tu música tranquila favorita', 'Medita con una persona de casa', 'Escucha una meditación guiada entera'),
   ),
 
   // ── Descanso y autocuidado ──
   Descanso: a(
-    ['Deja el móvil en la mesilla', 'Apaga la luz grande', 'Tápate con la manta'],
-    ['Pon el móvil a cargar lejos de la cama', 'Ponte el pijama', 'Lávate los dientes'],
-    ['Métete en la cama', 'Lee una página en la cama', 'Apaga todas las pantallas'],
+    c('Deja el móvil en la mesilla boca abajo', 'Apaga la luz grande', 'Tápate con tu manta favorita', 'Escucha un sonido de lluvia en el móvil', 'Deja el móvil en la mesilla'),
+    c('Pon el móvil a cargar fuera de la habitación', 'Apaga 3 pantallas', 'Ponte tu pijama favorito', 'Envía «Buenas noches» a una persona de confianza', 'Ponte el pijama'),
+    c('Lee una página de un libro de papel en la cama', 'Apaga todas las pantallas de la casa', 'Métete en la cama con tu manta favorita', 'Escucha un cuento para dormir en el móvil', 'Métete en la cama'),
   ),
   Aseo: a(
-    ['Mira la puerta del baño', 'Coge la toalla', 'Ponte las zapatillas de casa'],
-    ['Lávate la cara', 'Lávate los dientes', 'Abre la ducha'],
-    ['Abre el grifo de la ducha', 'Lávate el pelo', 'Prepara la ropa limpia'],
+    c('Mira la puerta del baño desde la cama', 'Coge la toalla a la primera', 'Coge tu toalla favorita', 'Mira tu gel favorito en la estantería', 'Coge la toalla'),
+    c('Lávate la cara con agua fría', 'Lávate los dientes contando hasta 30', 'Lávate la cara con tu jabón favorito', 'Escucha un pódcast curioso en el baño', 'Lávate la cara'),
+    c('Dúchate con la luz baja', 'Lávate el pelo', 'Dúchate con tu música favorita', 'Prepara la ropa limpia con tu prenda favorita', 'Abre el grifo de la ducha'),
   ),
   Skincare: a(
-    ['Coge un producto', 'Abre el bote de crema', 'Mírate en el espejo'],
-    ['Lávate la cara', 'Ponte la crema hidratante', 'Ponte protector solar'],
-    ['Ponte cada producto de tu rutina en la cara', 'Ponte una mascarilla', 'Pasa el desmaquillante por la cara'],
+    c('Mírate en el espejo con otra luz', 'Coge un producto a la primera', 'Coge tu crema favorita', 'Lee la etiqueta de tu crema', 'Abre el bote de crema'),
+    c('Ponte la crema empezando por el cuello', 'Ponte 2 productos en la cara', 'Ponte tu crema favorita', 'Ponte la crema con una persona de casa', 'Lávate la cara'),
+    c('Ponte una mascarilla nueva', 'Ponte 3 productos de tu rutina', 'Ponte una mascarilla con tu música favorita', 'Ponte una mascarilla con una persona de casa', 'Pasa el desmaquillante por la cara'),
   ),
   Comida: a(
-    ['Mira hacia la cocina', 'Coge un plato', 'Abre la nevera'],
-    ['Saca de la nevera un yogur', 'Pon un plato en la mesa', 'Calienta la comida'],
-    ['Prepara un bocadillo en un plato', 'Siéntate a comer', 'Come sin mirar el móvil'],
+    c('Mira la nevera desde la puerta de la cocina', 'Coge un plato a la primera', 'Coge tu plato favorito', 'Mira qué hay en la nevera', 'Abre la nevera'),
+    c('Pon la mesa en otro sitio de la casa', 'Saca 2 alimentos de la nevera', 'Saca tu comida favorita de la nevera', 'Pregunta a una persona de casa qué le apetece', 'Calienta la comida'),
+    c('Come en un sitio nuevo de la casa', 'Prepara un plato con 3 alimentos', 'Prepara tu bocadillo favorito', 'Come con una persona de casa', 'Prepara un bocadillo en un plato'),
   ),
   Hidratación: a(
-    ['Bebe un sorbo de agua', 'Coge un vaso', 'Coge la botella'],
-    ['Llena un vaso de agua', 'Bebe un vaso de agua', 'Llena la botella'],
-    ['Bebe un vaso de agua entero', 'Deja una botella llena en tu mesa', 'Bebe un vaso de agua con limón'],
+    c('Bebe un sorbo de agua con una pajita', 'Bebe un sorbo de agua', 'Bebe un sorbo de tu bebida favorita sin azúcar', 'Mira cuánta agua queda en la botella', 'Coge la botella de agua'),
+    c('Llena un vaso de agua con hielo', 'Bebe medio vaso de agua', 'Bebe un vaso de agua con limón', 'Llena un vaso de agua para una persona de casa', 'Llena un vaso de agua'),
+    c('Deja una botella llena en un sitio nuevo de la casa', 'Bebe 2 vasos de agua', 'Bebe un vaso de agua en tu taza favorita', 'Bebe un vaso de agua con una persona de casa', 'Bebe un vaso de agua entero'),
   ),
   Desconexión: a(
-    ['Deja el móvil boca abajo', 'Cierra los ojos', 'Respira hondo una vez'],
-    ['Deja el móvil en otra habitación', 'Asómate a la ventana', 'Túmbate en el sofá'],
-    ['Sal a dar un paseo sin móvil', 'Coge un libro de papel', 'Escucha una canción con los ojos cerrados'],
+    c('Deja el móvil en otra habitación', 'Deja el móvil boca abajo', 'Coge tu manta favorita', 'Escucha los sonidos de la calle', 'Cierra los ojos'),
+    c('Asómate a una ventana que no sueles usar', 'Respira hondo 5 veces', 'Túmbate en el sofá con tu manta favorita', 'Habla con una persona de casa sin pantallas', 'Túmbate en el sofá'),
+    c('Sal a pasear sin el móvil', 'Camina 2 manzanas sin el móvil', 'Escucha tu disco favorito con los ojos cerrados', 'Pasea con una persona de confianza sin el móvil', 'Coge un libro de papel'),
   ),
 
   // ── Ampliación de la app ──
   'Pasear al perro': a(
-    ['Coge la correa', 'Llama al perro', 'Ponte un zapato'],
-    ['Ponle la correa al perro', 'Ponte los zapatos', 'Sal al portal con el perro'],
-    ['Da una vuelta a la manzana con el perro', 'Pasea al perro por un sitio nuevo', 'Lleva al perro al parque'],
+    c('Mira una ruta nueva en el mapa', 'Llama al perro a la primera', 'Coge el juguete favorito del perro', 'Mira por la ventana el tiempo de fuera', 'Coge la correa'),
+    c('Sal con el perro por otra puerta', 'Ponle la correa al perro a la primera', 'Ponte tu canción favorita en los auriculares', 'Escribe a una persona de confianza para pasear contigo', 'Ponle la correa al perro'),
+    c('Pasea al perro por un parque nuevo', 'Da una vuelta a 2 manzanas con el perro', 'Lleva al perro a su parque favorito', 'Pasea al perro con una persona de confianza', 'Da una vuelta a la manzana con el perro'),
   ),
   Veterinario: a(
-    ['Busca el teléfono del veterinario', 'Coge la cartilla de tu mascota', 'Abre la web del veterinario'],
-    ['Marca el número sin pulsar llamar', 'Pon la cartilla en la mesa', 'Pide la cita en la web'],
-    ['Llama para pedir la cita', 'Prepara el transportín', 'Lleva a tu mascota al veterinario'],
+    c('Busca el teléfono del veterinario en su web', 'Busca el teléfono del veterinario a la primera', 'Coge la cartilla con tu mascota al lado', 'Mira la fecha de la última vacuna', 'Coge la cartilla de tu mascota'),
+    c('Pide la cita por la web en vez de llamar', 'Marca el número sin pulsar llamar', 'Pon la cartilla en la mesa con tu mascota al lado', 'Escribe en un pósit la pregunta para el veterinario', 'Abre la web del veterinario'),
+    c('Prepara el transportín con una manta nueva', 'Prepara 3 cosas para la visita', 'Mete el juguete favorito en el transportín', 'Lleva a tu mascota con una persona de confianza', 'Llama para pedir la cita'),
   ),
   Mascotas: a(
-    ['Coge el cuenco del agua', 'Llama a tu mascota', 'Coge un juguete'],
-    ['Llena el cuenco de agua', 'Pon comida en el cuenco', 'Juega con tu mascota con un juguete'],
-    ['Limpia el arenero', 'Cepilla a tu mascota', 'Juega con tu mascota con un juguete nuevo'],
-  ),
-  Test: a(
-    ['Abre la app del test', 'Coge el móvil con la app del test', 'Mira la primera pregunta del test'],
-    ['Lee la primera pregunta del test', 'Marca la respuesta de la primera pregunta', 'Pon el test en pantalla completa'],
-    ['Contesta 5 preguntas del test', 'Contesta un test completo en la app', 'Repasa en la app las preguntas falladas del último test'],
+    c('Llama a tu mascota desde otra habitación', 'Coge el cuenco del agua a la primera', 'Coge el juguete favorito de tu mascota', 'Mira qué está tramando tu mascota', 'Coge el cuenco del agua'),
+    c('Pon el cuenco en un sitio nuevo', 'Llena 2 cuencos', 'Juega con tu mascota con su juguete favorito', 'Juega con tu mascota con una persona de casa', 'Llena el cuenco de agua'),
+    c('Juega con tu mascota con un juguete nuevo', 'Cepilla a tu mascota 10 veces', 'Cepilla a tu mascota con tu música favorita', 'Cepilla a tu mascota con una persona de casa', 'Limpia el arenero'),
   ),
 }
 
-/* ── Modificadores INCUP: cambian el ENFOQUE, no la mecánica ──
-   El INCUP no añade fricción artificial (nada de «con la mano que no usas»): da otro enfoque
-   que encaja con el tipo de actividad. Si la tarea es leer, la Novedad es «empezando por la
-   última línea» o «usando una regla para no perderte»; si es salir a andar, «por una calle distinta».
-   - Novedad: otro orden, otra herramienta u otro sitio.
-   - Desafío: un número o una meta pequeña, sin reloj.
-   - Pasión: algo que te gusta alrededor.
-   - Interés: alguien cerca o fijarse en algo nuevo.
-   - Urgencia: un micro-límite sin cronómetro.
-   Cada familia tiene su lista normal y, en Pesado, solo modificadores que se pueden cumplir
-   sin levantarse de la cama. */
-
-export type Familia = 'general' | 'pantalla' | 'mensajes' | 'lectura' | 'escritura' | 'creativo' | 'ritmo' | 'casa' | 'movimiento' | 'calma'
-type Lista = Record<TipoReto, string[]>
-export type Modificadores = { normal: Lista; pesado: Lista }
-
-const URGENCIA = ['antes de mirar las notificaciones', 'antes de que se enfríe tu café', 'mientras suena una canción']
-const PASION = ['con tu música favorita de fondo', 'con tu bebida favorita al lado', 'con una manta encima']
-const INTERES = ['fijándote en un detalle que no habías visto', 'con alguien cerca', 'como si se lo enseñaras a alguien']
-const DESAFIO = ['a la primera', 'sin mirar las notificaciones', 'sin parar a mitad']
-
-const familia = (novedad: string[], novedadPesado: string[], otros: Partial<Lista> = {}, pesado: Partial<Lista> = {}): Modificadores => {
-  const normal: Lista = { novedad, desafio: DESAFIO, pasion: PASION, interes: INTERES, urgencia: URGENCIA, ...otros }
-  return { normal, pesado: { ...normal, novedad: novedadPesado, ...pesado } }
+/** Frase de permiso por nivel: baja la exigencia sin juzgar (se ve en el detalle del reto). */
+export const PERMISO: Record<Nivel, string> = {
+  pesado: 'Con eso ya cuenta.',
+  medio: 'No tiene que quedar perfecto.',
+  ligero: 'Si sale regular, también vale.',
 }
 
-export const MODIFICADORES: Record<Familia, Modificadores> = {
-  // Tareas sin categoría (respaldo)
-  general: familia(
-    ['en un sitio de la casa distinto al de siempre', 'con otra luz en la habitación', 'con la libreta abierta delante'],
-    ['con otra luz en la habitación', 'con la libreta abierta delante', 'con una manta encima'],
-  ),
-  pantalla: familia(
-    ['desde el ordenador en vez del móvil', 'con la pantalla en modo oscuro', 'en un sitio de la casa distinto al de siempre'],
-    ['con la pantalla en modo oscuro', 'con el brillo de la pantalla bajo', 'con el móvil en horizontal'],
-  ),
-  mensajes: familia(
-    ['con un audio en vez de texto', 'con una foto en vez de texto', 'con un emoji al final'],
-    ['con un emoji al final', 'con un audio en vez de texto', 'con una foto en vez de texto'],
-    {
-      desafio: ['en una sola frase', 'a la primera', 'sin borrar nada'],
-      interes: ['con una pregunta para esa persona', 'recordando un plan que compartisteis', 'fijándote en su última foto'],
-    },
-  ),
-  lectura: familia(
-    ['empezando por la última línea', 'usando una regla para no perderte', 'señalando cada línea con el dedo'],
-    ['empezando por la última línea', 'señalando la línea con el dedo', 'usando una regla para no perderte'],
-    { desafio: ['contando las palabras que no conoces', 'sin pasar de página', 'buscando 2 palabras clave'] },
-    { desafio: ['sin pasar de página', 'a la primera', 'sin mirar las notificaciones'] },
-  ),
-  escritura: familia(
-    ['con un boli de otro color', 'en una hoja suelta', 'en mayúsculas'],
-    ['con un boli de otro color', 'en mayúsculas', 'en una hoja suelta'],
-    { desafio: ['en una sola línea', 'sin borrar nada', 'con 10 palabras como máximo'] },
-    { desafio: ['en una sola línea', 'sin borrar nada', 'a la primera'] },
-  ),
-  creativo: familia(
-    ['con un material que no sueles usar', 'empezando por el borde de la hoja', 'desde un ángulo distinto al de siempre'],
-    ['con un material que no sueles usar', 'desde un ángulo distinto al de siempre', 'empezando por el borde de la hoja'],
-    { desafio: ['sin borrar nada', 'a la primera', 'con 3 colores como máximo'] },
-    { desafio: ['sin borrar nada', 'a la primera', 'sin mirar las notificaciones'] },
-  ),
-  ritmo: familia(
-    ['más despacio que de costumbre', 'con una canción que no conoces', 'empezando por el final'],
-    ['más despacio que de costumbre', 'con una canción que no conoces', 'empezando por el final'],
-  ),
-  casa: familia(
-    ['empezando por el lado contrario', 'en un orden distinto al de siempre', 'con una lista de reproducción nueva'],
-    ['empezando por el lado contrario', 'en un orden distinto al de siempre', 'con una lista de reproducción nueva'],
-    { desafio: ['contando cada cosa en voz alta', 'a la primera', 'sin parar a mitad'] },
-  ),
-  movimiento: familia(
-    ['por una calle distinta', 'con una canción nueva en los auriculares', 'en un orden distinto al de siempre'],
-    ['con una canción nueva en los auriculares', 'mirando por la ventana', 'con tu ropa más cómoda'],
-    {
-      desafio: ['contando los pasos', 'a la primera', 'sin parar a mitad'],
-      pasion: ['con tu música favorita en los auriculares', 'con tu ropa de deporte favorita', 'con tu bebida favorita preparada'],
-      interes: ['con alguien que te acompañe', 'fijándote en un detalle que no habías visto', 'con alguien cerca'],
-    },
-    {
-      desafio: ['a la primera', 'sin mirar las notificaciones', 'sin parar a mitad'],
-      interes: ['fijándote en un detalle que no habías visto', 'con alguien cerca', 'como si se lo enseñaras a alguien'],
-    },
-  ),
-  calma: familia(
-    ['con una luz más suave', 'en un sitio de la casa distinto al de siempre', 'con una música tranquila nueva'],
-    ['con una luz más suave', 'con una música tranquila nueva', 'con una manta encima'],
-    { pasion: ['con tu música favorita de fondo', 'con tu olor favorito cerca', 'con tu bebida caliente favorita'] },
-  ),
-}
-
-/* Familia de cada categoría: decide qué modificadores INCUP le encajan */
-export const FAMILIA: Record<string, Familia> = {
-  Comunicación: 'pantalla', Administrativo: 'pantalla', Académico: 'lectura', Llamadas: 'pantalla',
-  Decisión: 'escritura', Creativo: 'escritura', Digital: 'pantalla', Test: 'pantalla',
-  Doméstico: 'casa', Compra: 'casa', Cocina: 'casa', Ropa: 'casa',
-  'Ver serie': 'pantalla', 'Ver película': 'pantalla', Lectura: 'lectura', Videojuego: 'pantalla',
-  Música: 'ritmo', Podcast: 'pantalla', Vídeo: 'pantalla',
-  Gimnasio: 'movimiento', Correr: 'movimiento', Caminar: 'movimiento', Yoga: 'movimiento', Bici: 'movimiento',
-  Natación: 'movimiento', Baile: 'ritmo', Escalada: 'movimiento', 'Deporte en equipo': 'movimiento',
-  'Quedar con amigos': 'mensajes', 'Llamada social': 'mensajes', Cumpleaños: 'mensajes', Fiesta: 'mensajes',
-  Familia: 'mensajes', Cita: 'mensajes', 'Chat de grupo': 'mensajes',
-  Dibujo: 'creativo', Escritura: 'escritura', Fotografía: 'creativo', 'Cocina creativa': 'casa',
-  Manualidades: 'creativo', Instrumento: 'ritmo', Jardín: 'casa', Meditación: 'calma',
-  Descanso: 'calma', Aseo: 'calma', Skincare: 'calma', Comida: 'casa', Hidratación: 'casa', Desconexión: 'calma',
-  'Pasear al perro': 'movimiento', Veterinario: 'pantalla', Mascotas: 'casa',
-}
-
-/* «Está hecho cuando…» según el nivel: decide la persona al pulsar «Reto conseguido» */
-export const HECHO_POR_NIVEL: Record<Nivel, string> = {
-  pesado: 'lo has hecho una vez. Con eso basta',
-  medio: 'lo has hecho una vez. Con eso basta',
-  ligero: 'tú lo des por hecho',
+/** Plazo de la carta Urgencia: una pauta temporal corta y concreta, nunca «rápido». */
+export const PLAZO: Record<Nivel, string> = {
+  pesado: 'en los próximos 5 minutos',
+  medio: 'en los próximos 10 minutos',
+  ligero: 'antes de que pase una hora',
 }

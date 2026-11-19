@@ -2,25 +2,25 @@
 // de src/datos/reglas.ts y src/datos/banco.ts, para que el documento siempre coincida con la app.
 import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { BANCO, FAMILIA, HECHO_POR_NIVEL, MODIFICADORES, type Familia, type Nivel } from '../src/datos/banco.ts'
-import { analizarTarea, NUM_MAZOS, REGLAS, RESPALDO, retosDe, type Regla } from '../src/datos/reglas.ts'
+import { BANCO, PERMISO, PLAZO, type Nivel } from '../src/datos/banco.ts'
+import { analizarTarea, numMazos, REGLAS, RESPALDO, retosDe, type Regla } from '../src/datos/reglas.ts'
 
 type Tipo = 'novedad' | 'desafio' | 'pasion' | 'interes' | 'urgencia'
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-const CARTAS: { tipo: Tipo; nombre: string; incup: string; fondo: string; tinta: string; busca: string; entradilla: string }[] = [
-  { tipo: 'novedad', nombre: 'Novedad', incup: 'Novedad', fondo: '#5b3fe0', tinta: '#ffffff', busca: 'Cambia el enfoque: otro orden, otra herramienta u otro sitio.', entradilla: '¡Plan nuevo! [Acción], [modificador].' },
-  { tipo: 'desafio', nombre: 'Desafío', incup: 'Competencia (reto)', fondo: '#ee6b47', tinta: '#1b1340', busca: 'Un reto pequeño, sin reloj.', entradilla: 'Mini reto: [acción], [modificador]. ¿Te apuntas?' },
-  { tipo: 'pasion', nombre: 'Pasión', incup: 'Pasión', fondo: '#f7a3e0', tinta: '#1b1340', busca: 'Añade algo que te gusta.', entradilla: 'Modo disfrute: [acción], [modificador].' },
-  { tipo: 'interes', nombre: 'Interés', incup: 'Interés', fondo: '#2fa4f0', tinta: '#1b1340', busca: 'Con alguien o fijándote en algo nuevo.', entradilla: 'Ponle interés: [acción], [modificador].' },
-  { tipo: 'urgencia', nombre: 'Urgencia', incup: 'Urgencia', fondo: '#ffd23f', tinta: '#1b1340', busca: 'Un micro-límite sin cronómetro.', entradilla: 'Ahora: [acción], [modificador].' },
+const CARTAS: { tipo: Tipo; nombre: string; incup: string; fondo: string; tinta: string; busca: string }[] = [
+  { tipo: 'novedad', nombre: 'Novedad', incup: 'Novedad', fondo: '#5b3fe0', tinta: '#ffffff', busca: 'Otro sitio, otro orden u otra herramienta.' },
+  { tipo: 'desafio', nombre: 'Desafío', incup: 'Competencia (reto)', fondo: '#ee6b47', tinta: '#1b1340', busca: 'Una meta pequeña que se puede contar («3 prendas», «a la primera»).' },
+  { tipo: 'pasion', nombre: 'Pasión', incup: 'Pasión', fondo: '#f7a3e0', tinta: '#1b1340', busca: 'Junto a algo que te gusta.' },
+  { tipo: 'interes', nombre: 'Interés', incup: 'Interés', fondo: '#2fa4f0', tinta: '#1b1340', busca: 'Con una persona o con un dato curioso.' },
+  { tipo: 'urgencia', nombre: 'Urgencia', incup: 'Urgencia', fondo: '#ffd23f', tinta: '#1b1340', busca: 'La acción más directa, con un plazo corto («en los próximos 5 minutos»).' },
 ]
 
 const NIVELES: { id: Nivel; nombre: string; estado: string; duracion: string; regla: string }[] = [
-  { id: 'ligero', nombre: 'Ligero', estado: 'Hay ganas, solo falta un empujón.', duracion: '1–3 minutos', regla: 'Puede tener algo de sustancia: avanzar de verdad.' },
-  { id: 'medio', nombre: 'Medio', estado: 'Pereza o resistencia.', duracion: '30–60 segundos', regla: 'Física, mecánica y acotada: romper la inercia.' },
-  { id: 'pesado', nombre: 'Pesado', estado: 'Bloqueo total.', duracion: '5–10 segundos', regla: 'Casi ridícula. Empieza por «Solo…». Prueba: ¿se podría hacer tumbado en la cama?' },
+  { id: 'ligero', nombre: 'Ligero', estado: 'Hay ganas, solo falta un empujón.', duracion: '1–3 minutos', regla: 'Un trozo pequeño con final claro.' },
+  { id: 'medio', nombre: 'Medio', estado: 'Pereza o resistencia.', duracion: '30–60 segundos', regla: 'El primer movimiento físico.' },
+  { id: 'pesado', nombre: 'Pesado', estado: 'Bloqueo total.', duracion: '5–10 segundos', regla: 'Contacto mínimo, empieza por «Solo…». Se puede cumplir sin levantarse de la cama.' },
 ]
 
 const GRUPOS: { nombre: string; desde: number; hasta: number }[] = [
@@ -62,8 +62,8 @@ const bloqueRegla = (r: Regla) => {
   return `
   <div class="regla">
     <p class="regla__cab"><strong>${esc(r.categoria)}</strong> <span class="peq">· icono ${esc(NOMBRE_ICONO[r.icono])} · palabras clave: ${esc(r.palabras.join(', '))}</span></p>
-    <table class="banco"><tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td>${lista(b.pesado)}</td><td>${lista(b.medio)}</td><td>${lista(b.ligero)}</td></tr></table>
+    <table class="banco"><tr><th></th>${CARTAS.map((c) => `<th>${c.nombre}</th>`).join('')}</tr>
+    ${NIVELES.map((n) => `<tr><td><strong>${n.nombre}</strong></td>${CARTAS.map((c) => `<td>${esc(b[n.id][c.tipo])}</td>`).join('')}</tr>`).join('')}</table>
   </div>`
 }
 
@@ -71,7 +71,7 @@ const bloqueRegla = (r: Regla) => {
 const TOTAL = (() => {
   const vistos = new Set<string>()
   for (const r of REGLAS)
-    for (const n of NIVELES) for (let m = 0; m < NUM_MAZOS; m++) retosDe(r.palabras[0], n.id, m).forEach((x) => vistos.add(x.titulo))
+    for (const n of NIVELES) for (let m = 0; m < numMazos(r.palabras[0], n.id); m++) retosDe(r.palabras[0], n.id, m).forEach((x) => vistos.add(x.titulo))
   return vistos.size
 })()
 
@@ -157,14 +157,14 @@ const html = `<!doctype html>
   <h2>1. Cómo funciona, de principio a fin</h2>
   <p>La persona escribe una tarea («Responder el email de Carlos») y elige cuánto le pesa. La app hace esto:</p>
   <div class="flujo">
-    <div class="paso"><b class="n">1</b><div><h4>Limpia el texto</h4><p>Pasa la tarea a minúsculas y quita tildes y signos, para comparar sin errores («Declaración» = «declaracion»).</p></div></div>
-    <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las ${REGLAS.length} categorías. Apartado 2.</p></div></div>
-    <div class="paso"><b class="n">3</b><div><h4>El esfuerzo elige la acción (ley del esfuerzo inverso)</h4><p>Cada categoría tiene 3 acciones por nivel en un banco. <strong>Cuanto más pesa la tarea, más pequeña es la acción</strong>: Ligero 1–3 minutos, Medio 30–60 segundos, Pesado 5–10 segundos. Apartado 3.</p></div></div>
-    <div class="paso"><b class="n">4</b><div><h4>Cada carta INCUP añade su modificador</h4><p>La misma acción cambia de sabor según la carta: «empezando por la última línea» (Novedad, si es leer), «a la primera» (Desafío), «con tu música favorita de fondo» (Pasión)… Apartado 4.</p></div></div>
-    <div class="paso"><b class="n">5</b><div><h4>Reparte el mazo</h4><p>5 cartas, una por factor INCUP. La persona desliza: derecha para aceptar, izquierda para ver la siguiente. Si rechaza las 5, llega otro mazo con combinaciones distintas (hasta ${NUM_MAZOS} mazos, ${NUM_MAZOS * 5} retos por tarea). Apartado 5.</p></div></div>
-    <div class="paso"><b class="n">6</b><div><h4>Detalle del reto aceptado</h4><p>Una sola acción, el criterio «Está hecho cuando…», un botón para escucharlo y un premio opcional. Decide la persona: pulsa «Reto conseguido» cuando lo da por hecho.</p></div></div>
+    <div class="paso"><b class="n">1</b><div><h4>Comprueba la tarea</h4><p>Si no es segura o no se entiende, lo dice con un mensaje amable y no crea retos.</p></div></div>
+    <div class="paso"><b class="n">2</b><div><h4>Busca la categoría</h4><p>Compara la tarea con las palabras clave de las ${REGLAS.length} categorías. Si no encaja en ninguna, busca en internet el objeto con el que se hace (apartado 2).</p></div></div>
+    <div class="paso"><b class="n">3</b><div><h4>El esfuerzo elige el tamaño (ley del esfuerzo inverso)</h4><p>Cuanto más pesa la tarea, más pequeña es la acción: Ligero, un trozo pequeño con final claro; Medio, el primer movimiento físico; Pesado, contacto mínimo que empieza por «Solo…». Apartado 3.</p></div></div>
+    <div class="paso"><b class="n">4</b><div><h4>Reparte 5 cartas escritas a mano</h4><p>Una por factor INCUP. Cada carta cambia la acción (otro sitio, una meta pequeña, algo que te gusta, una persona, un plazo corto). La carta dice solo la acción, sin entradillas. Apartado 4.</p></div></div>
+    <div class="paso"><b class="n">5</b><div><h4>Más mazos, siempre igual o más fáciles</h4><p>Si rechaza las 5, llega otro mazo de la misma tarea: primero el nivel elegido y después los niveles más ligeros. Apartado 5.</p></div></div>
+    <div class="paso"><b class="n">6</b><div><h4>Detalle del reto aceptado</h4><p>La acción en la carta con su botón «Hecho», el criterio «Está hecho cuando…» sacado de la propia acción, una frase de permiso del nivel, «Escuchar» y un premio opcional.</p></div></div>
   </div>
-  <div class="nota"><strong>${TOTAL.toLocaleString('es-ES')} retos distintos</strong> salen de combinar ${REGLAS.length} categorías × 3 niveles × 3 acciones × los modificadores de las 5 cartas. Un script (<code>npm run validar</code>) comprueba que todos cumplen las reglas de oro.</div>
+  <div class="nota"><strong>${TOTAL.toLocaleString('es-ES')} retos distintos</strong> escritos a mano: ${REGLAS.length} categorías × 3 niveles × 5 cartas, más los retos genéricos con el nombre de la tarea. Un script (<code>npm run validar</code>) comprueba que todos cumplen las reglas.</div>
 </section>
 
 <section class="salto">
@@ -192,7 +192,7 @@ const html = `<!doctype html>
   <p>Se usa el respaldo con el texto de la tarea entre comillas. Ejemplo con «arreglar la persiana»:</p>
   <table>
     <tr><th>Pesado</th><th>Medio</th><th>Ligero</th></tr>
-    <tr><td>${lista(RESPALDO('arreglar la persiana').pesado)}</td><td>${lista(RESPALDO('arreglar la persiana').medio)}</td><td>${lista(RESPALDO('arreglar la persiana').ligero)}</td></tr>
+    <tr><td>${lista(Object.values(RESPALDO('arreglar la persiana').pesado))}</td><td>${lista(Object.values(RESPALDO('arreglar la persiana').medio))}</td><td>${lista(Object.values(RESPALDO('arreglar la persiana').ligero))}</td></tr>
   </table>
   <div class="nota"><strong>La categoría se puede cambiar.</strong> En la pantalla de selección, el botón con el lápiz deja elegir otra categoría si la detectada no es la correcta. Eso cambia el icono de las cartas.</div>
 </section>
@@ -201,43 +201,29 @@ const html = `<!doctype html>
   <h2>3. Regla de oro: la ley del esfuerzo inverso</h2>
   <p>El nivel que elige la persona en «¿Cuánto te pesa?» decide el tamaño de la acción. Cuanta más resistencia, más pequeña la acción.</p>
   <table>
-    <tr><th>Nivel</th><th>Estado</th><th>Duración</th><th>Cómo es la acción</th><th>Ejemplo (Comunicación)</th><th>Está hecho cuando</th></tr>
-    ${NIVELES.map((n) => `<tr><td><strong>${n.nombre}</strong></td><td>${esc(n.estado)}</td><td>${n.duracion}</td><td>${esc(n.regla)}</td><td>${esc((n.id === 'pesado' ? 'Solo ' + BANCO['Comunicación'][n.id][0].charAt(0).toLowerCase() + BANCO['Comunicación'][n.id][0].slice(1) : BANCO['Comunicación'][n.id][0]))}</td><td>${esc(HECHO_POR_NIVEL[n.id])}.</td></tr>`).join('')}
+    <tr><th>Nivel</th><th>Estado</th><th>Cómo es la acción</th><th>Ejemplo (Comunicación, carta Urgencia)</th><th>Permiso</th></tr>
+    ${NIVELES.map((n) => `<tr><td><strong>${n.nombre}</strong></td><td>${esc(n.estado)}</td><td>${esc(n.regla)}</td><td>${esc(retosDe('Responder el email', n.id)[4].titulo)}</td><td>${esc(PERMISO[n.id])}</td></tr>`).join('')}
   </table>
-  <h3>Reglas de redacción de cada acción</h3>
+  <h3>Reglas de redacción de cada reto</h3>
   <ul>
-    <li><strong>Verbo físico al principio</strong>: Abre, Coge, Escribe, Ponte, Toca, Mira…</li>
-    <li><strong>Cero carga cognitiva</strong>: no pide pensar, decidir, organizar ni planificar.</li>
+    <li><strong>Solo la acción</strong>, en una frase. Sin entradillas («¡Plan nuevo!», «Mini reto…») ni coletillas pegadas con coma: la etiqueta de la carta ya dice su tipo.</li>
+    <li><strong>Verbo físico al principio</strong> (Abre, Coge, Escribe, Ponte, Toca…) y <strong>objeto concreto</strong> (la app, el libro, la correa). Nunca «la primera parte».</li>
     <li><strong>Una sola acción</strong>: sin «y», «luego», «después», ni opciones con «o».</li>
-    <li><strong>Sin límites de tiempo</strong>: nada de «en 2 minutos», «rápido» o «tómate 5 minutos».</li>
-    <li><strong>Sin la palabra «tarea»</strong> y <strong>sin imperativos agresivos</strong> («¡Hazlo ya!»): tono neutral y amable.</li>
-    <li><strong>Decide la persona</strong>: el reto está hecho cuando pulsa «Reto conseguido».</li>
+    <li><strong>Sin el verbo «hacer»</strong>, sin la palabra «tarea», sin prisas («rápido») ni juicios, y sin género gramatical para la persona.</li>
+    <li><strong>Tiempos solo en Urgencia</strong>, con un plazo corto y concreto: ${Object.entries(PLAZO).map(([n, p]) => `${n} → «${esc(p)}»`).join(' · ')}.</li>
+    <li><strong>«Está hecho cuando…» concreto</strong>, sacado de la acción: «Abre la app del test» → «has abierto la app del test».</li>
+    <li><strong>Decide la persona</strong>: el reto está hecho cuando pulsa «Hecho» en la carta y «Reto conseguido».</li>
   </ul>
-  <p>Además siguen las pautas de comunicación accesible (<code>docs/comunicacion.md</code>): lenguaje literal, sin metáforas, sin emojis y sin género gramatical para la persona.</p>
 </section>
 
 <section class="salto">
-  <h2>4. Matriz de combinación: las 5 cartas INCUP</h2>
-  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta toma una acción del banco y le añade <strong>su modificador</strong>.</p>
-  <p class="formula">Reto = entradilla de la carta + acción del banco (según nivel) + modificador INCUP</p>
-  <div class="nota"><strong>El INCUP no altera la mecánica, altera el enfoque.</strong> No añade fricción artificial (nada de «con la mano que no usas»). Si la tarea es leer, la Novedad es «empezando por la última línea» o «usando una regla para no perderte»; si es salir a andar, «por una calle distinta». Por eso los modificadores dependen de la <strong>familia</strong> de la categoría.</div>
+  <h2>4. Las 5 cartas INCUP: cada una cambia la acción</h2>
+  <p>INCUP son los 5 factores que más motivan con TDAH: <strong>I</strong>nterés, <strong>N</strong>ovedad, <strong>C</strong>ompetencia (reto), <strong>U</strong>rgencia y <strong>P</strong>asión. Cada carta tiene su propio reto, escrito a mano para la categoría y el nivel: el factor INCUP cambia <strong>la acción</strong>, no le añade una coletilla.</p>
   <table>
-    <tr><th>Carta</th><th>Factor</th><th>Qué hace</th><th>Entradilla</th></tr>
-    ${CARTAS.map((c) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${c.incup}</td><td>${esc(c.busca)}</td><td class="formula">${esc(c.entradilla)}</td></tr>`).join('')}
+    <tr><th>Carta</th><th>Factor</th><th>Cómo cambia la acción</th><th>Ejemplo con «Pasear al perro» (Medio)</th></tr>
+    ${CARTAS.map((c, i) => `<tr><td><span class="chip" style="background:${c.fondo};color:${c.tinta}">${c.nombre}</span></td><td>${c.incup}</td><td>${esc(c.busca)}</td><td>${esc(retosDe('Pasear al perro', 'medio')[i].titulo)}</td></tr>`).join('')}
   </table>
-  <h3>Modificadores por familia de actividad</h3>
-  <table>
-    <tr><th>Familia</th><th>Categorías</th><th>Novedad</th><th>Desafío</th></tr>
-    ${(Object.keys(MODIFICADORES) as Familia[]).map((fam) => `<tr><td><strong>${fam}</strong></td><td class="peq">${esc(Object.keys(FAMILIA).filter((c) => FAMILIA[c] === fam).join(', ') || 'Tareas sin categoría')}</td><td>${esc(MODIFICADORES[fam].normal.novedad.join(' · '))}</td><td>${esc(MODIFICADORES[fam].normal.desafio.join(' · '))}</td></tr>`).join('')}
-  </table>
-  <p class="peq">Pasión, Interés y Urgencia son casi iguales en todas las familias: ${esc(MODIFICADORES.general.normal.pasion.join(' · '))} / ${esc(MODIFICADORES.general.normal.interes.join(' · '))} / ${esc(MODIFICADORES.general.normal.urgencia.join(' · '))}.</p>
-  <ul>
-    <li><strong>Objeto concreto obligatorio</strong>: cada reto nombra un objeto físico o digital (la app, el libro, la libreta, el boli). Nunca «la primera parte».</li>
-    <li><strong>Sin el verbo «hacer»</strong>: «Hacer el test» es abstracto; se reformula con un verbo físico («Abre la app del test»).</li>
-    <li>En <strong>Pesado</strong> solo se usan modificadores que se pueden cumplir sin levantarse ni organizar nada, y la acción empieza por «Solo…».</li>
-    <li>Si el modificador repite una palabra de la acción («Coge el móvil, sin mirar el móvil»), se usa otro.</li>
-    <li>El tono atrevido va <strong>solo en la entradilla</strong>. Si hay pregunta, es una invitación («¿Te apuntas?»), nunca un juicio.</li>
-  </ul>
+  <div class="nota"><strong>Por qué así.</strong> Antes la app pegaba «entradilla + acción + modificador» y salían frases sin sentido («¡Plan nuevo! Ponle la correa al perro, por una calle distinta.»). Las apps para TDAH que mejor funcionan muestran una sola acción clara (Tiimo), la hacen más pequeña de lo que parece razonable (guías de inicio de tareas) y no castigan ni juzgan (críticas a Habitica).</div>
   <h3>Ejemplos</h3>
   ${ejemploCompleto('Responder el email de Carlos', 'pesado')}
   ${ejemploCompleto('Pasear al perro', 'medio')}
@@ -246,25 +232,26 @@ const html = `<!doctype html>
 
 <section class="salto">
   <h2>5. Cuando se acaba el mazo: más retos de la misma tarea</h2>
-  <p>Si se rechazan las 5 cartas, la app reparte un <strong>mazo nuevo con 5 retos distintos para la misma tarea</strong> y lo avisa. Hay <strong>${NUM_MAZOS} mazos</strong> (${NUM_MAZOS * 5} retos) y la numeración sigue: 01–05, 06–10… «Aún no, dame más retos» en «Reto conseguido» también pasa al mazo siguiente.</p>
-  <p>Cada mazo rota las acciones del banco y los modificadores, así <strong>ninguna combinación se repite</strong> en la misma tarea:</p>
+  <p>Si se rechazan las 5 cartas, la app reparte otro mazo de la <strong>misma tarea</strong>, siempre igual o más fácil:</p>
+  <table>
+    <tr><th>Esfuerzo elegido</th><th>Mazos</th></tr>
+    <tr><td>Ligero</td><td>Ligero → Medio → Pesado (15 retos)</td></tr>
+    <tr><td>Medio</td><td>Medio → Pesado → retos genéricos con el nombre de la tarea (15 retos)</td></tr>
+    <tr><td>Pesado</td><td>Pesado → retos genéricos con el nombre de la tarea (10 retos)</td></tr>
+  </table>
   ${ejemploCompleto('Responder el email de Carlos', 'pesado', 1)}
-  ${ejemploCompleto('Responder el email de Carlos', 'pesado', 2)}
-  <div class="nota">Tras los ${NUM_MAZOS * 5} retos aparece «Has visto los ${NUM_MAZOS * 5} retos», con tres opciones: escribir la tarea de otra forma (más pequeña o más concreta), volver al primer mazo o ver otro mazo.</div>
-
-  <h3>Detalle, escuchar, enfoque y premio</h3>
-  <p>El detalle muestra la acción en grande, el criterio «Está hecho cuando…» y el botón «Escuchar», que lo lee en voz alta con la voz del dispositivo. El modo enfoque tiene 3 opciones: «Sin límite», «10 min + 3 de descanso» y «25 min + 5 de descanso». Se puede elegir un premio opcional (método RAN), que la app recuerda al pulsar «Reto conseguido».</p>
+  <div class="nota">Al terminar los mazos aparece «Has visto los N retos», con tres opciones: escribir la tarea de otra forma (más pequeña o más concreta), volver al primer mazo o ver otro mazo.</div>
 </section>
 
 <section class="salto">
-  <h2>6. Banco completo de acciones por categoría</h2>
-  <p>Para cada categoría: las palabras clave que la activan y sus 3 acciones por nivel. Todas cumplen las reglas del apartado 3. En Pesado la app añade «Solo…» delante.</p>
+  <h2>6. Banco completo de retos por categoría</h2>
+  <p>Para cada categoría: las palabras clave que la activan y sus 15 retos (3 niveles × 5 cartas). En Pesado la app añade «Solo…» delante y en Urgencia el plazo del nivel.</p>
   ${GRUPOS.map(
     (g) => `
     <h3>${esc(g.nombre)}</h3>
     ${REGLAS.slice(g.desde, g.hasta + 1).map(bloqueRegla).join('')}`,
   ).join('')}
-  <div class="nota"><strong>Cómo ampliar el sistema</strong>: cuando una tarea cae en el respaldo, se añade una regla en <code>src/datos/reglas.ts</code> con sus palabras clave y su icono, y en <code>src/datos/banco.ts</code> sus 3 acciones por nivel. Después, <code>npm run validar</code> comprueba que cumplen las reglas.</div>
+  <div class="nota"><strong>Cómo ampliar el sistema</strong>: cuando una tarea cae en el respaldo, se añade una regla en <code>src/datos/reglas.ts</code> con sus palabras clave y su icono, y en <code>src/datos/banco.ts</code> sus 15 retos. Después, <code>npm run validar</code> comprueba que cumplen las reglas.</div>
 </section>
 
 <section class="salto">
@@ -272,6 +259,9 @@ const html = `<!doctype html>
   <ul>
     <li><strong>Guía y Reglas Completas del Sistema de Retos Anti-Procrastinación (V2)</strong>: las categorías y sus palabras clave, los gatillos motivacionales y el protocolo de expansión.</li>
     <li><strong>Regla de oro: la ley del esfuerzo inverso</strong> y <strong>Matriz de combinación</strong>: tamaño de la acción por nivel, reglas de redacción y modificadores INCUP.</li>
+    <li><strong>Cómo redactan las tareas las apps para TDAH</strong>: Goblin Tools (pasos concretos según lo pequeños que se necesiten), Tiimo (una sola tarea, tono probado con usuarios neurodivergentes), Finch (metas mínimas sin juicio) y las críticas a Habitica (castigar genera vergüenza y abandono).</li>
+    <li><strong>Guías de inicio de tareas</strong> (Brain.fm, Universidad de Minnesota): el primer paso más pequeño de lo que parece razonable, físico y con permiso para que salga torpe.</li>
+    <li><strong>Pautas de comunicación para personas autistas</strong> (UK Home Office, Scope): lenguaje literal, frases cortas, pasos explícitos y estructura predecible.</li>
     <li><strong>GAM Medical</strong>, «Cómo motivarte con la parálisis TDAH»: factores INCUP, método RAN (Recompensa, Responsabilidad, Novedad), micropasos y reducir distracciones.</li>
     <li><strong>Isaac, López y Escobar (2024)</strong>, «Arousal dysregulation and executive dysfunction in ADHD», <em>Frontiers in Psychiatry</em> 14:1336040: el rendimiento mejora cuando la tarea pide menos esfuerzo y cuando hay recompensa.</li>
     <li><strong>Sanitas</strong>, «Ocho pasos para lograr que los niños con TDAH hagan los deberes»: dar las instrucciones de una en una, dividir las tareas e introducir descansos.</li>

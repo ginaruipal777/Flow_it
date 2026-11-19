@@ -47,6 +47,8 @@ export type Reto = {
   pasos: string[]
   /** Criterio de éxito: «Está hecho cuando …». */
   hecho: string
+  /** Frase de permiso del nivel («Con eso ya cuenta.») */
+  permiso?: string
 }
 
 export type Mazo = {

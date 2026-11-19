@@ -150,7 +150,7 @@ export function Detalle() {
           numero={reto.numero}
           hecho={{ marcado, onCambiar: () => setHechoEn(marcado ? null : reto.tipo) }}
         />
-        <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} marcado={marcado} />
+        <ListaPasos key={reto.tipo} titulo={reto.titulo} pasos={reto.pasos} hecho={reto.hecho} marcado={marcado} permiso={reto.permiso} />
         {tarea.web?.enlace && (
           <a className="detalle__enlace t-texto-control" href={tarea.web.enlace} target="_blank" rel="noopener noreferrer">
             Abrir la web oficial: {tarea.web.contexto}

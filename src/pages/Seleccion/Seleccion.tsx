@@ -6,7 +6,7 @@ import { ICONOS_CATEGORIA, ICONOS_UI, type Categoria } from '../../components/Ic
 import { AccionesCarta, BotonVolver, Overlay, Pantalla } from '../../components/UI/UI'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { generarRetos, tituloTarea } from '../../datos/retos'
-import { NUM_MAZOS } from '../../datos/reglas'
+import { numMazos } from '../../datos/reglas'
 import { useFlow } from '../../estado/FlowEstado'
 import './Seleccion.css'
 
@@ -34,6 +34,7 @@ export default function Seleccion() {
 
   const mazo = estado.mazo ?? 0
   const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo) : []), [tareaActual, mazo])
+  const totalMazos = tareaActual ? numMazos(tareaActual.texto, tareaActual.esfuerzo, tareaActual.web) : 1
   const indice = Math.min(estado.indiceReto, 4)
   const agotado = estado.indiceReto >= 5
 
@@ -124,7 +125,7 @@ export default function Seleccion() {
         </div>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
-            Mazo {mazo + 1} de {NUM_MAZOS} · carta {Math.min(indice + 1, 5)} de 5
+            Mazo {mazo + 1} de {totalMazos} · carta {Math.min(indice + 1, 5)} de 5
           </p>
           <div className="progreso-mazo__pista">
             <span style={{ width: `${(Math.min(indice + 1, 5)) * 15}%` }} />
@@ -134,7 +135,7 @@ export default function Seleccion() {
 
       <main className="seleccion__cuerpo">
         <p className="aviso-mazo t-texto-control" role="status" data-visible={avisoMazo || undefined}>
-          {avisoMazo ? `Mazo nuevo: 5 retos distintos para la misma tarea (${mazo + 1} de ${NUM_MAZOS}).` : ''}
+          {avisoMazo ? `Mazo nuevo: 5 retos distintos para la misma tarea (${mazo + 1} de ${totalMazos}).` : ''}
         </p>
         <div className="mazo">
           {siguiente && !agotado && (
@@ -191,6 +192,7 @@ export default function Seleccion() {
 
       {agotado && (
         <DialogoAgotado
+          total={totalMazos * 5}
           onNuevaTarea={(texto) => despachar({ tipo: 'nueva-tarea', texto })}
           onSeguir={() => despachar({ tipo: 'reiniciar-mazo' })}
           onOtroMazo={() => despachar({ tipo: 'mazo-siguiente' })}
@@ -255,7 +257,9 @@ function DialogoAgotado({
   onNuevaTarea,
   onSeguir,
   onOtroMazo,
+  total,
 }: {
+  total: number
   onNuevaTarea: (t: string) => void
   onSeguir: () => void
   onOtroMazo: () => void
@@ -270,7 +274,7 @@ function DialogoAgotado({
           if (texto.trim()) onNuevaTarea(texto)
         }}
       >
-        <p className="t-texto-eyebrow dialogo__eyebrow">Has visto los {NUM_MAZOS * 5} retos</p>
+        <p className="t-texto-eyebrow dialogo__eyebrow">Has visto los {total} retos</p>
         <h2 className="t-titular-m">¿Se te atasca esta tarea?</h2>
         <p className="t-texto-cuerpo dialogo__suave">Escríbela de otra forma, más pequeña o más concreta, y te preparamos cartas nuevas.</p>
         <div className="campo-pildora">

@@ -49,10 +49,10 @@ Flujo completo de «prot final», instalable como PWA y publicado en https://flo
 Siguen la «Regla de oro: la ley del esfuerzo inverso» y la «Matriz de combinación» ([src/datos/reglas.ts](src/datos/reglas.ts) y [src/datos/banco.ts](src/datos/banco.ts)):
 
 1. La tarea se busca en las **52 categorías** (palabras clave del «Sistema de Retos V2» + ampliaciones de la app).
-2. El **nivel de esfuerzo** elige una de las 3 acciones del banco de esa categoría: Ligero (1–3 min), Medio (30–60 s) o Pesado (5–10 s, empieza por «Solo…»).
-3. Cada **carta INCUP** añade su modificador («con la mano que no usas», «sin mirar el móvil», «antes de que se enfríe tu café»…) y su entradilla.
+2. El **nivel de esfuerzo** elige el tamaño: Ligero (un trozo pequeño), Medio (el primer movimiento) o Pesado (contacto mínimo, empieza por «Solo…»).
+3. Cada **carta INCUP** tiene su propio reto escrito a mano para la categoría y el nivel: Novedad (otro sitio u orden), Desafío (una meta que se puede contar), Pasión (algo que te gusta), Interés (una persona o un dato curioso) y Urgencia (la acción más directa con un plazo corto, por ejemplo «en los próximos 5 minutos»).
 4. Si no hay categoría, se usa un respaldo con el texto de la tarea.
 
-Cada acción empieza por un verbo físico (nunca «hacer»), nombra un objeto concreto, es una sola (sin «y» ni «o»), sin tiempos y sin la palabra «tarea». Los modificadores INCUP cambian el enfoque según el tipo de actividad, sin fricción artificial. El prompt para un futuro generador con IA está en [docs/prompt-generador-ia.md](docs/prompt-generador-ia.md). Compruébalo con `npm run validar`. El PDF explicativo se genera con `npm run documento` (docs/sistema-de-retos.pdf).
+La carta dice solo la acción, sin entradillas: verbo físico primero (nunca «hacer»), un objeto concreto, una sola acción (sin «y» ni «o») y sin la palabra «tarea». El detalle añade «Está hecho cuando…» sacado de la acción y una frase de permiso del nivel. El prompt para un futuro generador con IA está en [docs/prompt-generador-ia.md](docs/prompt-generador-ia.md). Compruébalo con `npm run validar`. El PDF explicativo se genera con `npm run documento` (docs/sistema-de-retos.pdf).
 
-Para ampliar el sistema, añade una regla a `REGLAS` y sus 3 acciones por nivel a `BANCO`.
+Para ampliar el sistema, añade una regla a `REGLAS` y sus 15 retos (3 niveles × 5 cartas) a `BANCO`.

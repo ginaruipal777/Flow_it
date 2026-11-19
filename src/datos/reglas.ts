@@ -1,20 +1,21 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
-import { BANCO, FAMILIA, HECHO_POR_NIVEL, MODIFICADORES, type Acciones, type Nivel } from './banco.ts'
+import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
-   Fuentes: «Guía y Reglas Completas del Sistema de Retos V2» (PDF) +
-   «Regla de oro: la ley del esfuerzo inverso» + «Matriz de combinación».
+   Fuentes: «Sistema de Retos V2» (PDF), «Ley del esfuerzo inverso» y la investigación
+   sobre cómo redactan tareas las apps para TDAH (docs/comunicacion.md).
 
    1. Se busca la tarea en las REGLAS (palabras clave → categoría).
-   2. El nivel de esfuerzo elige la acción del BANCO de esa categoría (banco.ts):
+   2. El nivel de esfuerzo elige las 5 cartas escritas a mano para esa categoría (banco.ts):
       cuanto más pesa la tarea, más pequeña es la acción.
-   3. Cada carta INCUP añade su modificador (MODIFICADORES) y su entradilla.
-   4. Si no hay regla, se usa el RESPALDO con el texto de la tarea.
+   3. Cada carta INCUP cambia la acción (otro sitio, una meta, algo que gusta, una persona,
+      un plazo corto). La carta dice solo la acción, sin entradillas.
+   4. Si no hay regla, se usa el RESPALDO con el texto de la tarea (o lo que encontró la web).
 
-   Protocolo de expansión: para una tarea que cae en el respaldo, añade aquí una
-   regla con sus palabras clave y en banco.ts sus 3 acciones por nivel.
+   Protocolo de expansión: para una tarea que cae en el respaldo, añade aquí una regla con
+   sus palabras clave y en banco.ts sus 15 retos (3 niveles × 5 cartas).
    ───────────────────────────────────────────────────────────── */
 
 export type Gatillo = 'motivacion' | 'novedad' | 'urgencia' | 'desafio' | 'directo'
@@ -119,24 +120,42 @@ export const REGLAS: Regla[] = [
 ]
 
 /* ── 3. Respaldo: tareas sin regla ──────────────────────────────
-   Si ninguna palabra clave encaja, los retos usan el texto de la tarea entre comillas.
-   Mismas reglas que el banco: verbo físico primero, una sola acción, sin tiempos. */
+   Si ninguna palabra clave encaja, los retos nombran la tarea entre comillas
+   y usan objetos concretos (libreta, móvil, mesa). Mismas reglas que el banco. */
 
 /* Verbos abstractos al principio de la tarea («hacer», «tener que»…): se quitan para quedarse
    con el objeto («Hacer el test de autoescuela» → «el test de autoescuela»). */
-const ABSTRACTOS = /^(tengo que |hay que |debo |quiero )?(hacer|realizar|terminar|acabar|empezar|completar|ponerme con|ponerse con)s+/i
+const ABSTRACTOS = /^(tengo que |hay que |debo |quiero )?(hacer|realizar|terminar|acabar|empezar|completar|ponerme con|ponerse con)\s+/i
 
 export const objetoDe = (tarea: string) => tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
 
 export const RESPALDO = (t: string): Acciones => ({
-  pesado: [`Escribe «${t}» en tu libreta`, `Coge el móvil para buscar «${t}»`, `Abre en el móvil la nota de «${t}»`],
-  medio: [`Pon sobre la mesa el material de «${t}»`, `Busca en el móvil la página de «${t}»`, `Lee en voz alta la nota de «${t}»`],
-  ligero: [`Completa la primera página de «${t}»`, `Escribe en tu libreta 3 pasos de «${t}»`, `Lee en el móvil la información de «${t}»`],
+  pesado: {
+    novedad: `Escribe «${t}» en un pósit`,
+    desafio: `Escribe «${t}» en tu libreta con 3 palabras`,
+    pasion: `Abre la nota de «${t}» con tu canción favorita sonando`,
+    interes: `Escribe «${t}» en un mensaje para una persona de confianza`,
+    urgencia: `Coge el móvil para buscar «${t}»`,
+  },
+  medio: {
+    novedad: `Busca «${t}» en el móvil desde otro sitio de la casa`,
+    desafio: `Pon sobre la mesa 3 cosas que necesitas para «${t}»`,
+    pasion: `Pon sobre la mesa el material de «${t}» con tu música favorita de fondo`,
+    interes: `Envía un mensaje a una persona de confianza para contarle que empiezas «${t}»`,
+    urgencia: `Pon sobre la mesa el material de «${t}»`,
+  },
+  ligero: {
+    novedad: `Lee la información de «${t}» en otro sitio de la casa`,
+    desafio: `Completa la primera página de «${t}»`,
+    pasion: `Lee la información de «${t}» con tu bebida favorita al lado`,
+    interes: `Busca en el móvil un dato curioso sobre «${t}»`,
+    urgencia: `Escribe en tu libreta el primer paso de «${t}»`,
+  },
 })
 
-/* Respaldo con lo que encontró la búsqueda web (api/micro_paso.py): el objeto concreto
+/* Retos con lo que encontró la búsqueda web (api/micro_paso.py): el objeto concreto
    («la app de test autoescuela») sustituye al texto de la tarea, y el micro-paso de la web
-   es la primera acción de su nivel. */
+   es la carta Urgencia de su nivel. */
 export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel }
 
 export function accionesWeb(w: DatosWeb): Acciones {
@@ -144,38 +163,76 @@ export function accionesWeb(w: DatosWeb): Acciones {
   const base: Acciones =
     w.tipo === 'digital'
       ? {
-          pesado: [`Abre ${o}`, `Coge el móvil con ${o}`, `Mira la primera pantalla de ${o}`],
-          medio: [`Entra en ${o}`, `Lee el título de ${o}`, `Pulsa el primer botón de ${o}`],
-          ligero: [`Lee la primera pantalla de ${o}`, `Rellena la primera casilla de ${o}`, `Apunta en tu libreta lo que pide ${o}`],
+          pesado: { novedad: `Abre ${o} con la pantalla en modo oscuro`, desafio: `Abre ${o} a la primera`, pasion: `Abre ${o} con tu canción favorita sonando`, interes: `Mira el menú de ${o}`, urgencia: `Abre ${o}` },
+          medio: { novedad: `Entra en ${o} desde el ordenador`, desafio: `Pulsa el primer botón de ${o}`, pasion: `Entra en ${o} con tu bebida favorita al lado`, interes: `Lee el título de ${o}`, urgencia: `Entra en ${o}` },
+          ligero: { novedad: `Lee la primera pantalla de ${o} desde el ordenador`, desafio: `Rellena la primera casilla de ${o}`, pasion: `Lee la primera pantalla de ${o} con tu música favorita de fondo`, interes: `Apunta en tu libreta lo que pide ${o}`, urgencia: `Lee la primera pantalla de ${o}` },
         }
       : {
-          pesado: [`Toca ${o}`, `Mira ${o}`, `Señala ${o} con el dedo`],
-          medio: [`Coge ${o}`, `Pon ${o} sobre la mesa`, `Abre ${o}`],
-          ligero: [`Usa ${o} una vez`, `Lee la primera página de ${o}`, `Deja ${o} preparado en la mesa`],
+          pesado: { novedad: `Mira ${o} desde otro sitio de la habitación`, desafio: `Toca ${o} a la primera`, pasion: `Toca ${o} con tu canción favorita sonando`, interes: `Señala ${o} a una persona de casa`, urgencia: `Toca ${o}` },
+          medio: { novedad: `Pon ${o} en un sitio distinto de la mesa`, desafio: `Coge ${o} a la primera`, pasion: `Coge ${o} con tu música favorita de fondo`, interes: `Enséñale ${o} a una persona de casa`, urgencia: `Coge ${o}` },
+          ligero: { novedad: `Usa ${o} empezando por el lado contrario`, desafio: `Usa ${o} 3 veces`, pasion: `Usa ${o} con tu música favorita de fondo`, interes: `Usa ${o} con una persona de casa cerca`, urgencia: `Usa ${o} una vez` },
         }
-  const propia = w.microPaso.replace(/^Solo /, '')
-  const lista = [propia.charAt(0).toUpperCase() + propia.slice(1), ...base[w.nivel].filter((x) => x.toLowerCase() !== propia.toLowerCase())]
-  return { ...base, [w.nivel]: lista.slice(0, 3) }
+  const propia = w.microPaso.replace(/^Solo /, '').replace(/[.]$/, '')
+  return { ...base, [w.nivel]: { ...base[w.nivel], urgencia: propia.charAt(0).toUpperCase() + propia.slice(1) } }
 }
 
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
-   Pautas para personas neurodivergentes (docs/comunicacion.md) + «Ley del esfuerzo inverso»:
-   - La acción va primero, empieza por un verbo físico y es UNA sola (sin «y», «o», «luego»).
-   - Sin tiempos ni prisas, sin la palabra «tarea», sin imperativos agresivos.
-   - El tono atrevido va SOLO en la entradilla de la carta («¡Plan nuevo!», «Mini reto»…).
-   - Si hay pregunta, es una invitación («¿Te apuntas?»), nunca un juicio.
-   - Nivel Pesado: la acción empieza por «Solo…». */
+   Investigación (docs/comunicacion.md): Goblin Tools, Tiimo, Finch y guías de inicio de tareas.
+   - La carta dice SOLO la acción, en una frase y con un objeto concreto. Sin entradillas.
+   - Pesado empieza por «Solo…». Urgencia lleva un plazo corto y concreto (PLAZO).
+   - «Está hecho cuando…» sale de la propia acción («Abre la app» → «has abierto la app»).
+   - Una frase de permiso por nivel (PERMISO) baja la exigencia sin juzgar. */
 
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
 
-export const ENTRADILLA: Record<TipoReto, (accion: string) => string> = {
-  novedad: (A) => `¡Plan nuevo! ${A}.`,
-  desafio: (A) => `Mini reto: ${minuscula(A)}. ¿Te apuntas?`,
-  pasion: (A) => `Modo disfrute: ${minuscula(A)}.`,
-  interes: (A) => `Ponle interés: ${minuscula(A)}.`,
-  urgencia: (A) => `Ahora: ${minuscula(A)}.`,
+/** Participio de cada verbo de acción, para escribir el criterio de éxito («has abierto…»).
+    `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
+export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
+  abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, apaga: { part: 'apagado' },
+  aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },
+  baila: { part: 'bailado' }, baja: { part: 'bajado' }, bebe: { part: 'bebido' }, busca: { part: 'buscado' },
+  calienta: { part: 'calentado' }, camina: { part: 'caminado' }, cambia: { part: 'cambiado' },
+  carga: { part: 'cargado' }, cepilla: { part: 'cepillado' }, cierra: { part: 'cerrado' }, cocina: { part: 'cocinado' },
+  coge: { part: 'cogido' }, come: { part: 'comido' }, completa: { part: 'completado' }, compra: { part: 'comprado' },
+  confirma: { part: 'confirmado' }, contesta: { part: 'contestado' }, copia: { part: 'copiado' }, corre: { part: 'corrido' },
+  corta: { part: 'cortado' }, crea: { part: 'creado' }, da: { part: 'dado' }, deja: { part: 'dejado' },
+  dibuja: { part: 'dibujado' }, dobla: { part: 'doblado' }, dúchate: { part: 'duchado', pron: 'te' }, enciende: { part: 'encendido' },
+  enseña: { part: 'enseñado' }, enséñale: { part: 'enseñado', pron: 'le' }, entra: { part: 'entrado' }, entrena: { part: 'entrenado' },
+  envía: { part: 'enviado' }, escala: { part: 'escalado' }, escribe: { part: 'escrito' }, escucha: { part: 'escuchado' },
+  estira: { part: 'estirado' }, explica: { part: 'explicado' }, extiende: { part: 'extendido' }, fotografía: { part: 'fotografiado' },
+  graba: { part: 'grabado' }, guarda: { part: 'guardado' }, habla: { part: 'hablado' }, infla: { part: 'inflado' },
+  intenta: { part: 'intentado' }, juega: { part: 'jugado' }, lanza: { part: 'lanzado' }, lava: { part: 'lavado' },
+  lávate: { part: 'lavado', pron: 'te' }, lee: { part: 'leído' }, limpia: { part: 'limpiado' }, llama: { part: 'llamado' },
+  llena: { part: 'llenado' }, lleva: { part: 'llevado' }, marca: { part: 'marcado' }, medita: { part: 'meditado' },
+  mete: { part: 'metido' }, métete: { part: 'metido', pron: 'te' }, mira: { part: 'mirado' }, mírate: { part: 'mirado', pron: 'te' },
+  mueve: { part: 'movido' }, nada: { part: 'nadado' }, ordena: { part: 'ordenado' }, pasa: { part: 'pasado' },
+  pasea: { part: 'paseado' }, pedalea: { part: 'pedaleado' }, pesa: { part: 'pesado' }, pide: { part: 'pedido' },
+  pon: { part: 'puesto' }, ponle: { part: 'puesto', pron: 'le' }, ponte: { part: 'puesto', pron: 'te' }, pregunta: { part: 'preguntado' },
+  pregúntale: { part: 'preguntado', pron: 'le' }, prepara: { part: 'preparado' }, propón: { part: 'propuesto' }, prueba: { part: 'probado' },
+  pulsa: { part: 'pulsado' }, quita: { part: 'quitado' }, recoge: { part: 'recogido' }, rellena: { part: 'rellenado' },
+  repasa: { part: 'repasado' }, repite: { part: 'repetido' }, reserva: { part: 'reservado' }, respira: { part: 'respirado' },
+  responde: { part: 'respondido' }, riega: { part: 'regado' }, saca: { part: 'sacado' }, sal: { part: 'salido' },
+  señala: { part: 'señalado' }, siéntate: { part: 'sentado', pron: 'te' }, sigue: { part: 'seguido' }, sube: { part: 'subido' },
+  subraya: { part: 'subrayado' }, supera: { part: 'superado' }, tápate: { part: 'tapado', pron: 'te' }, termina: { part: 'terminado' },
+  tiende: { part: 'tendido' }, tira: { part: 'tirado' }, toca: { part: 'tocado' }, túmbate: { part: 'tumbado', pron: 'te' },
+  usa: { part: 'usado' }, vacía: { part: 'vaciado' }, ve: { part: 'ido' }, vístete: { part: 'vestido', pron: 'te' },
+}
+
+/** «Abre la app del test» → «has abierto la app del test»; «Ponte los zapatos» → «te has puesto los zapatos». */
+export function hechoDe(accion: string): string {
+  const [verbo, ...resto] = sinPunto(accion).replace(/^Solo /i, '').split(' ')
+  const p = PARTICIPIOS[verbo.toLowerCase()]
+  if (!p) return 'lo has conseguido una vez'
+  return `${p.pron ? `${p.pron} ` : ''}has ${p.part}${resto.length ? ` ${resto.join(' ')}` : ''}`
+}
+
+/** Texto de la carta: la acción sola, con «Solo…» en Pesado y el plazo en Urgencia. */
+export function fraseReto(accion: string, nivel: Nivel, tipo: TipoReto): string {
+  let A = sinPunto(accion)
+  if (tipo === 'urgencia') A = `${A} ${PLAZO[nivel]}`
+  return nivel === 'pesado' ? `Solo ${minuscula(A)}` : mayuscula(A)
 }
 
 /* ── 5. Lógica de ejecución ─────────────────────────────────── */
@@ -233,54 +290,41 @@ export function analizarTarea(tarea: string): Resultado {
   return { regla: null, categoria: 'Tarea', icono: null, acciones: RESPALDO(minuscula(objetoDe(tarea)) || 'esto') }
 }
 
-/* ── 6. Matriz de combinación ──────────────────────────────────
-   Reto = acción del banco (según el nivel de esfuerzo) + modificador INCUP de la carta.
-   - El NIVEL decide la acción: Ligero (1–3 min), Medio (30–60 s), Pesado (5–10 s, «Solo…»).
-   - La CARTA decide el modificador: Novedad cambia el método, Desafío pone un reto sin reloj,
-     Pasión añade algo que gusta, Interés añade a alguien o un detalle, Urgencia un micro-límite.
-   - Cada mazo rota acciones y modificadores, así ninguna combinación se repite en la misma tarea.
-   - Si el modificador repite una palabra de la acción («Coge el móvil, sin mirar el móvil»),
-     se salta al siguiente. */
+/* ── 6. Los retos de una tarea y sus mazos ─────────────────────
+   Una carta por factor INCUP, escrita a mano para la categoría y el nivel (banco.ts).
+   Si se rechazan las 5 cartas llega otro mazo de la MISMA tarea, siempre igual o más fácil
+   (ley del esfuerzo inverso): primero el nivel elegido, después los niveles más ligeros
+   y, al final, retos genéricos con el nombre de la tarea. */
 
-export type RetoCarta = { tipo: TipoReto; titulo: string; pasos: string[]; hecho: string }
+export type RetoCarta = { tipo: TipoReto; titulo: string; pasos: string[]; hecho: string; permiso: string }
 
 export const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
-/** Mazos de 5 cartas que se pueden repartir para la misma tarea sin repetir combinación */
-export const NUM_MAZOS = 6
+type FuenteMazo = { nivel: Nivel; generico?: boolean }
 
-const raices = (s: string) =>
-  new Set(
-    normalizar(s)
-      .split(' ')
-      .filter((p) => p.length > 4),
-  )
-
-/** Modificador de la carta para este mazo, saltando los que chocan con la acción */
-export function modificadorDe(tipo: TipoReto, mazo: number, accion: string, nivel: Nivel, categoria = 'Tarea'): string {
-  const enAccion = raices(accion)
-  const todos = MODIFICADORES[FAMILIA[categoria] ?? 'general'][nivel === 'pesado' ? 'pesado' : 'normal'][tipo]
-  const validos = todos.filter((mod) => ![...raices(mod)].some((p) => enAccion.has(p)))
-  const lista = validos.length > 1 ? validos : todos
-  // Cada 3 mazos la acción vuelve a salir: el modificador avanza uno más para no repetir pareja
-  return lista[((mazo % 3) + Math.floor(mazo / 3)) % lista.length]
+export function mazosDe(esfuerzo: Nivel, conCategoria: boolean): FuenteMazo[] {
+  const extra = (nivel: Nivel): FuenteMazo[] => (conCategoria ? [{ nivel, generico: true }] : [])
+  if (esfuerzo === 'pesado') return [{ nivel: 'pesado' }, ...extra('pesado')]
+  if (esfuerzo === 'medio') return [{ nivel: 'medio' }, { nivel: 'pesado' }, ...extra('medio')]
+  return [{ nivel: 'ligero' }, { nivel: 'medio' }, { nivel: 'pesado' }]
 }
 
-/** Frase completa de la acción con su modificador: «Solo abre el correo, en silencio» */
-export function accionConModificador(accion: string, mod: string, nivel: Nivel) {
-  const A = sinPunto(accion)
-  return `${nivel === 'pesado' ? `Solo ${minuscula(A)}` : mayuscula(A)}, ${mod}`
+/** Número de mazos distintos que tiene una tarea (depende del esfuerzo y de si tiene categoría). */
+export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb): number {
+  const conCategoria = Boolean(analizarTarea(tarea).regla) || Boolean(web)
+  return mazosDe(esfuerzo, conCategoria).length
 }
 
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
   const analisis = analizarTarea(tarea)
-  const { categoria } = analisis
-  const acciones = !analisis.regla && web ? accionesWeb(web) : analisis.acciones
-  const lista = acciones[esfuerzo]
-  return ORDEN.map((tipo, k) => {
-    const accion = lista[(mazo + k) % lista.length]
-    const mod = modificadorDe(tipo, mazo, accion, esfuerzo, categoria)
-    const frase = accionConModificador(accion, mod, esfuerzo)
-    return { tipo, titulo: ENTRADILLA[tipo](frase), pasos: [frase], hecho: HECHO_POR_NIVEL[esfuerzo] }
+  const propias = !analisis.regla && web ? accionesWeb(web) : analisis.acciones
+  const conCategoria = Boolean(analisis.regla) || Boolean(web)
+  const mazos = mazosDe(esfuerzo, conCategoria)
+  const fuente = mazos[mazo % mazos.length]
+  const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
+  return ORDEN.map((tipo) => {
+    const accion = acciones[fuente.nivel][tipo]
+    const frase = fraseReto(accion, fuente.nivel, tipo)
+    return { tipo, titulo: `${frase}.`, pasos: [frase], hecho: hechoDe(accion), permiso: PERMISO[fuente.nivel] }
   })
 }
