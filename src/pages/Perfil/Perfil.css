@@ -380,9 +380,13 @@
   height: 40px;
   border: 0;
   border-radius: 50%;
-  background: var(--marca-lima);
+  background: none;
   color: var(--marca-tinta);
   cursor: pointer;
+}
+.perfil__lapiz:focus-visible {
+  outline: 3px solid var(--marca-violeta);
+  outline-offset: 2px;
 }
 .perfil__editar {
   width: min(100%, 300px);
