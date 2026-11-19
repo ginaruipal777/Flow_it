@@ -9,6 +9,8 @@ import { BotonVolver, Pantalla } from '../../components/UI/UI'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { haceCuanto } from '../../datos/retos'
 import { useFlow } from '../../estado/FlowEstado'
+import { resumen } from '../../datos/aprendizaje'
+import { TIPOS_RETO } from '../../components/CartaReto/tipos'
 import './Perfil.css'
 
 /* 12 · Perfil (mazos), 12b · Perfil · Retomar y 13 · Crear categoría
@@ -42,7 +44,7 @@ function Cabecera({ claro }: { claro?: boolean }) {
 export default function Perfil() {
   const navegar = useNavigate()
   const { estado, despachar } = useFlow()
-  const [pestana, setPestana] = useState<'mazos' | 'retomar'>('mazos')
+  const [pestana, setPestana] = useState<'mazos' | 'retomar' | 'funciona'>('mazos')
   const aMedias = estado.tareas.filter((t) => t.estado === 'a-medias')
 
   return (
@@ -68,9 +70,20 @@ export default function Perfil() {
         >
           Retomar · {aMedias.length}
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={pestana === 'funciona'}
+          className="t-texto-control"
+          onClick={() => setPestana('funciona')}
+        >
+          Te funciona
+        </button>
       </nav>
 
-      {pestana === 'mazos' ? (
+      {pestana === 'funciona' ? (
+        <LoQueTeFunciona />
+      ) : pestana === 'mazos' ? (
         <ul className="mazos" role="tabpanel">
           {estado.mazos.map((m) => (
             <li key={m.categoria} className="mazos__item">
@@ -131,6 +144,67 @@ export default function Perfil() {
       )}
       <BarraNav />
     </Pantalla>
+  )
+}
+
+/* ── Lo que te funciona: resumen de lo aprendido (aprendizaje.ts) ── */
+
+const QUE_HACE: Record<string, string> = {
+  novedad: 'cambiar de sitio, de orden o de herramienta',
+  desafio: 'una meta pequeña que se puede contar',
+  pasion: 'juntarlo con algo que te gusta',
+  interes: 'hacerlo con alguien o con un dato curioso',
+  urgencia: 'un plazo corto',
+}
+
+function LoQueTeFunciona() {
+  const { estado, despachar } = useFlow()
+  const r = resumen(estado.aprendizaje)
+  const nombre = (t: string) => TIPOS_RETO.find((x) => x.id === t)?.nombre ?? t
+
+  if (r.total < 3)
+    return (
+      <div className="funciona" role="tabpanel">
+        <p className="t-texto-cuerpo funciona__vacio">
+          Cuando aceptes o rechaces unas cuantas cartas, aquí verás qué tipo de reto te activa más. La app usa eso para
+          poner primero las cartas que mejor te funcionan.
+        </p>
+      </div>
+    )
+
+  return (
+    <div className="funciona" role="tabpanel">
+      {r.mejor && (
+        <p className="t-texto-cuerpo funciona__titular">
+          Te activan más las cartas de <strong>{nombre(r.mejor.tipo)}</strong>: {QUE_HACE[r.mejor.tipo]}. Aceptas el{' '}
+          {r.mejor.porcentaje} %.
+        </p>
+      )}
+      <ul className="funciona__lista">
+        {TIPOS_RETO.map((t) => {
+          const datos = r.tipos.find((x) => x.tipo === t.id)
+          return (
+            <li key={t.id} className="funciona__fila" data-tipo={t.id}>
+              <span className="funciona__nombre t-texto-control">{t.nombre}</span>
+              <span className="funciona__barra" aria-hidden="true">
+                <span style={{ width: `${datos?.porcentaje ?? 0}%` }} />
+              </span>
+              <span className="funciona__dato t-texto-cuerpo-s">
+                {datos ? `${datos.aceptadas} de ${datos.vistas}` : 'sin datos'}
+                {datos?.conseguidas ? ` · ${datos.conseguidas} ✓` : ''}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="t-texto-cuerpo-s funciona__nota">
+        Basado en {r.total} cartas. Las cartas que más aceptas y consigues salen antes en los mazos siguientes. Solo se
+        guarda en este móvil.
+      </p>
+      <button type="button" className="t-texto-control funciona__borrar" onClick={() => despachar({ tipo: 'borrar-aprendizaje' })}>
+        Borrar lo aprendido
+      </button>
+    </div>
   )
 }
 

@@ -298,3 +298,61 @@
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 4px 0 var(--marca-tinta), 0 0 0 12px var(--superficie-lienzo);
 }
+
+/* Lo que te funciona (aprendizaje de cartas aceptadas, rechazadas y conseguidas) */
+.funciona {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+.funciona__vacio,
+.funciona__nota {
+  color: var(--texto-secundario);
+}
+.funciona__titular {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--superficie-crema);
+}
+.funciona__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.funciona__fila {
+  display: grid;
+  grid-template-columns: 76px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.funciona__barra {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--superficie-crema);
+  overflow: hidden;
+}
+.funciona__barra span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--carta-fondo);
+  transition: width 300ms ease;
+}
+.funciona__dato {
+  min-width: 74px;
+  text-align: right;
+  color: var(--texto-secundario);
+}
+.funciona__borrar {
+  align-self: flex-start;
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  color: var(--marca-tinta);
+  text-decoration: underline;
+  cursor: pointer;
+}

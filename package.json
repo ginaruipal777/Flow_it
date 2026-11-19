@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "iconos": "node scripts/iconos.mjs",
     "documento": "node scripts/documento-retos.mts",
-    "validar": "node scripts/validar-retos.mts"
+    "validar": "node scripts/validar-retos.mts",
+    "fuentes": "node scripts/comprobar-fuentes.mts"
   },
   "dependencies": {
     "react": "^19.3.1",

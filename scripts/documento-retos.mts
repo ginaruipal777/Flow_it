@@ -235,15 +235,19 @@ const html = `<!doctype html>
   <h2>4b. Lectura de la situación</h2>
   <p>Con TDAH una tarea se evita por motivos distintos, y cada uno pide otro empujón. Con <strong>la tarea que escribe la persona y el esfuerzo que marca</strong>, la app deduce qué puede estar pasando, lo dice en una frase corta en la pantalla de las cartas y <strong>ordena las cartas</strong> para que salga primero la que mejor encaja. Nunca diagnostica: dice «puede que» y la persona decide.</p>
   <table>
-    <tr><th>Situación</th><th>Lo que ve la persona</th><th>Primera carta</th></tr>
-    ${SITUACIONES_DOC.map((x) => `<tr><td><strong>${x.id}</strong></td><td>${esc(x.frase)}</td><td>${({ novedad: 'Novedad', desafio: 'Desafío', pasion: 'Pasión', interes: 'Interés', urgencia: 'Urgencia' } as Record<string, string>)[x.orden[0]]}</td></tr>`).join('')}
-    ${Object.values(POR_ESFUERZO_DOC).map((x) => `<tr><td><strong>${x.id}</strong> <span class="peq">(si no encaja ninguna)</span></td><td>${esc(x.frase)}</td><td>${({ novedad: 'Novedad', desafio: 'Desafío', pasion: 'Pasión', interes: 'Interés', urgencia: 'Urgencia' } as Record<string, string>)[x.orden[0]]}</td></tr>`).join('')}
+    <tr><th>Situación</th><th>Lo que ve la persona</th><th>Primera carta</th><th>Fuente</th></tr>
+    ${SITUACIONES_DOC.map((x) => `<tr><td><strong>${esc(x.nombre)}</strong></td><td>${esc(x.frase)}</td><td>${({ novedad: 'Novedad', desafio: 'Desafío', pasion: 'Pasión', interes: 'Interés', urgencia: 'Urgencia' } as Record<string, string>)[x.orden[0]]}</td><td class="peq">${esc(x.fuente.nombre)}</td></tr>`).join('')}
+    ${Object.values(POR_ESFUERZO_DOC).map((x) => `<tr><td><strong>${esc(x.nombre)}</strong> <span class="peq">(si no encaja ninguna)</span></td><td>${esc(x.frase)}</td><td>${({ novedad: 'Novedad', desafio: 'Desafío', pasion: 'Pasión', interes: 'Interés', urgencia: 'Urgencia' } as Record<string, string>)[x.orden[0]]}</td><td class="peq">${esc(x.fuente.nombre)}</td></tr>`).join('')}
   </table>
   <h3>Ejemplos</h3>
   <table>
     <tr><th>Tarea</th><th>Esfuerzo</th><th>Lectura</th></tr>
     ${([['Llamar al dentista', 'pesado'], ['Limpiar la cocina', 'medio'], ['Hacer la declaración de la renta', 'ligero'], ['Entregar el informe mañana', 'medio']] as const).map(([t, n]) => `<tr><td>${esc(t)}</td><td>${n}</td><td>${esc(leerSituacion(t, n).frase)}</td></tr>`).join('')}
   </table>
+  <h3>Cómo lee la tarea</h3>
+  <p>Cada situación tiene señales con peso (una palabra muy clara pesa 3; una que solo apunta, 1 o 2). Se suman todas las señales de la tarea y gana la que más puntos tiene. Las reglas salen de webs de psicología y TDAH leídas una vez (columna «Fuente»), no de una búsqueda en cada tarea: así la lectura es instantánea y funciona sin conexión. <code>npm run fuentes</code> comprueba que los enlaces siguen abiertos.</p>
+  <h3>Lo que te funciona: el algoritmo</h3>
+  <p>La app apunta, solo en el móvil, qué tipo de carta se rechaza, se acepta, se consigue o se archiva, en total y por situación. Al empezar cada mazo ordena las cartas con una media con creencia inicial: parte del orden de la situación, aceptar suma, conseguir suma un poco más, rechazar o archivar resta, y lo aprendido en la misma situación pesa más que lo general. En el perfil, «Te funciona» enseña qué cartas le activan más y deja borrar lo aprendido.</p>
   <p class="peq">Las situaciones salen de las causas de evitación de tareas con TDAH que describen las guías de inicio de tareas (miedo a la respuesta, sensación de tamaño, aburrimiento, perfeccionismo, poca energía, malestar) y de los mensajes que prueba Tiimo según la energía de la persona.</p>
 </section>
 

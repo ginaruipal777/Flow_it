@@ -34,7 +34,9 @@ export default function Seleccion() {
   const inicio = useRef<number | null>(null)
 
   const mazo = estado.mazo ?? 0
-  const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo) : []), [tareaActual, mazo])
+  const orden = estado.ordenCartas
+  const situacion = tareaActual ? leerSituacion(tareaActual.texto, tareaActual.esfuerzo) : null
+  const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo, orden) : []), [tareaActual, mazo, orden])
   const totalMazos = tareaActual ? numMazos(tareaActual.texto, tareaActual.esfuerzo, tareaActual.web) : 1
   const indice = Math.min(estado.indiceReto, 4)
   const agotado = estado.indiceReto >= 5
@@ -63,7 +65,7 @@ export default function Seleccion() {
           despachar({ tipo: 'aceptar-reto', reto: retos[indice].tipo })
           navegar('/reto/detalle')
         } else {
-          despachar({ tipo: 'siguiente-reto' })
+          despachar({ tipo: 'siguiente-reto', reto: retos[indice].tipo, motivo: 'rechazo' })
         }
         setSalida(null)
         setArrastre(0)
@@ -124,7 +126,12 @@ export default function Seleccion() {
             </span>
           </button>
         </div>
-        <p className="seleccion__situacion t-texto-cuerpo-s">{leerSituacion(tareaActual.texto, tareaActual.esfuerzo).frase}</p>
+        <p className="seleccion__situacion t-texto-cuerpo-s">
+          {situacion?.frase}{' '}
+          <a href={situacion?.fuente.url} target="_blank" rel="noopener noreferrer" title={situacion?.fuente.nombre}>
+            ¿Por qué?
+          </a>
+        </p>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
             Mazo {mazo + 1} de {totalMazos} · carta {Math.min(indice + 1, 5)} de 5

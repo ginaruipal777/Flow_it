@@ -1,15 +1,22 @@
 import type { Categoria } from '../components/Icono/iconos'
+import type { TipoReto } from '../components/CartaReto/tipos'
 import { NOMBRE_CATEGORIA, type Reto, type Tarea } from './modelo'
 import { analizarTarea, retosDe } from './reglas'
 import { leerSituacion } from './situacion'
 
 /* Los retos salen del banco escrito a mano (banco.ts y reglas.ts). El orden de las cartas
-   depende de la situación probable de la persona (situacion.ts): primero las que mejor encajan. */
+   depende de la situación probable de la persona (situacion.ts) y de lo que la app ha aprendido
+   sobre qué cartas le funcionan (aprendizaje.ts): primero las que mejor encajan. */
 
-export function generarRetos(tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web'>>, mazo = 0): Reto[] {
+/** `orden`: orden de cartas del mazo calculado con lo aprendido (aprendizaje.ts); si no llega, el de la situación. */
+export function generarRetos(
+  tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web'>>,
+  mazo = 0,
+  ordenAprendido?: TipoReto[] | null,
+): Reto[] {
   // Un reto distinto por carta INCUP (ver retosDe en reglas.ts).
   // Cada mazo nuevo de la misma tarea sigue la numeración: 01–05, 06–10…
-  const { orden } = leerSituacion(tarea.texto, tarea.esfuerzo)
+  const orden = ordenAprendido?.length === 5 ? ordenAprendido : leerSituacion(tarea.texto, tarea.esfuerzo).orden
   const retos = retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web)
   return orden
     .map((tipo) => retos.find((r) => r.tipo === tipo)!)

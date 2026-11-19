@@ -400,3 +400,8 @@
   font-size: 13.5px;
   line-height: 1.3;
 }
+.seleccion__situacion a {
+  color: var(--marca-violeta);
+  font-weight: 700;
+  white-space: nowrap;
+}

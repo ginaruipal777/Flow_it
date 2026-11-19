@@ -45,20 +45,34 @@ Pautas para todos los textos de la app (retos, botones, avisos). Están pensadas
 
 ## 5b. Lectura de la situación
 
-Con la tarea y el esfuerzo, la app deduce qué puede estar frenando ([src/datos/situacion.ts](../src/datos/situacion.ts)), lo dice en una frase corta en la pantalla de las cartas y pone primero la carta que mejor encaja:
+Con la tarea y el esfuerzo, la app deduce qué puede estar frenando ([src/datos/situacion.ts](../src/datos/situacion.ts)), lo dice en una frase corta en la pantalla de las cartas (con un enlace «¿Por qué?» a su fuente) y pone primero la carta que mejor encaja.
 
-| Situación | Señales en la tarea | Frase | Primera carta |
+**Cómo lee la tarea.** Cada situación tiene señales con peso: una palabra muy clara pesa 3 («llamar», «dentista», «TFG») y una que solo apunta, 1 o 2. Se suman todas las señales de la tarea y gana la situación con más puntos; con esfuerzo Pesado, «Poca energía» y «Cuidarse» suman un punto más. Si una segunda situación también encaja, se guarda.
+
+**De dónde salen.** De webs de psicología y TDAH, leídas una vez y convertidas en reglas, en vez de buscar en cada tarea: así la lectura es instantánea, funciona sin conexión y no depende de buscadores que bloquean. `npm run fuentes` comprueba que los enlaces siguen abiertos.
+
+| Situación | Frase | Primera carta | Fuente |
 |---|---|---|---|
-| Plazo encima | hoy, mañana, urgente, plazo | Hay un plazo encima. Esa presión puede ayudar: la carta Urgencia va primero. | Urgencia |
-| Hablar con otras personas | llamar, responder, jefe, cita, quedar | Hablar con otras personas puede dar respeto. Empiezas por lo que no exige hablar con nadie. | Novedad |
-| Mal rato | médico, dentista, análisis, veterinario | Es normal posponer lo que da mal rato. Los primeros pasos no te comprometen a nada todavía. | Novedad |
-| Miedo a hacerlo mal | escribir, informe, proyecto, examen | Puede que pese el miedo a que no quede bien. Aquí vale un primer borrador feo. | Novedad |
-| Verlo enorme | limpiar, ordenar, estudiar, mudanza | Puede parecer enorme porque se ve entero. Solo hace falta un trozo que se pueda contar. | Desafío |
-| Poca energía | gimnasio, correr, pasear | Con poca energía, el cuerpo arranca mejor con algo pequeño que te guste. | Pasión |
-| Aburrimiento | papeleo, trámites, platos, lavadora | Es más aburrida que difícil. Juntarla con algo que te gusta ayuda a empezar. | Pasión |
-| Cuidarse | ducharse, comer, dormir | Cuidarte cuesta más en los días malos. Con un paso pequeño ya cuenta. | Pasión |
+| Plazo encima | Hay un plazo encima. Esa presión puede ayudar: la carta Urgencia va primero. | Urgencia | [Sistema nervioso basado en el interés (Dodson)](https://neurodivergentinsights.com/interest-based-nervous-system/) |
+| Hablar con otras personas | Hablar con otras personas puede dar respeto. Empiezas por lo que no exige hablar con nadie. | Novedad | [Ansiedad al teléfono y TDAH](https://www.getinflow.io/post/phone-anxiety-and-adhd) |
+| Algo que da mal rato | Es normal posponer lo que da mal rato. Los primeros pasos no te comprometen a nada todavía. | Novedad | [BPS: más citas médicas perdidas con TDAH](https://bps.org.uk/research-digest/high-rates-missed-gp-visits-found-among-patients-adhd) |
+| Miedo a que no quede bien | Puede que pese el miedo a que no quede bien. Aquí vale un primer borrador feo. | Novedad | [ADDitude: perfeccionismo y TDAH](https://additudemag.com/perfectionism-adhd-not-good-enough-anxiety/) |
+| Verlo enorme | Puede parecer enorme porque se ve entero. Solo hace falta un trozo que se pueda contar. | Desafío | [Child Mind: parálisis por TDAH](https://childmind.org/es/articulo/que-es-la-paralisis-por-tdah/) |
+| Poca energía | Con poca energía, el cuerpo arranca mejor con algo pequeño que te guste. | Pasión | [ADDA: ejercicio y TDAH](https://add.org/exercising-your-adhd/) |
+| Aburrimiento | Es más aburrida que difícil. Juntarla con algo que te gusta ayuda a empezar. | Pasión | [Psychology Today: el aburrimiento con TDAH](https://www.psychologytoday.com/pr/blog/por-que-el-aburrimiento-es-insoportable-para-personas-con-tdah) |
+| Cuidarse | Cuidarte cuesta más en los días malos. Con un paso pequeño ya cuenta. | Pasión | [CHADD: TDAH y cuidado personal](https://chadd.org/adhd-news/adhd-news-adults/attention-adhd-and-personal-care/) |
 
-Si no encaja ninguna, la frase sale del esfuerzo (Pesado: «Hoy cuesta mucho arrancar…»). Nunca diagnostica: dice «puede que» y la persona decide.
+Si no encaja ninguna, la frase sale del esfuerzo (Pesado: «Hoy cuesta mucho arrancar…», fuente Child Mind; Medio: [ADDA, evitación de demandas](https://add.org/demand-avoidance/)). Nunca diagnostica: dice «puede que» y la persona decide.
+
+## 5c. Lo que te funciona (aprendizaje)
+
+La app apunta, solo en el móvil, qué tipo de carta se rechaza, se acepta, se consigue o se archiva, en total y por situación ([src/datos/aprendizaje.ts](../src/datos/aprendizaje.ts)). Con eso ordena las cartas de cada mazo nuevo:
+
+- Parte del orden que propone la situación (la primera carta empieza con más puntos).
+- Aceptar suma, conseguir suma un poco más, rechazar o archivar resta.
+- Pocas respuestas cambian poco el orden; muchas mandan sobre el orden de partida. Lo aprendido en la misma situación pesa más que lo general.
+- El orden se fija al empezar cada mazo, para que las cartas no cambien mientras se miran.
+- En el perfil, la pestaña «Te funciona» enseña qué cartas le activan más («Te activan más las cartas de Pasión: juntarlo con algo que te gusta. Aceptas el 70 %.») y deja borrar lo aprendido.
 
 ## 6. Ley del esfuerzo inverso
 

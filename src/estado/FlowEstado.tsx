@@ -4,6 +4,8 @@ import type { TipoReto } from '../components/CartaReto/tipos'
 import { NOMBRE_CATEGORIA, type Esfuerzo, type Mazo, type MicroPasoWeb, type Tarea } from '../datos/modelo'
 import { detectarCategoria } from '../datos/retos'
 import { numMazos } from '../datos/reglas'
+import { leerSituacion } from '../datos/situacion'
+import { APRENDIZAJE_VACIO, ordenar, registrar, type Aprendizaje, type Evento } from '../datos/aprendizaje'
 
 /* Estado de la app guardado en el navegador (localStorage).
    Más adelante se cambiará por una base de datos con cuentas. */
@@ -23,6 +25,10 @@ type Estado = {
   /** Última tarea marcada como completada (resalta su fila en «Tus tareas»). */
   recienCompletada: string | null
   mazos: Mazo[]
+  /** Lo que ha aprendido la app sobre qué cartas le funcionan (aprendizaje.ts) */
+  aprendizaje: Aprendizaje
+  /** Orden de las cartas del mazo actual; se calcula al empezar cada mazo y no cambia dentro de él */
+  ordenCartas: TipoReto[] | null
 }
 
 type Accion =
@@ -31,7 +37,8 @@ type Accion =
   | { tipo: 'nueva-tarea'; texto: string; web?: MicroPasoWeb }
   | { tipo: 'retomar'; id: string }
   | { tipo: 'cambiar-categoria'; categoria: Categoria }
-  | { tipo: 'siguiente-reto' }
+  /** `reto`: la carta que se deja (para aprender); `motivo: 'archivo'` si se archiva un reto ya aceptado */
+  | { tipo: 'siguiente-reto'; reto?: TipoReto; motivo?: 'rechazo' | 'archivo' }
   | { tipo: 'reiniciar-mazo' }
   | { tipo: 'mazo-siguiente' }
   | { tipo: 'aceptar-reto'; reto: TipoReto }
@@ -40,6 +47,7 @@ type Accion =
   | { tipo: 'dejar-a-medias' }
   | { tipo: 'nuevo-mazo'; categoria: Categoria; nombre: string }
   | { tipo: 'premio'; premio: string | undefined }
+  | { tipo: 'borrar-aprendizaje' }
 
 /* Versión de fábrica: la app arranca vacía, como recién descargada.
    Las reglas y el banco de retos están en src/datos; aquí solo se guarda lo que hace cada persona. */
@@ -54,12 +62,33 @@ const INICIAL: Estado = {
   retoAceptado: null,
   recienCompletada: null,
   mazos: [],
+  aprendizaje: APRENDIZAJE_VACIO,
+  ordenCartas: null,
 }
 
 /** Mazos distintos de la tarea actual (dependen del esfuerzo y de si tiene categoría) */
 function mazosDeTarea(e: Estado) {
   const t = e.tareas.find((x) => x.id === e.tareaActual)
   return t ? numMazos(t.texto, t.esfuerzo, t.web) : 1
+}
+
+/** Situación de la tarea actual (situacion.ts) */
+function situacionActual(e: Estado) {
+  const t = e.tareas.find((x) => x.id === e.tareaActual)
+  return t ? leerSituacion(t.texto, t.esfuerzo) : null
+}
+
+/** Calcula el orden de cartas del próximo mazo con lo aprendido hasta ahora */
+function conOrden(e: Estado): Estado {
+  const s = situacionActual(e)
+  return { ...e, ordenCartas: s ? ordenar(s.orden, e.aprendizaje, s.id) : null }
+}
+
+/** Apunta lo que ha pasado con una carta */
+function aprender(e: Estado, tipo: TipoReto | null | undefined, evento: Evento): Estado {
+  const s = situacionActual(e)
+  if (!tipo || !s) return e
+  return { ...e, aprendizaje: registrar(e.aprendizaje, s.id, tipo, evento) }
 }
 
 function cambiarTarea(e: Estado, cambio: (t: Tarea) => Tarea): Estado {
@@ -86,34 +115,36 @@ function reductor(e: Estado, a: Accion): Estado {
         actualizada: Date.now(),
         ...(a.web && { web: a.web }),
       }
-      return { ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null }
+      return conOrden({ ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null })
     }
     case 'retomar':
-      return {
+      return conOrden({
         ...e,
         tareaActual: a.id,
         indiceReto: 0,
         mazo: 0,
         retoAceptado: null,
         tareas: e.tareas.map((t) => (t.id === a.id ? { ...t, estado: 'en-curso' } : t)),
-      }
+      })
     case 'cambiar-categoria':
       return cambiarTarea(e, (t) => ({ ...t, categoria: a.categoria }))
     case 'siguiente-reto': {
-      // Al pasar la última carta llega un mazo nuevo de la misma tarea; tras el último, «agotado» (5)
-      if (e.indiceReto >= 4 && (e.mazo ?? 0) < mazosDeTarea(e) - 1) return { ...e, indiceReto: 0, mazo: (e.mazo ?? 0) + 1 }
-      return { ...e, indiceReto: Math.min(e.indiceReto + 1, 5) }
+      const n = a.motivo === 'archivo' ? aprender(e, e.retoAceptado, 'archivada') : aprender(e, a.reto, 'rechazada')
+      // Al pasar la última carta llega un mazo nuevo de la misma tarea, ya ordenado con lo aprendido;
+      // tras el último, «agotado» (5)
+      if (n.indiceReto >= 4 && (n.mazo ?? 0) < mazosDeTarea(n) - 1) return conOrden({ ...n, indiceReto: 0, mazo: (n.mazo ?? 0) + 1 })
+      return { ...n, indiceReto: Math.min(n.indiceReto + 1, 5) }
     }
     case 'reiniciar-mazo':
-      return { ...e, indiceReto: 0, mazo: 0 }
+      return conOrden({ ...e, indiceReto: 0, mazo: 0 })
     case 'mazo-siguiente':
-      return { ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e) }
+      return conOrden({ ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e) })
     case 'aceptar-reto':
-      return { ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto }
+      return aprender({ ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto }, a.reto, 'aceptada')
     case 'reto-conseguido': {
       const actual = e.tareas.find((t) => t.id === e.tareaActual)
       const reto = e.retoAceptado
-      const conReto = cambiarTarea(e, (t) => ({ ...t, retos: t.retos + 1 }))
+      const conReto = aprender(cambiarTarea(e, (t) => ({ ...t, retos: t.retos + 1 })), reto, 'conseguida')
       if (!actual || !reto) return conReto
       const existe = e.mazos.some((m) => m.categoria === actual.categoria)
       const mazos = existe
@@ -130,6 +161,8 @@ function reductor(e: Estado, a: Accion): Estado {
       }
     case 'dejar-a-medias':
       return cambiarTarea(e, (t) => ({ ...t, estado: 'a-medias' }))
+    case 'borrar-aprendizaje':
+      return { ...e, aprendizaje: APRENDIZAJE_VACIO }
     case 'nuevo-mazo':
       if (e.mazos.some((m) => m.categoria === a.categoria)) return e
       return { ...e, mazos: [...e.mazos, { categoria: a.categoria, nombre: a.nombre, cartas: [] }] }

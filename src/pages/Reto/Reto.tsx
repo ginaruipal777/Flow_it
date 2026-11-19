@@ -17,7 +17,7 @@ import './Reto.css'
 function useRetoAceptado(): { tarea: Tarea; reto: Reto } | null {
   const { estado, tareaActual } = useFlow()
   if (!tareaActual || !estado.retoAceptado) return null
-  const reto = generarRetos(tareaActual, estado.mazo ?? 0).find((r) => r.tipo === estado.retoAceptado)
+  const reto = generarRetos(tareaActual, estado.mazo ?? 0, estado.ordenCartas).find((r) => r.tipo === estado.retoAceptado)
   return reto ? { tarea: tareaActual, reto } : null
 }
 
@@ -105,7 +105,7 @@ function DialogoArchivar({ onCerrar }: { onCerrar: () => void }) {
           conIcono={false}
           className="boton--ancho"
           onClick={() => {
-            despachar({ tipo: 'siguiente-reto' })
+            despachar({ tipo: 'siguiente-reto', motivo: 'archivo' })
             navegar('/reto', { replace: true })
           }}
         >
