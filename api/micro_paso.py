@@ -130,9 +130,14 @@ def es_galimatias(texto: str) -> bool:
 
 def comprobar_comprension(tarea: str) -> dict | None:
     """Devuelve el error amigable si no se entiende la tarea; None si se entiende."""
-    if es_galimatias(tarea) or not tiene_verbo(tarea):
+    # No hace falta verbo: una palabra sola («café», «gafas») también es una tarea.
+    # Solo se rechaza el texto sin sentido y las respuestas vacías («nada», «no sé»).
+    if es_galimatias(tarea) or SIN_TAREA.match(normalizar(tarea)):
         return respuesta("incomprehensible", mensaje=MENSAJE_INCOMPRENSIBLE)
     return None
+
+
+SIN_TAREA = re.compile(r"^(nada|no se|nose|ninguna|ninguno|no lo se|ni idea|nose que|algo|cosas|no)$")
 
 
 # ── 3. Búsqueda web con límite de tiempo ────────────────────────

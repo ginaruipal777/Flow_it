@@ -66,6 +66,10 @@ export function filtrarTarea(texto: string, conCategoria: boolean): Filtro {
   if (AUTOLESION.test(t)) return { status: 'blocked', mensaje: MENSAJE_BLOQUEO, ayuda: AYUDA_CRISIS }
   if (PROHIBIDAS.test(t)) return { status: 'blocked', mensaje: MENSAJE_BLOQUEO }
   if (esGalimatias(texto)) return { status: 'incomprehensible', mensaje: MENSAJE_INCOMPRENSIBLE }
-  if (!conCategoria && !tieneVerbo(texto)) return { status: 'incomprehensible', mensaje: MENSAJE_INCOMPRENSIBLE }
+  // No hace falta verbo: una palabra sola («café», «gafas») también vale; si no se reconoce,
+  // la app la busca y, si hace falta, pregunta de qué tipo es. Solo se rechazan respuestas vacías.
+  if (!conCategoria && SIN_TAREA.test(t)) return { status: 'incomprehensible', mensaje: MENSAJE_INCOMPRENSIBLE }
   return { status: 'ok' }
 }
+
+const SIN_TAREA = /^(nada|no se|nose|ninguna|ninguno|no lo se|ni idea|algo|cosas|no)$/
