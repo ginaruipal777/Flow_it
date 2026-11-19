@@ -325,7 +325,7 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
 
 
 ENLACE_UNDERSTOOD = re.compile(r"https://www\.understood\.org/es-mx/[a-z0-9/\-]+")
-TEMAS_ARRANQUE = re.compile(r"(empez|comenzar|tarea|funcion.ejecutiva|executive.function|procrastin|motiva|organiz|concentr|tdah|adhd|atencion)")
+TEMAS_ARRANQUE = re.compile(r"(empez|comenzar|tarea|funcion.ejecutiva|executive.function|procrastin|motiva|organiz|concentr|evitar)")
 # understood.org habla mucho de crianza: esos artículos no sirven para arrancar una tarea propia
 TEMAS_CRIANZA = re.compile(r"(hijo|hija|preescolar|kinder|bebe|nino|nina|maestro|escuela primaria)")
 
