@@ -2,7 +2,14 @@
 
 const ARTICULO = /^(el|la|los|las|un|una|unos|unas|mi|mis|tu|tus|su|sus)\s/i
 const PREPOSICION = /^(a|al|con|en|de|del|para|por|sobre|hasta)\s/i
-const FEMENINAS = new Set(['llave', 'leche', 'calle', 'noche', 'carne', 'fuente', 'frase', 'clase', 'nube', 'piel', 'sal', 'red', 'luz', 'flor', 'sarten', 'sartén', 'nariz', 'mano', 'foto', 'moto', 'radio', 'tele', 'web', 'app', 'cama', 'torre'])
+const FEMENINAS = new Set([
+  'llave', 'leche', 'calle', 'noche', 'carne', 'fuente', 'frase', 'clase', 'nube', 'piel', 'sal', 'red', 'luz', 'flor',
+  'sarten', 'sartén', 'nariz', 'mano', 'foto', 'moto', 'radio', 'tele', 'web', 'app', 'cama', 'torre',
+  // -or que son femeninas, para no chocar con la regla general de -or masculino
+  'flor', 'labor', 'coliflor',
+  // objetos y herramientas que terminan en consonante o en -e y son femeninas
+  'pared', 'lavadora', 'secadora', 'nevera', 'aspiradora', 'plancha', 'bascula', 'báscula', 'lija', 'brocha',
+])
 const MASCULINAS_EN_A = new Set(['dia', 'día', 'mapa', 'sofa', 'sofá', 'problema', 'sistema', 'programa', 'agua', 'tema', 'planeta', 'idioma', 'clima', 'pijama'])
 
 /** Artículo que le toca a un nombre sin artículo («cafetera» → «la cafetera»); «mi» pasa a «tu». */

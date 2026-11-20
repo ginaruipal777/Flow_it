@@ -70,7 +70,10 @@ const UNIDADES: [RegExp, Unidad][] = [
   [/\b(documento|pdf|informe|presentacion|trabajo|tfg|tfm)\b/, { pesado: (o) => `Abre ${o}`, uno: (o) => `Escribe la primera frase de ${o}`, varios: (o, k) => `Escribe ${k} frases de ${o}` }],
   [/\b(ropa|prendas?|colada|lavadora|tender|planchar|doblar)\b/, { pesado: () => 'Toca una prenda', uno: () => 'Dobla una prenda', varios: (_, k) => `Dobla ${k} prendas` }],
   [/\b(platos?|fregadero|lavavajillas|fregar)\b/, { pesado: () => 'Toca el primer plato del fregadero', uno: () => 'Friega un plato', varios: (_, k) => `Friega ${k} platos` }],
-  [/\b(bayeta|trapo|fregona|escoba|aspiradora|desengrasante|limpi\w*|polvo)\b/, { pesado: (o) => `Toca ${o}`, uno: (o) => `Pasa ${o} por una superficie`, varios: (o, k) => `Pasa ${o} por ${k} superficies` }],
+  // Solo si el objeto ES la herramienta de limpieza (viene de la web): «limpi\w*» NO va aquí,
+  // porque dispara con el verbo «limpiar» de la frase aunque el objeto sea la zona («la cocina»,
+  // no un trapo), y entonces «Pasa la cocina por 5 superficies» no tiene ningún sentido.
+  [/\b(bayeta|trapo|fregona|escoba|aspiradora|desengrasante)\b/, { pesado: (o) => `Toca ${o}`, uno: (o) => `Pasa ${o} por una superficie`, varios: (o, k) => `Pasa ${o} por ${k} superficies` }],
   [/\b(web|portal|plataforma|app|aplicacion)\b/, { pesado: (o) => `Abre ${o}`, uno: (o) => `Lee la primera pantalla de ${o}`, varios: (o, k) => `Lee ${k} pantallas de ${o}` }],
 ]
 
@@ -335,10 +338,17 @@ type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nuc
 
 /** Orden con lo que falló: fuera las plantillas descartadas; la estrategia descartada al final;
     con descartes, primero la estrategia opuesta (casi siempre la acción mecánica). */
+const nucleoDePlantilla = (plantilla: string) => plantilla.split('+')[0]
+
 function conDescartes(lista: Candidata[], op?: OpcionesMotor): Candidata[] {
   if (!op) return lista
-  const libres = lista.filter((c) => !op.descartadas.has(c.plantilla))
-  const pool = libres.length ? libres : lista
+  // Primero se evita hasta el NÚCLEO de lo que ya rechazaste (no solo esa combinación exacta
+  // con ese modificador): si dijiste que no a «Pon X a la vista con música», no vuelve a
+  // ofrecerte «Pon X a la vista» con otro modificador mientras haya alternativa.
+  const nucleosDescartados = new Set([...op.descartadas].map(nucleoDePlantilla))
+  const sinNucleo = lista.filter((c) => !nucleosDescartados.has(nucleoDePlantilla(c.plantilla)))
+  const libres = (sinNucleo.length ? sinNucleo : lista).filter((c) => !op.descartadas.has(c.plantilla))
+  const pool = libres.length ? libres : sinNucleo.length ? sinNucleo : lista
   const puntos = (c: Candidata) =>
     (c.estrategia === op.estrategiaDescartada || c.nucleo === op.estrategiaDescartada ? 2 : 0) +
     (c.nucleo === (op.preferida ?? 'mecanica') ? 0 : 1)
@@ -361,7 +371,6 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
     // mientras queden otros sin usar: con pocas variantes, el barajado por carta podía elegir el
     // mismo núcleo 3-4 veces y solo cambiar la coletilla final.
     const usadosNucleos = new Set<string>()
-    const nucleoDe = (plantilla: string) => plantilla.split('+')[0]
     const cartas = {} as Acciones[Nivel]
     const origenes = {} as Record<TipoReto, Origen>
     TIPOS.forEach((tipo, i) => {
@@ -399,10 +408,10 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       const listas = conDescartes(candidatas, opciones).map((c) => ({ ...c, texto: contraer(c.texto) }))
       const cabe = (c: (typeof listas)[number]) => c.texto.length <= (tipo === 'urgencia' ? MAXIMO_URGENCIA : MAXIMO) && !usadas.has(c.texto)
       const elegida =
-        listas.find((c) => cabe(c) && !usadosNucleos.has(nucleoDe(c.plantilla))) ??
+        listas.find((c) => cabe(c) && !usadosNucleos.has(nucleoDePlantilla(c.plantilla))) ??
         listas.find((c) => cabe(c)) ?? { ...candidatas[0], texto: contraer(candidatas[0].texto) }
       usadas.add(elegida.texto)
-      usadosNucleos.add(nucleoDe(elegida.plantilla))
+      usadosNucleos.add(nucleoDePlantilla(elegida.plantilla))
       cartas[tipo] = elegida.texto
       origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia, ...(elegida.pasos && { pasos: elegida.pasos }) }
     })

@@ -10,6 +10,7 @@
 
 import type { TipoReto } from '../components/CartaReto/tipos'
 import { conArticulo } from './articulos.ts'
+import { OBJETOS_UNIVERSALES } from './pasos.ts'
 
 export type OpcionContexto = {
   id: string
@@ -69,7 +70,9 @@ export function preguntasDe(
             ? { id: `metodo:${m}`, texto: m, icono: iconoDe(m), metodo: m.toLowerCase() }
             : { id: `metodo:${m}`, texto: m, icono: iconoDe(m), objeto: conArticulo(m.toLowerCase()), verbo: 'Coge' }
         }),
-        { id: 'otra', texto: 'De otra forma', icono: 'nose' },
+        // Nivel 1 (filtro de ubicuidad): sin un método propio, un objeto universal es mejor
+        // que no tener ninguno («Escribe en un pósit…» para todo).
+        { id: 'otra', texto: 'De otra forma', icono: 'manos', objeto: OBJETOS_UNIVERSALES[1], verbo: 'Usa' },
       ],
     })
   } else if (materiales.length >= 2) {
@@ -84,7 +87,7 @@ export function preguntasDe(
           objeto: m,
           verbo: 'Coge',
         })),
-        { id: 'nada', texto: 'Nada de esto', icono: 'nose' },
+        { id: 'nada', texto: 'Nada de esto', icono: 'manos', objeto: OBJETOS_UNIVERSALES[1], verbo: 'Usa' },
       ],
     })
   }

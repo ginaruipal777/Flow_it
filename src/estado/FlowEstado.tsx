@@ -239,7 +239,14 @@ function cargar(): Estado {
   try {
     CLAVES_VIEJAS.forEach((k) => localStorage.removeItem(k))
     const guardado = localStorage.getItem(CLAVE)
-    if (guardado) return { ...INICIAL, ...JSON.parse(guardado) }
+    if (!guardado) return INICIAL
+    const estado: Estado = { ...INICIAL, ...JSON.parse(guardado) }
+    // Tareas de antes de la semilla al azar (abc7893): les toca la suya, en vez de quedarse
+    // para siempre con las frases fijas que salían del hash de su propio texto.
+    if (estado.tareas.some((t) => t.semilla === undefined)) {
+      estado.tareas = estado.tareas.map((t) => (t.semilla === undefined ? { ...t, semilla: Math.floor(Math.random() * 0x7fffffff) } : t))
+    }
+    return estado
   } catch {
     /* sin almacenamiento: se usa el estado inicial */
   }

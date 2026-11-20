@@ -96,8 +96,21 @@ const ADJETIVO_ESPECIFICO = /\b(a\s+bater[ií]a|inal[áa]mbric[oa]s?|el[ée]ctri
 /** Producto o método muy concreto → su equivalente universal (nivel 1), en vez de descartarlo.
     Nombres sin artículo: conArticulo les pone el suyo más abajo. */
 const TRADUCCION_UNIVERSAL: [RegExp, string][] = [
-  [/limpiacristales|desengrasante|quitagrasas|abrillantador|antical\w*|limpiahogar/, 'papel de cocina'],
-  [/estropajo (de acero|especial)|lana de acero/, 'estropajo'],
+  // limpieza
+  [/limpiacristales|desengrasante|quitagrasas|abrillantador|antical\w*|limpiahogar|multiusos|friegasuelos|lejia|lejía/, 'papel de cocina'],
+  [/estropajo (de acero|especial)|lana de acero|estropajo met[áa]lico/, 'estropajo'],
+  [/guantes? (de goma|de latex|de nitrilo|resistentes?)/, 'guantes'],
+  // bricolaje y pintura
+  [/rodillo (de pelo (corto|largo)|especial|antigoteo)/, 'rodillo'],
+  [/brocha (de precisi[oó]n|angular|especial)/, 'brocha'],
+  [/cinta (de carrocero|de pintor|especial)/, 'cinta adhesiva'],
+  [/lija (de grano \d+|fina|gruesa)/, 'lija'],
+  // café y cocina
+  [/(papel|filtro) de caf[eé] (n[úu]mero \d+|especial)/, 'filtro de papel'],
+  [/b[áa]scula de cocina/, 'báscula'],
+  // otros
+  [/mascarilla (ffp\d|quir[úu]rgica|de tela)/, 'mascarilla'],
+  [/gafas (de protecci[oó]n|de seguridad)/, 'gafas'],
 ]
 
 /** Simplifica un material: quita adjetivos de marca/potencia o lo traduce a algo universal. */

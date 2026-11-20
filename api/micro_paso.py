@@ -688,6 +688,8 @@ def verbo_del_primer_paso(contexto: Contexto) -> str | None:
 REQUIERE_LUGAR = re.compile(
     r"\b(limpiar|fregar|barrer|aspirar|ordenar|recoger|tender|planchar|colada|lavadora|cocinar|"
     r"guisar|hornear|regar|pintar|montar|desmontar|arreglar|reparar|taladrar|lijar|atornillar|"
+    r"desatornillar|soldar|coser|tejer|podar|cortar el cesped|cortar el césped|desempolvar|"
+    r"platos|sacar la basura|hacer la cama|"
     r"ejercicio|entrenar|gimnasio|pesas|correr|caminar|pasear|nadar|bici|yoga|estirar|bailar|"
     r"ducharme|ducha|bano|afeitarme|maquillarme|pasear al perro|sacar al perro|jardin|huerto|"
     r"descalcificar|desatascar|lavar los platos|lavar el coche|aparcar)\b"
