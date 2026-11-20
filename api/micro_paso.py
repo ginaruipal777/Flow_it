@@ -550,6 +550,10 @@ def elegir_herramienta(tarea: str, contexto: Contexto) -> tuple[Herramienta | No
         if h.tipos_tarea is not None and contexto.tipo_busqueda not in h.tipos_tarea:
             continue
         nombrada = bool(h.patron.search(en_tarea))
+        # «la app de {tema}» solo si la tarea es de un tipo digital conocido o la frase la nombra:
+        # muchas webs dicen «descarga nuestra app» y no por eso se pinta una habitación con una app
+        if "{tema}" in h.objeto and not nombrada and contexto.tipo_busqueda == "Otro":
+            continue
         coincidencias = sum(bool(h.patron.search(d)) for d in documentos)
         if coincidencias:
             recuento[h.objeto.split(" de ")[0]] = coincidencias
