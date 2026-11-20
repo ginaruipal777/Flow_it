@@ -326,8 +326,9 @@ async def _leer(url: str, segundos: float = 8.0, completa: bool = False) -> tupl
         return "", ""
 
 
-async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[str], dict] | None:
-    """Web general: de qué va la tarea y con qué herramienta se hace. Fuentes de confianza primero."""
+async def _buscar_general(tarea: str, tipo: str, extra: str = "") -> tuple[str, list[str], list[str], dict] | None:
+    """Web general: de qué va la tarea y con qué herramienta se hace. Fuentes de confianza primero.
+    `extra` (respuestas de contexto) concreta la primera consulta; la relevancia se mide con la tarea."""
     claves, necesarias = _claves(tarea)
     raiz = raiz_verbo(tarea)
     regla = FUENTES_CONFIANZA.get(tipo, {})
@@ -337,7 +338,10 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
     # Tarea de una palabra («escribir»): se concreta para no traer páginas de cualquier cosa
     corta = len(normalizar(tema_de(tarea)).split()) <= 1
     consultas = [
-        _consultar(f"cómo {tarea}{pais} paso a paso", limit=10, blocked_domains=bloqueados, timeout=12.0),
+        _consultar(
+            f"cómo {tarea}{pais} {extra} primer paso" if extra.strip() else f"cómo {tarea}{pais} paso a paso",
+            limit=10, blocked_domains=bloqueados, timeout=12.0,
+        ),
         _consultar(
             f"{tarea}{pais} guía para principiantes" if corta else f"{tarea}{pais} paso a paso guía",
             limit=10, blocked_domains=bloqueados, timeout=12.0,
@@ -480,11 +484,11 @@ async def _buscar_materiales(tarea: str) -> str:
     return ""
 
 
-async def _buscar(tarea: str) -> Contexto:
+async def _buscar(tarea: str, extra: str = "") -> Contexto:
     """Las búsquedas a la vez: web general (qué es la tarea), materiales, understood.org (cómo arrancar) y Wikipedia."""
     tipo = tipo_de_busqueda(tarea)
     general, guia, wiki, materiales = await asyncio.gather(
-        _buscar_general(tarea, tipo), _buscar_understood(tarea), _buscar_wikipedia(tarea), _buscar_materiales(tarea),
+        _buscar_general(tarea, tipo, extra), _buscar_understood(tarea), _buscar_wikipedia(tarea), _buscar_materiales(tarea),
         return_exceptions=True,
     )
     texto_wiki, url_wiki, diag_wiki = wiki if wiki and not isinstance(wiki, BaseException) else ("", "", {"error": "fallo"})
@@ -508,10 +512,11 @@ async def _buscar(tarea: str) -> Contexto:
     )
 
 
-def buscar_contexto(tarea: str) -> Contexto:
-    """Búsqueda + lectura con un límite total de LIMITE_SEGUNDOS. Si falla, un contexto vacío con el motivo."""
+def buscar_contexto(tarea: str, extra: str = "") -> Contexto:
+    """Búsqueda + lectura con un límite total de LIMITE_SEGUNDOS. Si falla, un contexto vacío con el motivo.
+    `extra`: palabras de las respuestas de contexto, que se añaden a la consulta principal."""
     try:
-        return asyncio.run(asyncio.wait_for(_buscar(tarea), timeout=LIMITE_SEGUNDOS))
+        return asyncio.run(asyncio.wait_for(_buscar(tarea, extra), timeout=LIMITE_SEGUNDOS))
     except Exception as error:
         motivo = "tiempo agotado" if isinstance(error, (asyncio.TimeoutError, TimeoutError)) else repr(error)[:120]
         return Contexto(titulo="", documentos=[], fuentes=[], tipo_busqueda=tipo_de_busqueda(tarea), diagnostico={"error": motivo})
@@ -882,10 +887,178 @@ def micro_paso_tramite(tarea: str, esfuerzo: str, tramite: Tramite) -> dict:
     )
 
 
+# ── 4c. Preguntas de contexto (antes de buscar) ─────────────────
+#
+# Paso 1: un clasificador local por palabras clave pone la tarea en un dominio.
+# Paso 2: el dominio da 3 preguntas con 3 opciones cada una (con su icono).
+# Paso 3: las respuestas se añaden a la consulta de búsqueda («… app móvil hacer test…»).
+# Paso 4: los retos usan el objeto que la persona ha dicho que tiene (filtro de ubicuidad),
+#         la fase en la que está y el bloqueo, que ordena las cartas INCUP (lo hace la app).
+# Cada opción lleva lo que la app necesita: `objeto` y `verbo` (herramienta), `fase` (plantillas
+# por nivel con {objeto}, {tema} o {zona}), `lugar`, `bloqueo` y `busqueda` (palabras para buscar).
+
+DOMINIOS = [
+    ("SOCIAL", re.compile(r"\b(llamar|escribir a|quedar|felicitar|visitar|hablar con|contestar a|mensaje a|cumpleanos|whatsapp)\b")),
+    ("ESTUDIO", re.compile(r"\b(test|tests|examen|examenes|estudiar|temario|apuntes|oposicion\w*|autoescuela|deberes|asignatura|repasar|tema \d+|selectividad|evau|ebau)\b")),
+    ("TRABAJO", re.compile(r"\b(informe|trabajo|correo|email|presentacion|proyecto|tfg|tfm|escribir|redactar|curriculum|cv|factura\w*|reunion|memoria|ensayo|articulo)\b")),
+    ("CASA", re.compile(r"\b(limpiar|ordenar|lavar|fregar|recoger|barrer|aspirar|cocina|bano|habitacion|cuarto|ropa|platos|polvo|armario|nevera|horno|descalcificar|tender|planchar)\b")),
+]
+
+
+def dominio_de(tarea: str) -> str:
+    texto = normalizar(tarea)
+    return next((nombre for nombre, patron in DOMINIOS if patron.search(texto)), "GENERAL")
+
+
+def _op(id_: str, texto: str, icono: str, busqueda: str = "", **efecto) -> dict:
+    return {"id": id_, "texto": texto, "icono": icono, "busqueda": busqueda, **efecto}
+
+
+def _bloqueo(*opciones: tuple[str, str, str, str]) -> dict:
+    return {
+        "id": "bloqueo",
+        "texto": "¿Qué te frena?",
+        "opciones": [_op(i, t, ic, b, bloqueo=i) for i, t, ic, b in opciones],
+    }
+
+
+def _zonas_casa(texto: str) -> list[dict]:
+    """La zona depende de dónde se limpia: cocina, baño, habitación o cualquier sitio."""
+    if re.search(r"\b(cocina|platos|nevera|horno|fregadero|encimera|descalcificar)\b", texto):
+        zonas = [("fregadero", "Fregadero", "fregadero", "el fregadero"), ("encimera", "Encimera", "encimera", "la encimera"), ("nevera", "Nevera", "nevera", "la nevera")]
+    elif re.search(r"\b(bano|ducha|lavabo|vater|inodoro)\b", texto):
+        zonas = [("lavabo", "Lavabo", "fregadero", "el lavabo"), ("ducha", "Ducha", "ducha", "la ducha"), ("suelo", "Suelo", "suelo", "el suelo")]
+    elif re.search(r"\b(habitacion|cuarto|armario|ropa|cama|dormitorio)\b", texto):
+        zonas = [("cama", "Cama", "cama", "la cama"), ("armario", "Armario", "armario", "el armario"), ("suelo", "Suelo", "suelo", "el suelo")]
+    else:
+        zonas = [("mesa", "Mesa", "mesa", "la mesa"), ("suelo", "Suelo", "suelo", "el suelo"), ("estanteria", "Estantería", "estanteria", "la estantería")]
+    return [_op(i, t, ic, t.lower(), zona=z) for i, t, ic, z in zonas]
+
+
+def generar_preguntas_contexto(tarea: str) -> dict:
+    """Las 3 preguntas de contexto de la tarea según su dominio (sin buscar en internet: es al instante)."""
+    tarea = (tarea or "").strip()[:200]
+    bloqueo = filtrar_seguridad(tarea)
+    if bloqueo:
+        return bloqueo
+    error = comprobar_comprension(tarea)
+    if error:
+        return error
+    texto = normalizar(tarea)
+    dominio = dominio_de(tarea)
+    lugar = {
+        "id": "lugar",
+        "texto": "¿Dónde estás ahora?",
+        "opciones": [
+            _op("cama", "En la cama", "cama", "", lugar="desde la cama"),
+            _op("mesa", "En una mesa", "mesa", "", lugar="en la mesa"),
+            _op("de-pie", "De pie", "de-pie", "", lugar="de pie"),
+        ],
+    }
+    if dominio == "ESTUDIO":
+        preguntas = [
+            {"id": "herramienta", "texto": "¿Cómo vas a estudiar?", "opciones": [
+                _op("app", "App del móvil", "movil", "app móvil", objeto="la app del móvil", verbo="Abre", tipo="digital"),
+                _op("libro", "Libro o apuntes", "libro", "libro apuntes", objeto="el libro", verbo="Abre", tipo="fisico"),
+                _op("web", "Web", "web", "web online", objeto="la web", verbo="Abre", tipo="digital"),
+            ]},
+            {"id": "fase", "texto": "¿Qué toca ahora?", "opciones": [
+                _op("leer", "Leer el temario", "leer", "leer temario", fase={"medio": "Lee el primer párrafo de {objeto}", "ligero": "Lee 2 páginas de {objeto}"}),
+                _op("hacer-test", "Hacer un test", "test", "hacer test", fase={"medio": "Contesta la primera pregunta de {objeto}", "ligero": "Contesta 10 preguntas de {objeto}"}),
+                _op("corregir", "Corregir fallos", "lupa", "corregir errores", fase={"medio": "Repasa el primer fallo de {objeto}", "ligero": "Repasa 3 fallos de {objeto}"}),
+            ]},
+            _bloqueo(("miedo", "Miedo a suspender", "miedo", "miedo a suspender"),
+                     ("aburrimiento", "Aburrimiento", "aburrimiento", ""),
+                     ("nose", "No sé por dónde empezar", "nose", "por dónde empezar")),
+        ]
+    elif dominio == "TRABAJO":
+        preguntas = [
+            {"id": "fase", "texto": "¿En qué punto estás?", "opciones": [
+                _op("ideas", "Buscar ideas", "ideas", "ideas", fase={"medio": "Apunta 3 ideas sueltas para {tema}", "ligero": "Apunta 10 ideas sueltas para {tema}"}),
+                _op("borrador", "Escribir el borrador", "borrador", "escribir borrador", fase={"medio": "Escribe la primera frase de {tema}", "ligero": "Escribe un párrafo de {tema}"}),
+                _op("repasar", "Repasar", "repasar", "revisar", fase={"medio": "Lee en voz alta el primer párrafo de {tema}", "ligero": "Repasa 3 párrafos de {tema}"}),
+            ]},
+            {"id": "herramienta", "texto": "¿Con qué lo haces?", "opciones": [
+                _op("ordenador", "Ordenador", "ordenador", "ordenador", objeto="el ordenador", verbo="Enciende", tipo="digital"),
+                _op("movil", "Móvil", "movil", "móvil", objeto="el móvil", verbo="Coge", tipo="digital"),
+                _op("papel", "Papel", "papel", "papel", objeto="la libreta", verbo="Coge", tipo="fisico"),
+            ]},
+            _bloqueo(("miedo", "Miedo a que no quede bien", "miedo", ""),
+                     ("nose", "No sé cómo empezar", "nose", "cómo empezar"),
+                     ("aburrimiento", "Aburrimiento", "aburrimiento", "")),
+        ]
+    elif dominio == "CASA":
+        preguntas = [
+            {"id": "zona", "texto": "¿Por dónde empiezas?", "opciones": _zonas_casa(texto)},
+            {"id": "herramienta", "texto": "¿Qué tienes a mano?", "opciones": [
+                _op("trapo", "Trapo o bayeta", "trapo", "trapo bayeta", objeto="el trapo", verbo="Coge", tipo="fisico",
+                    fase={"medio": "Pasa el trapo por una parte de {zona}", "ligero": "Pasa el trapo por {zona} de un lado al otro"}),
+                _op("escoba", "Escoba", "escoba", "escoba", objeto="la escoba", verbo="Coge", tipo="fisico",
+                    fase={"medio": "Pasa la escoba por una parte de {zona}", "ligero": "Pasa la escoba por {zona} de un lado al otro"}),
+                # Sin herramienta: el reto Pesado usa la zona («Acércate al fregadero»)
+                _op("manos", "Solo mis manos", "manos", "recoger", tipo="fisico",
+                    fase={"medio": "Recoge 3 cosas de {zona}", "ligero": "Recoge 10 cosas de {zona}"}),
+            ]},
+            _bloqueo(("cansancio", "Cansancio", "cansancio", ""),
+                     ("agobio", "Está muy sucio", "sucio", "muy sucio"),
+                     ("pereza", "Pereza", "pereza", "")),
+        ]
+    elif dominio == "SOCIAL":
+        preguntas = [
+            {"id": "medio", "texto": "¿Cómo vas a hablar?", "opciones": [
+                _op("mensaje", "Mensaje", "mensaje", "mensaje", objeto="el móvil", verbo="Coge", tipo="digital",
+                    fase={"medio": "Escribe el saludo del mensaje", "ligero": "Envía el mensaje entero"}),
+                _op("llamada", "Llamada", "llamada", "llamada", objeto="el móvil", verbo="Coge", tipo="digital",
+                    fase={"medio": "Busca el contacto en el móvil", "ligero": "Pulsa el botón de llamar"}),
+                _op("persona", "En persona", "personas", "quedar en persona", objeto="el móvil", verbo="Coge", tipo="digital",
+                    fase={"medio": "Escribe un mensaje para proponer un día", "ligero": "Envía un mensaje con día y hora"}),
+            ]},
+            lugar,
+            _bloqueo(("verguenza", "Vergüenza", "verguenza", ""),
+                     ("nose", "No sé qué decir", "nose", "qué decir"),
+                     ("cansancio", "Cansancio", "cansancio", "")),
+        ]
+    else:
+        preguntas = [
+            {"id": "herramienta", "texto": "¿Con qué lo vas a hacer?", "opciones": [
+                _op("movil", "Móvil", "movil", "móvil", objeto="el móvil", verbo="Coge", tipo="digital"),
+                _op("ordenador", "Ordenador", "ordenador", "ordenador", objeto="el ordenador", verbo="Enciende", tipo="digital"),
+                _op("papel", "Papel", "papel", "papel", objeto="la libreta", verbo="Coge", tipo="fisico"),
+            ]},
+            lugar,
+            _bloqueo(("ansiedad", "Ansiedad", "ansiedad", ""),
+                     ("aburrimiento", "Aburrimiento", "aburrimiento", ""),
+                     ("cansancio", "Cansancio", "cansancio", "")),
+        ]
+    return respuesta("success", dominio=dominio, preguntas=preguntas)
+
+
+def generar_reto_final(tarea: str, respuestas_contexto: list[str], esfuerzo: str = "medio") -> dict:
+    """Búsqueda enriquecida con las respuestas («hacer test autoescuela app móvil hacer test miedo a suspender»)
+    y micro-paso con el objeto que la persona ha dicho que tiene (filtro de ubicuidad)."""
+    preguntas = generar_preguntas_contexto(tarea).get("preguntas") or []
+    ids = set(respuestas_contexto or [])
+    elegidas = [o for p in preguntas for o in p["opciones"] if o["id"] in ids]
+    extra = " ".join(o["busqueda"] for o in elegidas if o.get("busqueda"))
+    resultado = procesar_tarea(tarea, esfuerzo, extra)
+    if resultado.get("status") != "success":
+        return resultado
+    herramienta = next((o for o in elegidas if o.get("objeto")), None)
+    if herramienta:
+        # Pesado: acción mecánica de unos segundos con el objeto elegido
+        objeto, verbo = herramienta["objeto"], herramienta["verbo"]
+        paso = {"pesado": f"Solo {verbo.lower()} {objeto}", "medio": f"{verbo} {objeto}", "ligero": f"{verbo} {objeto}"}[
+            esfuerzo if esfuerzo in NIVELES else "medio"
+        ]
+        resultado.update(micro_paso=f"{paso}.", objeto=objeto, tipo_objeto=herramienta.get("tipo", "fisico"))
+    resultado["respuestas_contexto"] = [o["id"] for o in elegidas]
+    return resultado
+
+
 # ── 5. Orquestación ─────────────────────────────────────────────
 
 
-def procesar_tarea(tarea: str, esfuerzo: str = "medio") -> dict:
+def procesar_tarea(tarea: str, esfuerzo: str = "medio", extra: str = "") -> dict:
     """Punto de entrada: seguridad → comprensión → trámite oficial o búsqueda (≤ 30 s) → micro-paso."""
     try:
         tarea = (tarea or "").strip()[:200]
@@ -899,7 +1072,7 @@ def procesar_tarea(tarea: str, esfuerzo: str = "medio") -> dict:
         tramite = tramite_oficial(tarea)
         if tramite:
             return micro_paso_tramite(tarea, esfuerzo, tramite)
-        contexto = buscar_contexto(tema_de(tarea))
+        contexto = buscar_contexto(tema_de(tarea), extra)
         return generar_micro_paso(tarea, esfuerzo, contexto)
     except Exception:
         # La app nunca se rompe: reto universal de emergencia (cumple las reglas de redacción)
@@ -936,7 +1109,18 @@ class handler(BaseHTTPRequestHandler):  # noqa: N801 (nombre que exige Vercel)
         except Exception:
             self._enviar(400, respuesta("incomprehensible", mensaje=MENSAJE_INCOMPRENSIBLE))
             return
-        self._enviar(200, procesar_tarea(str(pedido.get("tarea", "")), str(pedido.get("esfuerzo", "medio"))))
+        tarea = str(pedido.get("tarea", ""))
+        esfuerzo = str(pedido.get("esfuerzo", "medio"))
+        # {"accion": "preguntas"} → las 3 preguntas de contexto (al instante, sin buscar)
+        if pedido.get("accion") == "preguntas":
+            self._enviar(200, generar_preguntas_contexto(tarea))
+            return
+        # {"respuestas": [ids]} → búsqueda enriquecida con lo que ha contestado la persona
+        respuestas = pedido.get("respuestas")
+        if isinstance(respuestas, list) and respuestas:
+            self._enviar(200, generar_reto_final(tarea, [str(r) for r in respuestas][:6], esfuerzo))
+            return
+        self._enviar(200, procesar_tarea(tarea, esfuerzo))
 
     def do_GET(self) -> None:  # noqa: N802
         self._enviar(405, {"status": "error", "mensaje": "Usa POST con {\"tarea\": …, \"esfuerzo\": …}"})
