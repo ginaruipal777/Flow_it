@@ -186,6 +186,12 @@ export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'f
 const MANIPULAR = /^(Coge|Saca|Retira|Quita|Extrae|Llena|Vacía|Coloca|Pon|Mete|Abre|Lava|Limpia|Seca|Monta|Desmonta|Enrosca|Desenrosca|Atornilla|Levanta|Mueve|Gira)$/
 const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|pdf|informe|web|app|sede|cita previa|tramite|trámite|presentaci[oó]n|tfg|tfm)\b/i
 
+/** Si la tarea es digital o física: lo que dice la web (fiable) o, si no, las palabras de la frase. */
+export function tipoDe(tarea: string, web?: DatosWeb): 'digital' | 'fisico' {
+  if (web?.fiable) return web.tipo
+  return DIGITAL.test(tarea) ? 'digital' : 'fisico'
+}
+
 /** Variables para el motor: de la web (si es fiable) y de la frase. */
 export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
   const base = variablesSinEleccion(tarea, web)

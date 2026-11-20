@@ -16,6 +16,7 @@ import type { Categoria } from '../../components/Icono/iconos'
 import type { MicroPasoWeb } from '../../datos/modelo'
 import { leerSituacion } from '../../datos/situacion'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
+import { filaDe, guardarEnSheet } from '../../datos/sheet'
 import './Inicio.css'
 
 /* 01 · Inicio y 02 · Inicio · escribiendo (Figma 2108:7545 y 2250:3782).
@@ -189,6 +190,7 @@ export default function Inicio() {
     pasos[3].detalle = iconoFinal ? `Mazo de ${NOMBRE_CATEGORIA[iconoFinal]}` : undefined
     paso(4)
     await pausa(300)
+    guardarEnSheet(filaDe(texto, categoria ?? (iconoFinal && NOMBRE_CATEGORIA[iconoFinal]) ?? 'General', web2))
     despachar({ tipo: 'nueva-tarea', texto, web: web2, ...(icono && { icono }) })
     setPreparando(null)
     navegar('/reto')
