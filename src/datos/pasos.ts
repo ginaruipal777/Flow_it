@@ -81,6 +81,33 @@ const ESPECIFICO = new RegExp(
 /** true si el texto depende de un aparato o método que no todo el mundo tiene */
 export const esEspecifico = (texto: string) => ESPECIFICO.test(quitarTildes(texto))
 
+/* ── Filtro de ubicuidad: 3 niveles de objetos ──────────────────
+   Nivel 1 (universales, siempre vale): el móvil, las manos, la ropa, una silla, una mesa.
+   Nivel 2 (contextuales, solo si la tarea es de esa zona): una taza, un plato, un cepillo, una
+   toalla, la cama. Nivel 3 (específicos, solo si la propia tarea los nombra): un libro de texto
+   concreto, unas zapatillas de un deporte. Lo que trae la web y es demasiado específico para
+   cualquier nivel se traduce a algo universal en vez de descartarse sin más. */
+export const OBJETOS_UNIVERSALES = ['el móvil', 'las manos', 'la ropa', 'una silla', 'una mesa']
+export const OBJETOS_CONTEXTUALES = ['una taza', 'un plato', 'un cepillo', 'una toalla', 'la cama']
+
+/** Adjetivos de marca o potencia que no cambian el objeto: se quitan en vez de descartar la línea entera */
+const ADJETIVO_ESPECIFICO = /\b(a\s+bater[ií]a|inal[áa]mbric[oa]s?|el[ée]ctric[oa]s?|profesional(es)?|de precisi[oó]n|industrial(es)?|l[áa]ser)\b/gi
+
+/** Producto o método muy concreto → su equivalente universal (nivel 1), en vez de descartarlo.
+    Nombres sin artículo: conArticulo les pone el suyo más abajo. */
+const TRADUCCION_UNIVERSAL: [RegExp, string][] = [
+  [/limpiacristales|desengrasante|quitagrasas|abrillantador|antical\w*|limpiahogar/, 'papel de cocina'],
+  [/estropajo (de acero|especial)|lana de acero/, 'estropajo'],
+]
+
+/** Simplifica un material: quita adjetivos de marca/potencia o lo traduce a algo universal. */
+function simplificarMaterial(n: string): string {
+  const sinAdjetivo = n.replace(ADJETIVO_ESPECIFICO, '').replace(/\s{2,}/g, ' ').trim()
+  if (sinAdjetivo && sinAdjetivo !== n && !esEspecifico(sinAdjetivo)) return sinAdjetivo
+  const universal = TRADUCCION_UNIVERSAL.find(([re]) => re.test(quitarTildes(n)))
+  return universal ? universal[1] : n
+}
+
 /** «retirar» → «Retira»; undefined si no es un infinitivo que se pueda pasar a imperativo. */
 function imperativo(infinitivo: string): string | undefined {
   const v = quitarTildes(infinitivo)
@@ -196,6 +223,7 @@ function materialesDeLinea(texto: string, conEspecificos = false): string[] {
   return nombre
     .split(/\s+[yo]\s+|,\s*/)
     .map((n) => n.trim().replace(/[.:]+$/, ''))
+    .map((n) => (conEspecificos ? n : simplificarMaterial(n)))
     .filter((n) => {
       const palabras = n.split(' ')
       const primera = quitarTildes(palabras[0] ?? '')
@@ -206,7 +234,7 @@ function materialesDeLinea(texto: string, conEspecificos = false): string[] {
         filtrarTarea(n, true).status !== 'blocked'
       )
     })
-    .map((n) => conArticulo(n.charAt(0).toLowerCase() + n.slice(1).toLowerCase()))
+    .map((n) => (/^(el|la|los|las|un|una|unos|unas)\s/i.test(n) ? n.toLowerCase() : conArticulo(n.charAt(0).toLowerCase() + n.slice(1).toLowerCase())))
 }
 
 /** Materiales y herramientas que nombran las webs en sus listas («la esterilla de yoga»…); como mucho 4. */

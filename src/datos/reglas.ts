@@ -141,13 +141,16 @@ const ABSTRACTOS = /^(tengo que |hay que |debo |quiero )?(hacer|realizar|termina
 
 export const objetoDe = (tarea: string) => tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
 
+/* Pesado en «modo de inercia»: cuando no hay ni objeto ni tema claros, el reto no intenta avanzar
+   en la tarea (no hay con qué). En vez de forzar un objeto que no existe, rompe la inercia física
+   con el cuerpo: micro-activación universal, sirve tumbado o sentado. */
 export const RESPALDO = (t: string): Acciones => ({
   pesado: {
-    novedad: `Escribe «${t}» en un pósit`,
-    desafio: `Escribe «${t}» en tu libreta con 3 palabras`,
-    pasion: `Abre la nota de «${t}» con tu canción favorita sonando`,
-    interes: `Escribe «${t}» en un mensaje para una persona de confianza`,
-    urgencia: `Coge el móvil para buscar «${t}»`,
+    novedad: `Mueve los dedos de los pies en otro sitio de la casa`,
+    desafio: `Aprieta los puños contando hasta tres`,
+    pasion: `Respira hondo con tu canción favorita sonando`,
+    interes: `Estira los brazos con una persona de confianza cerca`,
+    urgencia: `Pon los pies en el suelo`,
   },
   medio: {
     novedad: `Busca «${t}» en el móvil desde otro sitio de la casa`,

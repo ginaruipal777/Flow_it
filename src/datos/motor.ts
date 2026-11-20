@@ -208,6 +208,8 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
     if (unidad && o) lista.push(m('p-unidad', unidad.pesado(o)), m('p-vista-o', `Pon ${o} a la vista`), i('p-info', `Busca en el móvil información sobre ${o}`))
     if (aprende) lista.push(i('p-como', `Busca en el móvil cómo ${a}`), i('p-video', `Busca en el móvil un vídeo sobre cómo ${a}`))
     if (a) lista.push(m('p-vista', `Pon a la vista una cosa que necesitas para ${a}`), m('p-posit', `Escribe en un pósit «${a}»`), !lista.length && m('p-libreta', `Apunta en tu libreta «${a}»`))
+    // Modo inercia: romper la inercia física con el cuerpo, sin depender de ningún objeto de la tarea
+    lista.push(m('p-inercia1', 'Estira los brazos'), m('p-inercia2', 'Respira muy hondo'))
   } else if (nivel === 'medio') {
     if (unidad && o) lista.push(m('m-unidad', unidad.uno(o)))
     if (v.paso) lista.push(m('m-paso', v.paso))
