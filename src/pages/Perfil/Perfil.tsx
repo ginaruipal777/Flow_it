@@ -9,6 +9,8 @@ import { BotonVolver, Pantalla } from '../../components/UI/UI'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { haceCuanto } from '../../datos/retos'
 import { useFlow } from '../../estado/FlowEstado'
+import { useSesion } from '../../estado/Sesion'
+import { guardarNube } from '../../datos/nube'
 import { resumen } from '../../datos/aprendizaje'
 import { TIPOS_RETO } from '../../components/CartaReto/tipos'
 import './Perfil.css'
@@ -82,6 +84,47 @@ function Cabecera({ claro }: { claro?: boolean }) {
         <strong>{retos}</strong>
       </div>
     </header>
+  )
+}
+
+/** Cuenta de Firebase: con sesión, el correo y «Cerrar sesión»; sin ella, la invitación a entrar. */
+function CuentaPerfil() {
+  const navegar = useNavigate()
+  const { estado, despachar } = useFlow()
+  const sesion = useSesion()
+  const [saliendo, setSaliendo] = useState(false)
+  if (!sesion.disponible) return null
+
+  const cerrar = async () => {
+    setSaliendo(true)
+    const uid = sesion.usuario?.uid
+    // Lo último que se ha cambiado se guarda antes de salir
+    if (uid && estado.propietario === uid) await guardarNube(uid, estado, estado.actualizado ?? Date.now()).catch(() => undefined)
+    await sesion.salir()
+    despachar({ tipo: 'cerrar-sesion' })
+    navegar('/entrar', { replace: true })
+  }
+
+  return (
+    <section className="cuenta" aria-label="Tu cuenta">
+      {sesion.usuario ? (
+        <>
+          <p className="t-texto-cuerpo-s cuenta__texto">
+            Sesión iniciada con <strong>{sesion.usuario.email ?? 'tu cuenta'}</strong>. Tus datos se guardan en la nube.
+          </p>
+          <button type="button" className="t-texto-control cuenta__boton" onClick={() => void cerrar()} disabled={saliendo}>
+            {saliendo ? 'Cerrando…' : 'Cerrar sesión'}
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="t-texto-cuerpo-s cuenta__texto">Sin cuenta: tus datos solo están en este móvil.</p>
+          <button type="button" className="t-texto-control cuenta__boton" onClick={() => navegar('/entrar')}>
+            Iniciar sesión o crear cuenta
+          </button>
+        </>
+      )}
+    </section>
   )
 }
 
@@ -186,6 +229,7 @@ export default function Perfil() {
           ))}
         </ul>
       )}
+      <CuentaPerfil />
       <BarraNav />
     </Pantalla>
   )

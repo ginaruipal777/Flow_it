@@ -4,14 +4,17 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { FlowEstado } from './estado/FlowEstado'
+import { SesionProvider } from './estado/Sesion'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {/* basename: sigue la ruta base de Vite («/» en Vercel) */}
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-      <FlowEstado>
-        <App />
-      </FlowEstado>
+      <SesionProvider>
+        <FlowEstado>
+          <App />
+        </FlowEstado>
+      </SesionProvider>
     </BrowserRouter>
   </StrictMode>,
 )

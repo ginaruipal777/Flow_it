@@ -123,3 +123,42 @@ input.campo__control:focus {
   color: var(--marca-lima);
   cursor: pointer;
 }
+
+/* Mensajes: error de la cuenta o aviso (correo de recuperación enviado) */
+.entrar__mensaje {
+  min-height: 1.4em;
+  margin: 12px 0 0;
+  color: var(--marca-lima);
+}
+.entrar__mensaje[data-error] {
+  color: var(--superficie-crema);
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #e5484d 45%, transparent);
+}
+.entrar__mensaje:empty {
+  min-height: 0;
+  margin: 0;
+}
+.entrar__nota {
+  margin: -16px 0 20px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--superficie-crema) 15%, transparent);
+  color: var(--superficie-crema);
+}
+.entrar__sin-cuenta {
+  align-self: center;
+  margin-top: 16px;
+  padding: 10px 8px;
+  border: 0;
+  background: none;
+  color: var(--superficie-crema);
+  text-decoration: underline;
+  opacity: 0.85;
+  cursor: pointer;
+}
+.entrar__olvido:disabled,
+.entrar__sin-cuenta:disabled {
+  opacity: 0.5;
+}

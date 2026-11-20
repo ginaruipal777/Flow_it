@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Flow it!: cada persona solo puede leer y escribir su propio documento (usuarios/{uid}).
+// Nadie más puede ver ni tocar sus tareas, retos ni lo que ha aprendido la app.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /usuarios/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['estado', 'actualizado', 'version'])
+        && request.resource.data.estado is string
+        && request.resource.data.estado.size() < 900000;
+    }
+    // Todo lo demás, cerrado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -414,3 +414,36 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Cuenta (Firebase): con quién has entrado y cerrar sesión */
+.cuenta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 24px 16px calc(96px + env(safe-area-inset-bottom, 0px));
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--superficie-crema);
+  color: var(--marca-tinta);
+}
+.cuenta__texto {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.cuenta__boton {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--marca-tinta);
+  border-radius: 999px;
+  background: none;
+  color: var(--marca-tinta);
+  cursor: pointer;
+}
+.cuenta__boton:hover,
+.cuenta__boton:active {
+  background: var(--marca-lima);
+}
+.cuenta__boton:disabled {
+  opacity: 0.5;
+}

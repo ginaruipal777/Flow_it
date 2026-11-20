@@ -209,7 +209,7 @@ export function Onboarding() {
         ) : (
           <footer className="onboarding__pie onboarding__pie--final">
             <Pasos actual={2} />
-            <Boton conIcono={false} className="boton--ancho" onClick={() => navegar('/entrar')}>
+            <Boton conIcono={false} className="boton--ancho" onClick={() => navegar('/entrar?modo=crear')}>
               Crear cuenta
             </Boton>
             <Boton estilo="texto" conIcono={false} className="boton--ancho" onClick={() => navegar('/entrar')}>

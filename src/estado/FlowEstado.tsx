@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
+import { leerNube, guardarNube } from '../datos/nube'
+import { useSesion } from './Sesion'
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
 import { NOMBRE_CATEGORIA, type Esfuerzo, type Mazo, type MicroPasoWeb, type Tarea } from '../datos/modelo'
@@ -38,6 +40,10 @@ type Estado = {
   retosFallidos: RetosFallidos
   /** El mazo actual llegó tras pulsar «No encaja» (cambia el aviso de mazo nuevo) */
   mazoPorDescarte: boolean
+  /** Hora del último cambio: con la copia de la nube gana la versión más reciente */
+  actualizado: number
+  /** Cuenta de Firebase a la que pertenecen estos datos (undefined: aún sin cuenta) */
+  propietario?: string
 }
 
 type Accion =
@@ -61,6 +67,11 @@ type Accion =
   | { tipo: 'cerrar-aviso' }
   /** «No encaja»: guarda el reto en retos fallidos y reparte un mazo nuevo sin esa lógica */
   | { tipo: 'descartar-reto'; reto: { tipo: TipoReto; plantilla?: string; estrategia?: Estrategia } }
+  /** Nube (Firestore): datos de la cuenta, o estos datos pasan a ser de la cuenta */
+  | { tipo: 'cargar-nube'; estado: Record<string, unknown>; uid: string }
+  | { tipo: 'asignar-propietario'; uid: string }
+  /** Al cerrar sesión los datos se quedan en la nube y el móvil vuelve a empezar */
+  | { tipo: 'cerrar-sesion' }
 
 /* Versión de fábrica: la app arranca vacía, como recién descargada.
    Las reglas y el banco de retos están en src/datos; aquí solo se guarda lo que hace cada persona. */
@@ -81,6 +92,7 @@ const INICIAL: Estado = {
   avisoRechazos: false,
   retosFallidos: {},
   mazoPorDescarte: false,
+  actualizado: 0,
 }
 
 /** El aviso «¿Se te atasca esta tarea?» se abre cada 9 cartas rechazadas seguidas */
@@ -167,6 +179,12 @@ function reductor(e: Estado, a: Accion): Estado {
       return conOrden({ ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e), avisoRechazos: false })
     case 'cerrar-aviso':
       return { ...e, avisoRechazos: false }
+    case 'cargar-nube':
+      return { ...INICIAL, ...(a.estado as Partial<Estado>), propietario: a.uid, onboardingVisto: true }
+    case 'asignar-propietario':
+      return { ...e, propietario: a.uid }
+    case 'cerrar-sesion':
+      return { ...INICIAL, onboardingVisto: true }
     case 'descartar-reto': {
       const t = e.tareas.find((x) => x.id === e.tareaActual)
       if (!t) return e
@@ -231,12 +249,22 @@ const Ctx = createContext<Contexto | null>(null)
 
 /** El aviso «No encaja» solo vale para el mazo que llegó con él */
 function reductorFlow(e: Estado, a: Accion): Estado {
-  const n = reductor(e, a)
-  return a.tipo !== 'descartar-reto' && n.mazoPorDescarte && (n.mazo !== e.mazo || n.tareaActual !== e.tareaActual) ? { ...n, mazoPorDescarte: false } : n
+  let n = reductor(e, a)
+  if (a.tipo !== 'descartar-reto' && n.mazoPorDescarte && (n.mazo !== e.mazo || n.tareaActual !== e.tareaActual)) n = { ...n, mazoPorDescarte: false }
+  // Cada cambio de verdad apunta su hora (lo que llega de la nube conserva la suya)
+  if (n !== e && a.tipo !== 'cargar-nube' && a.tipo !== 'asignar-propietario') n = { ...n, actualizado: Date.now() }
+  return n
 }
 
 export function FlowEstado({ children }: { children: ReactNode }) {
   const [estado, despachar] = useReducer(reductorFlow, undefined, cargar)
+  const { usuario } = useSesion()
+  const actual = useRef(estado)
+  useEffect(() => {
+    actual.current = estado
+  }, [estado])
+  /** Cuenta con la que ya se han juntado los datos de la nube: solo entonces se guardan cambios */
+  const [sincronizada, setSincronizada] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -245,6 +273,41 @@ export function FlowEstado({ children }: { children: ReactNode }) {
       /* ignorar */
     }
   }, [estado])
+
+  // Al entrar con una cuenta: gana la versión más reciente (la del móvil o la de la nube).
+  // Si los datos del móvil son de otra cuenta, se usan los de la nube (o se empieza de cero).
+  const uid = usuario?.uid
+  useEffect(() => {
+    if (!uid) return
+    let cancelado = false
+    leerNube(uid)
+      .then((nube) => {
+        if (cancelado) return
+        const local = actual.current
+        const deOtraCuenta = Boolean(local.propietario && local.propietario !== uid)
+        if (nube && (deOtraCuenta || nube.actualizado > (local.actualizado ?? 0))) despachar({ tipo: 'cargar-nube', estado: nube.estado, uid })
+        else if (deOtraCuenta) despachar({ tipo: 'cargar-nube', estado: { onboardingVisto: true }, uid })
+        else despachar({ tipo: 'asignar-propietario', uid })
+        setSincronizada(uid)
+      })
+      .catch(() => {
+        /* sin conexión o sin permiso: se sigue con lo del móvil y se vuelve a intentar al próximo inicio */
+      })
+    return () => {
+      cancelado = true
+    }
+  }, [uid])
+
+  // Cada cambio se copia en la nube (agrupado: como mucho uno cada poco más de un segundo)
+  useEffect(() => {
+    if (!uid || sincronizada !== uid || estado.propietario !== uid) return
+    const reloj = window.setTimeout(() => {
+      guardarNube(uid, estado, estado.actualizado ?? Date.now()).catch(() => {
+        /* sin conexión: se guarda con el siguiente cambio */
+      })
+    }, 1200)
+    return () => window.clearTimeout(reloj)
+  }, [estado, uid, sincronizada])
 
   const valor = useMemo(
     () => ({ estado, despachar, tareaActual: estado.tareas.find((t) => t.id === estado.tareaActual) ?? null }),
