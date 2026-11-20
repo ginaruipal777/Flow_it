@@ -1,11 +1,12 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
 import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
-import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, METODOS, type Actividad } from './metodos.ts'
+import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, type Actividad } from './metodos.ts'
 import { leerSituacion, type Fuente } from './situacion.ts'
 import { esVerbo } from './filtros.ts'
 import { accionesMotor, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
 import type { Estrategia, OpcionesMotor } from './descartes.ts'
+import { objetoDePaso } from './pasos.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -190,22 +191,40 @@ export function partesDe(tarea: string): { verbo: string; objeto: string } | und
 }
 
 /* Retos con lo que encontró la búsqueda web (api/micro_paso.py). */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string }
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string; pasos?: string[] }
 
+const MANIPULAR = /^(Coge|Saca|Retira|Quita|Extrae|Llena|Vacía|Coloca|Pon|Mete|Abre|Lava|Limpia|Seca|Monta|Desmonta|Enrosca|Desenrosca|Atornilla|Levanta|Mueve|Gira)$/
 const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|pdf|informe|web|app|sede|cita previa|tramite|trámite|presentaci[oó]n|tfg|tfm)\b/i
 
 /** Variables para el motor: de la web (si es fiable) y de la frase. */
 export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
   const p = partesDe(tarea)
   const accion = p ? `${p.verbo} ${p.objeto}` : undefined
+  // Pasos reales de la guía: son el relleno principal de los conectores del motor
+  const pasos = web?.fiable && web.pasos?.length ? web.pasos : undefined
+  if (pasos) {
+    // El objeto, de un paso que manipula algo («Retira la pantalla»), no de «Desconecta la corriente»
+    const manipula = pasos.filter((p) => MANIPULAR.test(p.split(' ')[0]))
+    const objeto = web!.objeto || [...manipula, ...pasos].map(objetoDePaso).find(Boolean)
+    return { objeto, tipo: web!.tipo, pasos, accion }
+  }
   if (web?.fiable && web.objeto) {
     const paso = web.nivel === 'medio' ? web.microPaso.replace(/^Solo /i, '').replace(/\.$/, '') : undefined
     const verbo = web.verboAccion ?? paso?.split(' ')[0] ?? (web.tipo === 'digital' ? 'Abre' : 'Coge')
     return { objeto: web.objeto, tipo: web.tipo, verbo, paso, accion }
   }
-  if (!p) return undefined
+  const tipo = DIGITAL.test(tarea) ? 'digital' : 'fisico'
+  if (!p) {
+    const limpio = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
+    const palabras = limpio.split(/\s+/)
+    // Un verbo suelto («descalcificar») ya es una acción
+    if (palabras.length === 1 && esVerbo(palabras[0])) return { tipo, accion: palabras[0].toLowerCase() }
+    // Sin verbo pero con un objeto con unidad («el test de autoescuela»): preguntas, párrafos…
+    if (limpio) return { objeto: conArticulo(limpio.replace(/^\p{Lu}(?!\p{Lu})/u, (c) => c.toLowerCase())), tipo, soloConUnidad: true }
+    return undefined
+  }
   // Sin web: el objeto de la frase solo se usa si es algo concreto con unidad («el tema 3», «el email de Carlos»)
-  return { objeto: p.objeto, tipo: DIGITAL.test(tarea) ? 'digital' : 'fisico', accion, soloConUnidad: true }
+  return { objeto: p.objeto, tipo, accion, soloConUnidad: true }
 }
 
 /** Retos montados por el motor universal (sirve para cualquier tarea, sin categoría). */
@@ -256,7 +275,10 @@ export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
   señala: { part: 'señalado' }, siéntate: { part: 'sentado', pron: 'te' }, sigue: { part: 'seguido' }, sube: { part: 'subido' },
   subraya: { part: 'subrayado' }, supera: { part: 'superado' }, tápate: { part: 'tapado', pron: 'te' }, termina: { part: 'terminado' },
   tiende: { part: 'tendido' }, tira: { part: 'tirado' }, toca: { part: 'tocado' }, túmbate: { part: 'tumbado', pron: 'te' },
-  friega: { part: 'fregado' }, dedica: { part: 'dedicado' }, moja: { part: 'mojado' }, descarga: { part: 'descargado' }, vierte: { part: 'vertido' },
+  friega: { part: 'fregado' }, dedica: { part: 'dedicado' }, acércate: { part: 'acercado', pron: 'te' },
+  mide: { part: 'medido' }, extrae: { part: 'extraído' }, hierve: { part: 'hervido' }, vuelve: { part: 'vuelto' },
+  remueve: { part: 'removido' }, aprieta: { part: 'apretado' }, suelta: { part: 'soltado' }, tuerce: { part: 'torcido' },
+  construye: { part: 'construido' }, sustituye: { part: 'sustituido' }, envuelve: { part: 'envuelto' }, moja: { part: 'mojado' }, descarga: { part: 'descargado' }, vierte: { part: 'vertido' },
   usa: { part: 'usado' }, vacía: { part: 'vaciado' }, ve: { part: 'ido' }, vístete: { part: 'vestido', pron: 'te' },
 }
 
@@ -412,51 +434,37 @@ function accionesDeTarea(
   const variables = variablesDe(tarea, web)
   const motor = variables && accionesMotor(variables, tarea, semillaDe(tarea, mazo), opciones)
   if (motor) return { acciones: motor.acciones, especificas: true, origen: motor.origen }
-  const analisis = analizarTarea(tarea)
-  if (analisis.regla) return { acciones: analisis.acciones, especificas: false }
-  const categoria = categoriaDe(tarea, web)
-  return { acciones: categoria ? BANCO[categoria] : analisis.acciones, especificas: false }
+  // Sin pasos de internet ni verbo en la frase («café» sin conexión): conectores con las palabras
+  // de la tarea. Nunca retos fijos de una categoría.
+  return { acciones: RESPALDO(minuscula(objetoDe(tarea)) || 'esto'), especificas: true }
 }
 
-/** Estrategia de una carta del banco o de un método según su tipo INCUP */
+/** Estrategia de una carta del respaldo según su tipo INCUP */
 const ESTRATEGIA_DE_TIPO: Record<TipoReto, Estrategia> = { novedad: 'mecanica', desafio: 'mecanica', pasion: 'emocional', interes: 'social', urgencia: 'mecanica' }
 
-/** Los métodos para TDAH no se mezclan si la tarea ya tuvo un «No encaja»: se pasa a acción directa */
-function actividadConMetodos(tarea: string, esfuerzo: Nivel, web?: DatosWeb, opciones?: OpcionesMotor) {
-  return accionesDeTarea(tarea, web).especificas || opciones ? undefined : actividadDe(tarea, esfuerzo, web)
-}
-
-function mazosDeTarea(tarea: string, esfuerzo: Nivel, web?: DatosWeb, opciones?: OpcionesMotor) {
-  const conCategoria = Boolean(categoriaDe(tarea, web)) || Boolean(web?.fiable)
-  return mazosDe(esfuerzo, conCategoria, Boolean(actividadConMetodos(tarea, esfuerzo, web, opciones)))
-}
-
-/** Número de mazos distintos que tiene una tarea (depende del esfuerzo, de la categoría y de si tiene métodos). */
+/** Número de mazos distintos de una tarea: uno por nivel, del elegido hacia los más fáciles. */
 export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb, opciones?: OpcionesMotor): number {
-  return mazosDeTarea(tarea, esfuerzo, web, opciones).length
+  void opciones
+  return mazosDe(esfuerzo, Boolean(categoriaDe(tarea, web)) || Boolean(web?.fiable)).length
 }
 
 /** Las 5 cartas de un mazo. `opciones` (estrategia_descartada y retos fallidos): ver descartes.ts. */
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb, opciones?: OpcionesMotor): RetoCarta[] {
-  const { acciones: propias, origen } = accionesDeTarea(tarea, web, mazo, opciones)
-  const mazos = mazosDeTarea(tarea, esfuerzo, web, opciones)
-  const fuente = mazos[mazo % mazos.length]
-  const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
-  const actividad = actividadConMetodos(tarea, esfuerzo, web, opciones)
+  const { acciones, origen } = accionesDeTarea(tarea, web, mazo, opciones)
+  const mazos = mazosDe(esfuerzo, true)
+  const nivel = mazos[mazo % mazos.length].nivel
   return ORDEN.map((tipo) => {
-    const metodo = actividad && fuente.metodos?.includes(tipo) ? METODOS[actividad][tipo] : undefined
-    const accion = metodo ? metodo.retos[fuente.nivel] : acciones[fuente.nivel][tipo]
-    const frase = fraseReto(accion, fuente.nivel, tipo)
-    const deMotor = !metodo && origen?.[fuente.nivel][tipo]
+    const accion = acciones[nivel][tipo]
+    const frase = fraseReto(accion, nivel, tipo)
+    const deMotor = origen?.[nivel][tipo]
     return {
       tipo,
       titulo: `${frase}.`,
       pasos: [frase],
       hecho: hechoDe(accion),
-      permiso: PERMISO[fuente.nivel],
-      plantilla: deMotor ? deMotor.plantilla : metodo ? `metodo:${metodo.nombre}:${fuente.nivel}` : `banco:${fuente.nivel}:${tipo}:${accion}`,
-      estrategia: deMotor ? deMotor.estrategia : metodo ? 'informativa' : ESTRATEGIA_DE_TIPO[tipo],
-      ...(metodo && { metodo: { nombre: metodo.nombre, fuente: metodo.fuente } }),
+      permiso: PERMISO[nivel],
+      plantilla: deMotor ? deMotor.plantilla : `respaldo:${nivel}:${tipo}`,
+      estrategia: deMotor ? deMotor.estrategia : ESTRATEGIA_DE_TIPO[tipo],
     }
   })
 }

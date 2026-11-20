@@ -30,6 +30,8 @@ export type Variables = {
   accion?: string
   /** El objeto sale de la frase: solo se nombra solo si tiene unidad («el tema 3»), nunca «Toca a tu madre» */
   soloConUnidad?: boolean
+  /** Pasos reales de la guía encontrada en internet («Retira las rejillas», «Aplica la solución…») */
+  pasos?: string[]
 }
 
 type Unidad = {
@@ -116,9 +118,25 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
   const lista: (Pieza | false | undefined)[] = []
   const m = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'mecanica' })
   const i = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
+  // Con la guía de internet, los conectores se rellenan con sus pasos reales
+  const pasos = v.pasos ?? []
+  if (pasos.length) {
+    const minus = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+    if (nivel === 'pesado') {
+      if (o) lista.push(m('g-acercate', `Acércate a ${o}`))
+      lista.push(i('g-lee1', `Lee el primer paso de la guía: «${minus(pasos[0])}»`))
+    } else if (nivel === 'medio') {
+      lista.push(m('g-paso1', pasos[0]))
+      if (aprende) lista.push(i('m-pasos', `Lee en el móvil los pasos para ${a}`))
+    } else {
+      const k = Math.min(3, pasos.length)
+      lista.push(m('g-hasta', `Sigue la guía hasta «${minus(pasos[k - 1])}»`), m('g-completa', `Completa los ${k} primeros pasos de la guía`))
+    }
+    return lista.filter((p): p is Pieza => Boolean(p))
+  }
   if (nivel === 'pesado') {
     if (tocable) lista.push(v.tipo === 'digital' ? m('p-abre', `Abre ${o}`) : m('p-toca', `Toca ${o}`), v.tipo === 'digital' ? m('p-busca', `Busca ${o} en el móvil`) : m('p-mira', `Mira ${o}`))
-    if (unidad && o) lista.push(m('p-unidad', unidad.pesado(o)))
+    if (unidad && o) lista.push(m('p-unidad', unidad.pesado(o)), m('p-vista-o', `Pon ${o} a la vista`), i('p-info', `Busca en el móvil información sobre ${o}`))
     if (aprende) lista.push(i('p-como', `Busca en el móvil cómo ${a}`), i('p-video', `Busca en el móvil un vídeo sobre cómo ${a}`))
     if (a) lista.push(m('p-vista', `Pon a la vista una cosa que necesitas para ${a}`), m('p-posit', `Escribe en un pósit «${a}»`), !lista.length && m('p-libreta', `Apunta en tu libreta «${a}»`))
   } else if (nivel === 'medio') {
@@ -170,10 +188,11 @@ function mezclar<T>(lista: T[], semilla: number): T[] {
 }
 
 const NUCLEO_UNIDAD = /^(Lee|Contesta|Escribe|Rellena) \d/
-const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-verbo|l-unidad|l-usa)/
+const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-verbo|l-unidad|l-usa|g-acercate|g-paso1)/
 
 const contraer = (s: string) => s.replace(/\b(a|de) el\b/g, (_, p: string) => (p === 'a' ? 'al' : 'del'))
 const MAXIMO = 100 // la carta admite ~110 con «Solo…»
+const MAXIMO_URGENCIA = 75 // Urgencia lleva además el plazo («antes de que pase una hora»)
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 const TIPOS: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
@@ -221,8 +240,11 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         )
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
         // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
+        // y nada de «sin mirar el móvil» cuando el núcleo se hace con el móvil o con la guía
         const encaja = (n: Pieza, m: Modificador) =>
-          (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) && (m.id !== 'i-detalle' || CON_OBJETO.test(n.id))
+          (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) &&
+          (m.id !== 'i-detalle' || CON_OBJETO.test(n.id)) &&
+          !(/móvil/.test(m.texto) && /móvil|guía|app|web/.test(n.texto))
         const combinadas = mezclar(base, s).flatMap((n) =>
           mezclar(mods, s >>> 3)
             .filter((m) => encaja(n, m))
@@ -235,7 +257,10 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       const elegida =
         conDescartes(candidatas, opciones)
           .map((c) => ({ ...c, texto: contraer(c.texto) }))
-          .find((c) => c.texto.length <= MAXIMO && !usadas.has(c.texto)) ?? { ...candidatas[0], texto: contraer(candidatas[0].texto) }
+          .find((c) => c.texto.length <= (tipo === 'urgencia' ? MAXIMO_URGENCIA : MAXIMO) && !usadas.has(c.texto)) ?? {
+          ...candidatas[0],
+          texto: contraer(candidatas[0].texto),
+        }
       usadas.add(elegida.texto)
       cartas[tipo] = elegida.texto
       origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia }

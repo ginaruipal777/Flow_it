@@ -130,7 +130,9 @@ export default function Inicio() {
     pasos[1].detalle = categoria
       ? `${categoria}${!regla && web?.categoria ? ' (según lo encontrado)' : !regla ? ' (lo has elegido tú)' : ''}`
       : web2?.fiable
-        ? `Tarea nueva: con ${web2.objeto}`
+        ? web2.objeto
+          ? `Tarea nueva: con ${web2.objeto}`
+          : `Tarea nueva: ${web2.pasos?.length ?? 0} pasos de una guía`
         : 'Tarea nueva'
     paso(2)
     await pausa(500)

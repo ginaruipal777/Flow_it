@@ -83,6 +83,25 @@ for (const w of WEB)
     }
   }
 
+// 2c. Retos con pasos reales de guías (respuestas guardadas de api/micro_paso.py, limpiadas con pasos.ts)
+const GUIAS: [string, string[]][] = [
+  ['limpiar el horno', ['Retira las rejillas', 'Aplica la solución limpiadora', 'Deja reposar la solución limpiadora', 'Limpia el interior del horno']],
+  ['cambiar la bombilla', ['Desconecta la corriente eléctrica', 'Retira la pantalla', 'Extrae la bombilla antigua']],
+  ['café', ['Llena el depósito de tu cafetera con agua filtrada', 'Coloca el filtro dentro de la canasta portafiltro', 'Enciende la cafetera']],
+]
+for (const [tarea, pasos] of GUIAS)
+  for (const esfuerzo of NIVELES)
+    for (let m = 0; m < 6; m++) {
+      const web = { microPaso: '', objeto: '', tipo: 'fisico' as const, nivel: esfuerzo, fiable: true, pasos }
+      for (const r of retosDe(tarea, esfuerzo, m, web)) {
+        const origen = `Guía «${tarea}»/${esfuerzo}/mazo ${m}/${r.tipo}`
+        for (const [re, motivo] of PROHIBIDO) if (re.test(r.titulo)) errores.push(`${origen}: ${motivo} → «${r.titulo}»`)
+        if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo (${r.titulo.length}) → «${r.titulo}»`)
+        if (r.hecho.startsWith('lo has conseguido')) errores.push(`${origen}: sin «Está hecho cuando» → «${r.titulo}»`)
+        titulos.add(r.titulo)
+      }
+    }
+
 // 3. Retos tal como se ven en la app: todos los mazos de cada tarea
 const tareas = [
   ...REGLAS.map((r) => r.palabras[0]),
@@ -120,7 +139,8 @@ for (const tarea of tareas) {
       const retos = retosDe(tarea, esfuerzo, ronda, undefined, op)
       for (const r of retos) {
         const origen = `No encaja «${tarea}»/${esfuerzo}/ronda ${ronda}/${r.tipo}`
-        if (op?.descartadas.has(r.plantilla) && !r.plantilla.startsWith('banco:')) errores.push(`${origen}: repite una plantilla descartada → ${r.plantilla}`)
+        // El respaldo (una palabra sin verbo ni conexión, «café») no tiene alternativas: puede repetirse
+        if (op?.descartadas.has(r.plantilla) && !r.plantilla.startsWith('respaldo:')) errores.push(`${origen}: repite una plantilla descartada → ${r.plantilla}`)
         if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo (${r.titulo.length}) → «${r.titulo}»`)
         for (const [re, motivo] of PROHIBIDO) if (re.test(r.titulo)) errores.push(`${origen}: ${motivo} → «${r.titulo}»`)
         titulos.add(r.titulo)

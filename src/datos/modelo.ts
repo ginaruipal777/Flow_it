@@ -46,6 +46,8 @@ export type MicroPasoWeb = {
   verboTarea?: string
   /** Verbo del primer paso en imperativo («Abre», «Vacía», «Coge»…) para el motor de retos */
   verboAccion?: string
+  /** Pasos reales de la guía encontrada, ya limpios («Retira las rejillas»…): ver pasos.ts */
+  pasos?: string[]
 }
 
 export type Reto = {

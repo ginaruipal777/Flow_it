@@ -2,6 +2,7 @@ import type { Esfuerzo, MicroPasoWeb } from './modelo'
 import type { Categoria } from '../components/Icono/iconos'
 import { catalogarConWeb } from './reglas'
 import { filtrarTarea, type Filtro } from './filtros'
+import { pasosDe, type LineaPaso } from './pasos'
 
 /* Llamada a la función api/micro_paso.py (Vercel): busca en internet cómo se hace la tarea.
    Con lo encontrado la app cataloga la tarea (si sus palabras no bastan) y, si la búsqueda
@@ -26,6 +27,7 @@ type Respuesta =
       fuente_estrategia?: string | null
       verbo_tarea?: string | null
       verbo_accion?: string | null
+      lineas_pasos?: LineaPaso[]
     }
   | Exclude<Filtro, { status: 'ok' }>
 
@@ -121,7 +123,11 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
     if (datos.origen === 'emergencia') return { status: 'sin-conexion' }
     // Lo que llega de internet pasa el mismo filtro de seguridad que la tarea
     if (filtrarTarea(datos.objeto, true).status === 'blocked') return { status: 'sin-conexion' }
-    const fiable = datos.origen === 'web' || datos.origen === 'oficial'
+    // Pasos reales de la guía encontrada (pasos.ts). Con 2 o más, la búsqueda ya es fiable:
+    // los retos se montan con ellos aunque no se reconociera ninguna herramienta.
+    const pasos = pasosDe(datos.lineas_pasos)
+    const conHerramienta = datos.origen === 'web' || datos.origen === 'oficial'
+    const fiable = conHerramienta || pasos.length >= 2
     const catalogo = catalogarConWeb(tarea, datos.resumen ?? '')
     if (!fiable && !catalogo) return { status: 'sin-conexion' }
     return {
@@ -132,8 +138,10 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
         ...(catalogo && { categoria: catalogo.categoria }),
         contexto: datos.contexto,
         microPaso: datos.micro_paso.replace(/\.$/, ''),
-        objeto: datos.objeto,
-        tipo: datos.tipo_objeto,
+        // Sin herramienta reconocida, el objeto del servidor es un comodín («la web de…»): no vale
+        objeto: conHerramienta ? datos.objeto : '',
+        tipo: conHerramienta ? datos.tipo_objeto : 'fisico',
+        ...(pasos.length && { pasos }),
         nivel: esfuerzo,
         ...(datos.verbo_tarea && { verboTarea: datos.verbo_tarea }),
         ...(datos.verbo_accion && { verboAccion: datos.verbo_accion }),
