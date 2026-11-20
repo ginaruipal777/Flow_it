@@ -32,6 +32,10 @@ export type Variables = {
   soloConUnidad?: boolean
   /** Pasos reales de la guía encontrada en internet («Retira las rejillas», «Aplica la solución…») */
   pasos?: string[]
+  /** Materiales y herramientas que nombran las webs («la esterilla», «el rodillo de pelo corto») */
+  materiales?: string[]
+  /** Técnicas que recomiendan las webs («Repasa sin mirar tus notas») */
+  tecnicas?: string[]
 }
 
 type Unidad = {
@@ -118,21 +122,39 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
   const lista: (Pieza | false | undefined)[] = []
   const m = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'mecanica' })
   const i = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
-  // Con la guía de internet, los conectores se rellenan con sus pasos reales
+  // Con lo que trae internet, los conectores se rellenan con datos reales:
+  // pasos de la guía, materiales que nombran las webs y técnicas que recomiendan
   const pasos = v.pasos ?? []
-  if (pasos.length) {
+  const mats = v.materiales ?? []
+  const tecs = v.tecnicas ?? []
+  if (pasos.length || mats.length || tecs.length) {
     const minus = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
     if (nivel === 'pesado') {
-      if (o) lista.push(m('g-acercate', `Acércate a ${o}`))
-      lista.push(i('g-lee1', `Lee el primer paso de la guía: «${minus(pasos[0])}»`))
+      mats.slice(0, 2).forEach((mat, n) => lista.push(m(`h-coge${n}`, `Coge ${mat}`)))
+      if (mats[0]) lista.push(m('h-vista', `Pon ${mats[0]} a la vista`))
+      if (pasos.length && o) lista.push(m('g-acercate', `Acércate a ${o}`))
+      if (pasos.length) lista.push(i('g-lee1', `Lee el primer paso de la guía: «${minus(pasos[0])}»`))
+      if (tecs[0]) lista.push(i('t-lee', `Lee la técnica «${minus(tecs[0])}»`), m('t-posit', `Apunta en un pósit «${minus(tecs[0])}»`))
+      if (tecs[1]) lista.push(i('t-lee2', `Lee la técnica «${minus(tecs[1])}»`))
     } else if (nivel === 'medio') {
-      lista.push(m('g-paso1', pasos[0]))
+      if (pasos[0]) lista.push(m('g-paso1', pasos[0]))
+      if (tecs[0]) lista.push(m('t-1', tecs[0]))
+      if (mats[0]) lista.push(m('h-prepara', `Prepara ${mats[0]}`), m('h-mesa', `Pon ${mats[0]} sobre la mesa`))
+      if (mats[1]) lista.push(m('h-coge1m', `Coge ${mats[1]}`))
       if (aprende) lista.push(i('m-pasos', `Lee en el móvil los pasos para ${a}`))
     } else {
-      const k = Math.min(3, pasos.length)
-      lista.push(m('g-hasta', `Sigue la guía hasta «${minus(pasos[k - 1])}»`), m('g-completa', `Completa los ${k} primeros pasos de la guía`))
+      if (pasos.length) {
+        const k = Math.min(3, pasos.length)
+        lista.push(m('g-hasta', `Sigue la guía hasta «${minus(pasos[k - 1])}»`), m('g-completa', `Completa los ${k} primeros pasos de la guía`))
+      }
+      if (tecs[1]) lista.push(m('t-2', tecs[1]))
+      if (mats.length >= 2) lista.push(m('h-junta', `Prepara estas ${Math.min(3, mats.length)} cosas (${mats.slice(0, 3).join(', ')})`))
+      if (tecs[0] && !pasos.length) lista.push(m('t-prueba', `Prueba la técnica «${minus(tecs[0])}»`))
     }
-    return lista.filter((p): p is Pieza => Boolean(p))
+    const vistos = new Set<string>()
+    const conDatos = lista.filter((p): p is Pieza => Boolean(p) && !vistos.has((p as Pieza).texto) && Boolean(vistos.add((p as Pieza).texto)))
+    if (conDatos.length) return conDatos
+    lista.length = 0
   }
   if (nivel === 'pesado') {
     if (tocable) lista.push(v.tipo === 'digital' ? m('p-abre', `Abre ${o}`) : m('p-toca', `Toca ${o}`), v.tipo === 'digital' ? m('p-busca', `Busca ${o} en el móvil`) : m('p-mira', `Mira ${o}`))
@@ -175,20 +197,26 @@ export function semillaDe(texto: string, mazo = 0): number {
   return (h ^ Math.imul(mazo + 1, 2654435761)) >>> 0
 }
 
+/** Barajado estable (mulberry32): la misma semilla da siempre el mismo orden */
 function mezclar<T>(lista: T[], semilla: number): T[] {
   const r = [...lista]
-  let s = semilla || 1
+  let s = semilla >>> 0
+  const azar = () => {
+    s = (s + 0x6d2b79f5) >>> 0
+    let t = s
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
   for (let i = r.length - 1; i > 0; i--) {
-    s = Math.imul(s ^ (s >>> 15), 2246822507) >>> 0
-    s = (s ^ (s >>> 13)) >>> 0
-    const j = s % (i + 1)
+    const j = Math.floor(azar() * (i + 1))
     ;[r[i], r[j]] = [r[j], r[i]]
   }
   return r
 }
 
 const NUCLEO_UNIDAD = /^(Lee|Contesta|Escribe|Rellena) \d/
-const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-verbo|l-unidad|l-usa|g-acercate|g-paso1)/
+const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-verbo|l-unidad|l-usa|g-acercate|g-paso1|h-coge|h-vista|h-prepara)/
 
 const contraer = (s: string) => s.replace(/\b(a|de) el\b/g, (_, p: string) => (p === 'a' ? 'al' : 'del'))
 const MAXIMO = 100 // la carta admite ~110 con «Solo…»

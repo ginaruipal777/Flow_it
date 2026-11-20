@@ -7,6 +7,7 @@ import { esVerbo } from './filtros.ts'
 import { accionesMotor, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
 import type { Estrategia, OpcionesMotor } from './descartes.ts'
 import { objetoDePaso } from './pasos.ts'
+import { conArticulo } from './articulos.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -167,21 +168,6 @@ export const RESPALDO = (t: string): Acciones => ({
    «descalcificar cafetera» → acción «descalcificar la cafetera»; si la web encontró cómo se hace,
    también su objeto («la cafetera»), su verbo («Vacía») y su primer paso. */
 
-const ARTICULO = /^(el|la|los|las|un|una|unos|unas|mi|mis|tu|tus|su|sus)\s/i
-const PREPOSICION = /^(a|al|con|en|de|del|para|por|sobre|hasta)\s/i
-const FEMENINAS = new Set(['llave', 'leche', 'calle', 'noche', 'carne', 'fuente', 'frase', 'clase', 'nube', 'piel', 'sal', 'red', 'luz', 'flor', 'sarten', 'sartén', 'nariz', 'mano', 'foto', 'moto', 'radio', 'tele', 'web', 'app', 'cama', 'torre'])
-const MASCULINAS_EN_A = new Set(['dia', 'día', 'mapa', 'sofa', 'sofá', 'problema', 'sistema', 'programa', 'agua', 'tema', 'planeta', 'idioma', 'clima', 'pijama'])
-
-/** Artículo que le toca a un nombre sin artículo («cafetera» → «la cafetera»); «mi» pasa a «tu». */
-function conArticulo(nombre: string): string {
-  const n = nombre.replace(/(^|\s)mi(s?)\s/gi, '$1tu$2 ')
-  if (ARTICULO.test(`${n} `) || PREPOSICION.test(`${n} `)) return n
-  const primera = n.split(' ')[0].toLowerCase()
-  const plural = /s$/.test(primera) && primera.length > 3 && !/(is|us)$/.test(primera)
-  const fem = FEMENINAS.has(primera) || (/(a|ión|ion|dad|tad|tud|umbre)s?$/.test(primera) && !MASCULINAS_EN_A.has(primera))
-  return `${plural ? (fem ? 'las' : 'los') : fem ? 'la' : 'el'} ${n}`
-}
-
 /** Verbo (infinitivo) y objeto con artículo de la frase; undefined si no trae los dos. */
 export function partesDe(tarea: string): { verbo: string; objeto: string } | undefined {
   const [verbo, ...resto] = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '').split(/\s+/)
@@ -191,7 +177,7 @@ export function partesDe(tarea: string): { verbo: string; objeto: string } | und
 }
 
 /* Retos con lo que encontró la búsqueda web (api/micro_paso.py). */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string; pasos?: string[] }
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string; pasos?: string[]; materiales?: string[]; tecnicas?: string[] }
 
 const MANIPULAR = /^(Coge|Saca|Retira|Quita|Extrae|Llena|Vacía|Coloca|Pon|Mete|Abre|Lava|Limpia|Seca|Monta|Desmonta|Enrosca|Desenrosca|Atornilla|Levanta|Mueve|Gira)$/
 const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|pdf|informe|web|app|sede|cita previa|tramite|trámite|presentaci[oó]n|tfg|tfm)\b/i
@@ -200,13 +186,15 @@ const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|
 export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
   const p = partesDe(tarea)
   const accion = p ? `${p.verbo} ${p.objeto}` : undefined
-  // Pasos reales de la guía: son el relleno principal de los conectores del motor
-  const pasos = web?.fiable && web.pasos?.length ? web.pasos : undefined
-  if (pasos) {
+  // Datos reales de internet (pasos, materiales, técnicas): son el relleno principal de los conectores
+  const pasos = web?.fiable ? web.pasos ?? [] : []
+  const materiales = web?.fiable ? web.materiales ?? [] : []
+  const tecnicas = web?.fiable ? web.tecnicas ?? [] : []
+  if (pasos.length || materiales.length || tecnicas.length) {
     // El objeto, de un paso que manipula algo («Retira la pantalla»), no de «Desconecta la corriente»
     const manipula = pasos.filter((p) => MANIPULAR.test(p.split(' ')[0]))
-    const objeto = [...manipula, ...pasos].map(objetoDePaso).find(Boolean) || web!.objeto || undefined
-    return { objeto, tipo: web!.tipo, pasos, accion }
+    const objeto = [...manipula, ...pasos].map(objetoDePaso).find(Boolean) || materiales[0] || web!.objeto || undefined
+    return { objeto, tipo: web!.tipo, pasos, materiales, tecnicas, accion }
   }
   if (web?.fiable && web.objeto) {
     const paso = web.nivel === 'medio' ? web.microPaso.replace(/^Solo /i, '').replace(/\.$/, '') : undefined

@@ -132,7 +132,9 @@ export default function Inicio() {
       : web2?.fiable
         ? web2.objeto
           ? `Tarea nueva: con ${web2.objeto}`
-          : `Tarea nueva: ${web2.pasos?.length ?? 0} pasos de una guía`
+          : web2.pasos?.length
+            ? `Tarea nueva: ${web2.pasos.length} pasos de una guía`
+            : `Tarea nueva: ${web2.materiales?.length ? `con ${web2.materiales[0]}` : 'con técnicas de internet'}`
         : 'Tarea nueva'
     paso(2)
     await pausa(500)

@@ -48,6 +48,10 @@ export type MicroPasoWeb = {
   verboAccion?: string
   /** Pasos reales de la guía encontrada, ya limpios («Retira las rejillas»…): ver pasos.ts */
   pasos?: string[]
+  /** Materiales y herramientas que nombran las webs («la esterilla», «el rodillo») */
+  materiales?: string[]
+  /** Técnicas que recomiendan las webs («Repasa sin mirar tus notas») */
+  tecnicas?: string[]
 }
 
 export type Reto = {

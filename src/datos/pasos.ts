@@ -11,8 +11,11 @@
    ───────────────────────────────────────────────────────────── */
 
 import { filtrarTarea } from './filtros.ts'
+import { conArticulo } from './articulos.ts'
 
 export type LineaPaso = { doc: number; n: number; texto: string }
+/** Elemento de una lista con viñetas de una web, con el título de su sección */
+export type LineaLista = { doc: number; seccion: string; texto: string }
 
 const PALABRAS_NO_VERBO = new Set([
   'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'lo', 'al', 'del', 'de', 'en', 'con', 'por', 'para', 'que', 'como',
@@ -53,8 +56,9 @@ const DE_USTED: Record<string, string> = {
 
 /* Verbos que no valen en un reto: abstractos o de decidir (reglas de redacción de la app) */
 const VERBOS_PROHIBIDOS = /^(espera|esperar|haz|hacer|elige|elegir|escoge|escoger|decide|decidir|piensa|pensar|organiza|organizar|planifica|planificar|considera|considerar|evita|evitar|recuerda|recordar|ten|tener|asegurate|asegurarse|intenta|intentar|experimenta)$/
-const PROHIBIDO = /\b(minutos?|segundos?|horas?|dias?|rapido|deprisa|tarea|algo|esto|primera parte|la parte|una parte|usted)\b/
-const CORTE = /\s*(,|;|\(|\s(y|o|e|u|pero|para|mientras|durante|hasta|antes|despues|luego|aproximadamente|si|cuando|porque|sin que)\s)/
+const PROHIBIDO = /\b(minutos?|segundos?|horas?|dias?|rapido|deprisa|tarea|algo|esto|primera parte|la parte|una parte|usted|pdf|pago|gratis|precio|compra|oferta|suscri\w*)\b/
+const INGLES = new Set(['hammer', 'level', 'pencil', 'screwdriver', 'tape', 'drill', 'saw', 'brush', 'paper', 'pen', 'notebook', 'scissors', 'water', 'timer'])
+const CORTE = /\s*(,|;|\(|\s[–—]\s|\s(y|o|e|u|pero|para|mientras|durante|hasta|antes|despues|después|luego|aproximadamente|si|cuando|porque|aunque|sin que)\s)/
 
 const quitarTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
@@ -73,7 +77,11 @@ function conVerbo(frase: string): string | undefined {
   const [primera, ...resto] = frase.split(/\s+/)
   if (!primera || !resto.length) return undefined
   const p = quitarTildes(primera)
-  if (PALABRAS_NO_VERBO.has(p) || NOMINAL.test(p) || /\d/.test(p)) return undefined
+  if (PALABRAS_NO_VERBO.has(p) || NOMINAL.test(p) || INGLES.has(p) || /\d/.test(p)) return undefined
+  // «Capa 1 · cobertura», «Semana 2»: un nombre con número, no una acción
+  if (/^\d/.test(resto[0]) || /[·|]/.test(frase)) return undefined
+  // «Cafetera de filtro»: nombre + «de» sin artículo; los verbos que llevan «de» son pocos
+  if (quitarTildes(resto[0]) === 'de' && !/^(cambia|deja|trata|acaba|termina|disfruta|aprovecha)$/.test(p)) return undefined
   let verbo: string | undefined
   if (DE_USTED[p]) verbo = DE_USTED[p]
   // De usted con cambio de letra: «-que» de -car, «-gue» de -gar, «-ice» de -izar («utilice» → «Utiliza»).
@@ -91,6 +99,7 @@ function conVerbo(frase: string): string | undefined {
 
 /** Una línea de la guía → una acción limpia, o undefined si no sirve para un reto. */
 export function limpiarPaso(texto: string): string | undefined {
+  if (/[¿?]/.test(texto)) return undefined
   const plano = texto
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/[*_`#>]/g, '')
@@ -106,6 +115,8 @@ export function limpiarPaso(texto: string): string | undefined {
     if (!paso) continue
     const palabras = paso.split(' ').length
     if (palabras < 2 || palabras > 9 || paso.length > 60) continue
+    // Medidas («10-12 m² por litro») no son acciones; los modelos («E14») sí se quedan
+    if (/(^|\s)\d/.test(paso)) continue
     if (PROHIBIDO.test(quitarTildes(paso))) continue
     if (filtrarTarea(paso, true).status === 'blocked') continue
     return paso
@@ -134,7 +145,71 @@ export function pasosDe(lineas: LineaPaso[] | undefined): string[] {
   return mejor.length >= 2 ? mejor.slice(0, 5) : []
 }
 
-const PARADA_OBJETO = new Set(['con', 'en', 'a', 'al', 'para', 'por', 'hasta', 'sin', 'sobre', 'desde', 'hacia', 'entre', 'que', 'y', 'o', 'dentro', 'fuera', 'encima', 'debajo', 'junto', 'cerca'])
+/* ── Materiales y técnicas de las listas de las webs ───────────
+   «Equípate con lo básico: **Esterilla de yoga**: …»   → material «la esterilla de yoga»
+   «Herramientas: Flexómetro y lápiz de carpintero.»     → «el flexómetro», «el lápiz de carpintero»
+   «Consejos: **Repasa sin mirar tus notas.** …»         → técnica «Repasa sin mirar tus notas»
+   Fuera: preguntas, enlaces, precios y menús, y las secciones de errores («Evita…»). */
+
+const SECCION_MATERIAL = /(herramient|material|necesit|equip|lo basico|utensilio|ingrediente|que hace falta|kit|reune|reunion)/
+const SECCION_RUIDO = /(error|evita|pregunta|faq|fuente|etiqueta|producto|precio|plan|pro$|ultra|feature|indice|tabla de contenido|relacionad|comentario|compart|categor|descarga|curso|ebook|guia completa|beneficio|ventaja|por que|mas entradas|formacion)/
+
+const plano = (s: string) =>
+  s
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[`#>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+/** «**Esterilla de yoga**: Una superficie…» → ['la esterilla de yoga'] */
+function materialesDeLinea(texto: string): string[] {
+  if (/\?|https?:|\d{2,}|€|\$/.test(texto)) return []
+  const t = plano(texto)
+  const negrita = t.match(/^\*\*([^*]{2,40})\*\*/)
+  const nombre = (negrita ? negrita[1] : t.split(/\s*[:–—(.]|\s(con|para|que|si|de precisión|según)\s/)[0]).replace(/\*/g, '').trim()
+  return nombre
+    .split(/\s+[yo]\s+|,\s*/)
+    .map((n) => n.trim().replace(/[.:]+$/, ''))
+    .filter((n) => {
+      const palabras = n.split(' ')
+      const primera = quitarTildes(palabras[0] ?? '')
+      return (
+        palabras.length >= 1 && palabras.length <= 4 && n.length <= 35 &&
+        !INGLES.has(primera) && !PALABRAS_NO_VERBO.has(primera) && !/(ar|er|ir)$/.test(primera) &&
+        !/^(una?|unos|unas|algun\w*|varios|varias|cualquier)$/.test(primera) && filtrarTarea(n, true).status !== 'blocked'
+      )
+    })
+    .map((n) => conArticulo(n.charAt(0).toLowerCase() + n.slice(1).toLowerCase()))
+}
+
+/** Materiales y herramientas que nombran las webs en sus listas («la esterilla de yoga»…); como mucho 4. */
+export function materialesDe(listas: LineaLista[] | undefined): string[] {
+  const vistos = new Set<string>()
+  for (const l of listas ?? []) {
+    const s = quitarTildes(l.seccion)
+    if (!SECCION_MATERIAL.test(s) || SECCION_RUIDO.test(s)) continue
+    for (const m of materialesDeLinea(l.texto)) vistos.add(m)
+    if (vistos.size >= 4) break
+  }
+  return [...vistos].slice(0, 4)
+}
+
+/** Técnicas que recomiendan las webs: elementos de lista que empiezan por un verbo («Repasa sin mirar tus notas»). */
+export function tecnicasDe(listas: LineaLista[] | undefined): string[] {
+  const vistas = new Set<string>()
+  for (const l of listas ?? []) {
+    const s = quitarTildes(l.seccion)
+    // Las listas de materiales son nombres, no técnicas («Esterilla de yoga»)
+    if (SECCION_RUIDO.test(s) || SECCION_MATERIAL.test(s) || /\?|https?:/.test(l.texto)) continue
+    const tecnica = limpiarPaso(l.texto)
+    if (tecnica && tecnica.split(' ').length >= 3) vistas.add(tecnica)
+    if (vistas.size >= 4) break
+  }
+  return [...vistas]
+}
+
+const PARADA_OBJETO = new Set(['con', 'en', 'a', 'al', 'para', 'por', 'hasta', 'sin', 'sobre', 'desde', 'hacia', 'entre', 'que', 'y', 'o', 'dentro', 'fuera', 'encima', 'debajo', 'junto', 'cerca', 'justo', 'bien', 'siempre', 'primero', 'despues', 'antes', 'muy', 'si', 'segun'])
 const ARTICULO = /^(el|la|los|las|un|una|tu|tus)$/
 
 /** El objeto que nombra un paso («Retira las rejillas del horno» → «las rejillas del horno»). */

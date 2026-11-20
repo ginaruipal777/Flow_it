@@ -2,7 +2,7 @@ import type { Esfuerzo, MicroPasoWeb } from './modelo'
 import type { Categoria } from '../components/Icono/iconos'
 import { catalogarConWeb } from './reglas'
 import { filtrarTarea, type Filtro } from './filtros'
-import { pasosDe, type LineaPaso } from './pasos'
+import { materialesDe, pasosDe, tecnicasDe, type LineaLista, type LineaPaso } from './pasos'
 
 /* Llamada a la función api/micro_paso.py (Vercel): busca en internet cómo se hace la tarea.
    Con lo encontrado la app cataloga la tarea (si sus palabras no bastan) y, si la búsqueda
@@ -28,6 +28,7 @@ type Respuesta =
       verbo_tarea?: string | null
       verbo_accion?: string | null
       lineas_pasos?: LineaPaso[]
+      lineas_listas?: LineaLista[]
     }
   | Exclude<Filtro, { status: 'ok' }>
 
@@ -126,8 +127,11 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
     // Pasos reales de la guía encontrada (pasos.ts). Con 2 o más, la búsqueda ya es fiable:
     // los retos se montan con ellos aunque no se reconociera ninguna herramienta.
     const pasos = pasosDe(datos.lineas_pasos)
+    // Y lo que recomiendan sus listas: materiales («la esterilla») y técnicas («Repasa sin mirar tus notas»)
+    const materiales = materialesDe(datos.lineas_listas)
+    const tecnicas = tecnicasDe(datos.lineas_listas)
     const conHerramienta = datos.origen === 'web' || datos.origen === 'oficial'
-    const fiable = conHerramienta || pasos.length >= 2
+    const fiable = conHerramienta || pasos.length >= 2 || materiales.length >= 2 || tecnicas.length >= 2
     const catalogo = catalogarConWeb(tarea, datos.resumen ?? '')
     if (!fiable && !catalogo) return { status: 'sin-conexion' }
     return {
@@ -142,6 +146,8 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
         objeto: conHerramienta ? datos.objeto : '',
         tipo: conHerramienta ? datos.tipo_objeto : 'fisico',
         ...(pasos.length && { pasos }),
+        ...(materiales.length && { materiales }),
+        ...(tecnicas.length && { tecnicas }),
         nivel: esfuerzo,
         ...(datos.verbo_tarea && { verboTarea: datos.verbo_tarea }),
         ...(datos.verbo_accion && { verboAccion: datos.verbo_accion }),

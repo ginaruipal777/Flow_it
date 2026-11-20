@@ -89,10 +89,18 @@ const GUIAS: [string, string[]][] = [
   ['cambiar la bombilla', ['Desconecta la corriente eléctrica', 'Retira la pantalla', 'Extrae la bombilla antigua']],
   ['café', ['Llena el depósito de tu cafetera con agua filtrada', 'Coloca el filtro dentro de la canasta portafiltro', 'Enciende la cafetera']],
 ]
-for (const [tarea, pasos] of GUIAS)
+// Materiales y técnicas sacados de las listas de las webs (materialesDe / tecnicasDe)
+const LISTAS: [string, { materiales?: string[]; tecnicas?: string[]; pasos?: string[] }][] = [
+  ['hacer yoga', { materiales: ['la ropa adecuada', 'la esterilla', 'la almohada de meditación'], tecnicas: ['Inhala profundamente por la nariz', 'Establece un horario fijo'] }],
+  ['estudiar para el examen', { tecnicas: ['Identifica dónde pierdes más aciertos', 'Repasa sin mirar tus notas', 'Reserva un horario fijo'] }],
+  ['montar la estantería', { materiales: ['el atornillador a batería', 'el destornillador manual', 'el nivel de burbuja'], tecnicas: ['Encaja el lateral haciendo coincidir las espigas guía', 'Gira el herraje con el destornillador manual'] }],
+  ['pintar la habitación', { pasos: ['Calcula la superficie', 'Limpia las paredes', 'Pinta primero el techo'], materiales: ['la pintura plástica', 'el rodillo de pelo corto'], tecnicas: ['Pinta con buena luz', 'Trabaja siempre con el borde húmedo'] }],
+  ['escribir', { materiales: ['la libreta', 'el lápiz'] }],
+]
+for (const [tarea, datos] of [...GUIAS.map(([t, pasos]) => [t, { pasos }] as const), ...LISTAS])
   for (const esfuerzo of NIVELES)
     for (let m = 0; m < 6; m++) {
-      const web = { microPaso: '', objeto: '', tipo: 'fisico' as const, nivel: esfuerzo, fiable: true, pasos }
+      const web = { microPaso: '', objeto: '', tipo: 'fisico' as const, nivel: esfuerzo, fiable: true, ...datos }
       for (const r of retosDe(tarea, esfuerzo, m, web)) {
         const origen = `Guía «${tarea}»/${esfuerzo}/mazo ${m}/${r.tipo}`
         for (const [re, motivo] of PROHIBIDO) if (re.test(r.titulo)) errores.push(`${origen}: ${motivo} → «${r.titulo}»`)
