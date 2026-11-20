@@ -143,18 +143,37 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
     // Sin una frase con verbo («café»), se completa con el tema («el café»): «Usa X para el café»
     const complemento = a ? `para empezar a ${a}` : v.tema ? `para ${v.tema}` : undefined
     const nombrar = a ?? v.tema
+    // Varias formulaciones por nivel (no solo una): así las 5 cartas no comparten el mismo núcleo
+    // y solo cambian de coletilla; el barajado (mezclar) reparte una distinta a cada tipo INCUP.
     if (nivel === 'pesado') {
-      if (e.objeto && e.verbo) propios.push(m('c-herr', `${e.verbo} ${e.objeto}`))
-      else if (e.metodo) propios.push(i('c-metodo-p', `Busca en el móvil información sobre ${e.metodo}`))
+      if (e.objeto && e.verbo) {
+        propios.push(m('c-herr', `${e.verbo} ${e.objeto}`), m('c-vista', `Pon ${e.objeto} a la vista`), m('c-acerca', `Acércate a ${e.objeto}`))
+      } else if (e.metodo) {
+        propios.push(i('c-metodo-p', `Busca en el móvil información sobre ${e.metodo}`), i('c-metodo-p2', `Lee en el móvil sobre ${e.metodo}`))
+      }
       if (!propios.length && nombrar) propios.push(m('c-posit', `Escribe en un pósit «${nombrar}»`))
       // Si la tarea necesita un sitio y la persona está en la cama, el contacto mínimo es levantarse
       if (e.lugar === 'cama') propios.push(m('c-ponte', 'Ponte de pie'))
     } else if (nivel === 'medio') {
-      if (e.objeto) propios.push(m('c-usa', complemento ? `Usa ${e.objeto} ${complemento}` : `Coge ${e.objeto}`))
-      else if (e.metodo) propios.push(m('c-metodo-m', `Prueba el estilo ${e.metodo}`))
+      if (e.objeto) {
+        propios.push(
+          m('c-usa', complemento ? `Usa ${e.objeto} ${complemento}` : `Coge ${e.objeto}`),
+          m('c-coge', complemento ? `Coge ${e.objeto} ${complemento}` : `Prepara ${e.objeto}`),
+          m('c-prepara', complemento ? `Prepara ${e.objeto} ${complemento}` : `Mira ${e.objeto}`),
+        )
+      } else if (e.metodo) {
+        propios.push(m('c-metodo-m', `Prueba el estilo ${e.metodo}`), m('c-metodo-m2', `Dedica un rato al estilo ${e.metodo}`))
+      }
     } else {
-      if (e.objeto) propios.push(m('c-usa-l', complemento ? `Usa ${e.objeto} hasta completar 3 pasos ${complemento}` : `Usa ${e.objeto} hasta terminar`))
-      else if (e.metodo) propios.push(m('c-metodo-l', `Prueba el estilo ${e.metodo} un rato más`))
+      if (e.objeto) {
+        propios.push(
+          m('c-usa-l', complemento ? `Usa ${e.objeto} hasta completar 3 pasos ${complemento}` : `Usa ${e.objeto} hasta terminar`),
+          m('c-prueba-l', complemento ? `Prueba ${e.objeto} hasta completar 3 pasos ${complemento}` : `Prueba ${e.objeto} hasta terminar`),
+          m('c-dedica-l', complemento ? `Dedica un rato a ${e.objeto} ${complemento}` : `Dedica un rato a ${e.objeto}`),
+        )
+      } else if (e.metodo) {
+        propios.push(m('c-metodo-l', `Prueba el estilo ${e.metodo} un rato más`), m('c-metodo-l2', `Dedica un rato más al estilo ${e.metodo}`))
+      }
     }
     // Buscar o leer cómo se hace, solo si nunca lo ha hecho
     if (e.experiencia === 'nunca') {
@@ -178,7 +197,12 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       if (tecs[0]) lista.push(i('t-lee', `Lee la técnica «${minus(tecs[0])}»`), m('t-posit', `Apunta en un pósit «${minus(tecs[0])}»`))
       if (tecs[1]) lista.push(i('t-lee2', `Lee la técnica «${minus(tecs[1])}»`))
     } else if (nivel === 'medio') {
-      if (pasos[0]) lista.push(m('g-paso1', pasos[0]))
+      if (pasos[0]) {
+        lista.push(m('g-paso1', pasos[0]))
+        // Con un único paso, no todas las cartas pueden repetir la misma frase: variantes con el
+        // objeto de ese paso (objetoDePaso, reglas.ts), con otro verbo y otra estructura
+        if (o) lista.push(m('g-coge-o', `Coge ${o}`), m('g-prepara-o', `Prepara ${o}`))
+      }
       if (tecs[0]) lista.push(m('t-1', tecs[0]))
       if (mats[0]) lista.push(m('h-prepara', `Prepara ${mats[0]}`), m('h-mesa', `Pon ${mats[0]} sobre la mesa`))
       if (mats[1]) lista.push(m('h-coge1m', `Coge ${mats[1]}`))
@@ -186,8 +210,12 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
     } else {
       if (pasos.length) {
         const k = Math.min(3, pasos.length)
+        const ultimo = minus(pasos[k - 1])
         // Los pasos se ven en el detalle del reto (RetoCarta.pasos)
-        lista.push({ ...m('g-hasta', `Sigue los pasos hasta «${minus(pasos[k - 1])}»`), pasos: pasos.slice(0, k) }, { ...m('g-completa', `Completa los ${k} primeros pasos`), pasos: pasos.slice(0, k) })
+        lista.push(
+          { ...m('g-hasta', `Sigue los pasos hasta «${ultimo}»`), pasos: pasos.slice(0, k) },
+          { ...m('g-completa', k === 1 ? 'Completa el primer paso' : `Completa los ${k} primeros pasos`), pasos: pasos.slice(0, k) },
+        )
       }
       if (tecs[1]) lista.push(m('t-2', tecs[1]))
       if (mats.length >= 2) lista.push(m('h-junta', `Prepara estas ${Math.min(3, mats.length)} cosas (${mats.slice(0, 3).join(', ')})`))
@@ -329,6 +357,11 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
     const base = nucleos(v, nivel, unidad)
     if (!base.length) return undefined
     const usadas = new Set<string>()
+    // Que no se repita el mismo núcleo (antes de empezar la frase) en dos cartas del mismo mazo
+    // mientras queden otros sin usar: con pocas variantes, el barajado por carta podía elegir el
+    // mismo núcleo 3-4 veces y solo cambiar la coletilla final.
+    const usadosNucleos = new Set<string>()
+    const nucleoDe = (plantilla: string) => plantilla.split('+')[0]
     const cartas = {} as Acciones[Nivel]
     const origenes = {} as Record<TipoReto, Origen>
     TIPOS.forEach((tipo, i) => {
@@ -363,14 +396,13 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         const primero = tipo === 'novedad' ? s % 2 === 0 : s % 3 === 0
         candidatas = primero ? [...sueltas, ...combinadas] : [...combinadas, ...sueltas]
       }
+      const listas = conDescartes(candidatas, opciones).map((c) => ({ ...c, texto: contraer(c.texto) }))
+      const cabe = (c: (typeof listas)[number]) => c.texto.length <= (tipo === 'urgencia' ? MAXIMO_URGENCIA : MAXIMO) && !usadas.has(c.texto)
       const elegida =
-        conDescartes(candidatas, opciones)
-          .map((c) => ({ ...c, texto: contraer(c.texto) }))
-          .find((c) => c.texto.length <= (tipo === 'urgencia' ? MAXIMO_URGENCIA : MAXIMO) && !usadas.has(c.texto)) ?? {
-          ...candidatas[0],
-          texto: contraer(candidatas[0].texto),
-        }
+        listas.find((c) => cabe(c) && !usadosNucleos.has(nucleoDe(c.plantilla))) ??
+        listas.find((c) => cabe(c)) ?? { ...candidatas[0], texto: contraer(candidatas[0].texto) }
       usadas.add(elegida.texto)
+      usadosNucleos.add(nucleoDe(elegida.plantilla))
       cartas[tipo] = elegida.texto
       origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia, ...(elegida.pasos && { pasos: elegida.pasos }) }
     })
