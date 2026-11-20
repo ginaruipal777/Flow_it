@@ -205,7 +205,7 @@ export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefine
   if (pasos) {
     // El objeto, de un paso que manipula algo («Retira la pantalla»), no de «Desconecta la corriente»
     const manipula = pasos.filter((p) => MANIPULAR.test(p.split(' ')[0]))
-    const objeto = web!.objeto || [...manipula, ...pasos].map(objetoDePaso).find(Boolean)
+    const objeto = [...manipula, ...pasos].map(objetoDePaso).find(Boolean) || web!.objeto || undefined
     return { objeto, tipo: web!.tipo, pasos, accion }
   }
   if (web?.fiable && web.objeto) {

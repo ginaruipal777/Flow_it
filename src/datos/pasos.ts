@@ -35,9 +35,25 @@ const IRREGULARES: Record<string, string> = {
   envolver: 'Envuelve', resolver: 'Resuelve', oler: 'Huele', jugar: 'Juega', atravesar: 'Atraviesa', tender: 'Tiende',
   extender: 'Extiende', entender: 'Entiende', defender: 'Defiende', perder: 'Pierde', descender: 'Desciende',
 }
+/* Guías que hablan de usted («Retire», «Coloque»): se pasa a tú, como habla la app. */
+const DE_USTED: Record<string, string> = {
+  retire: 'Retira', coloque: 'Coloca', llene: 'Llena', vacie: 'Vacía', limpie: 'Limpia', aplique: 'Aplica', deje: 'Deja',
+  saque: 'Saca', quite: 'Quita', ponga: 'Pon', abra: 'Abre', cierre: 'Cierra', encienda: 'Enciende', apague: 'Apaga',
+  enjuague: 'Enjuaga', seque: 'Seca', gire: 'Gira', tire: 'Tira', empuje: 'Empuja', desconecte: 'Desconecta',
+  conecte: 'Conecta', desenchufe: 'Desenchufa', enchufe: 'Enchufa', mezcle: 'Mezcla', anada: 'Añade', vierta: 'Vierte',
+  use: 'Usa', utilice: 'Utiliza', frote: 'Frota', lave: 'Lava', pase: 'Pasa', compruebe: 'Comprueba', revise: 'Revisa',
+  extraiga: 'Extrae', introduzca: 'Introduce', pulse: 'Pulsa', presione: 'Presiona', seleccione: 'Selecciona',
+  elimine: 'Elimina', rocie: 'Rocía', prepare: 'Prepara', monte: 'Monta', atornille: 'Atornilla', coja: 'Coge',
+  mida: 'Mide', caliente: 'Calienta', sirva: 'Sirve', cubra: 'Cubre', recubra: 'Recubre', corte: 'Corta', pinte: 'Pinta',
+  lije: 'Lija', proteja: 'Protege', cambie: 'Cambia', instale: 'Instala', descargue: 'Descarga', rellene: 'Rellena',
+  acceda: 'Entra en', entre: 'Entra en', busque: 'Busca', escriba: 'Escribe', lea: 'Lee', marque: 'Marca', toque: 'Toca',
+  desmonte: 'Desmonta', sujete: 'Sujeta', suelte: 'Suelta', apriete: 'Aprieta', afloje: 'Afloja', enrosque: 'Enrosca',
+  desenrosque: 'Desenrosca', sustituya: 'Sustituye', vuelva: 'Vuelve', repita: 'Repite', agregue: 'Agrega',
+}
+
 /* Verbos que no valen en un reto: abstractos o de decidir (reglas de redacción de la app) */
 const VERBOS_PROHIBIDOS = /^(espera|esperar|haz|hacer|elige|elegir|escoge|escoger|decide|decidir|piensa|pensar|organiza|organizar|planifica|planificar|considera|considerar|evita|evitar|recuerda|recordar|ten|tener|asegurate|asegurarse|intenta|intentar|experimenta)$/
-const PROHIBIDO = /\b(minutos?|segundos?|horas?|dias?|rapido|deprisa|tarea|algo|esto|primera parte|usted)\b/
+const PROHIBIDO = /\b(minutos?|segundos?|horas?|dias?|rapido|deprisa|tarea|algo|esto|primera parte|la parte|una parte|usted)\b/
 const CORTE = /\s*(,|;|\(|\s(y|o|e|u|pero|para|mientras|durante|hasta|antes|despues|luego|aproximadamente|si|cuando|porque|sin que)\s)/
 
 const quitarTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -59,7 +75,13 @@ function conVerbo(frase: string): string | undefined {
   const p = quitarTildes(primera)
   if (PALABRAS_NO_VERBO.has(p) || NOMINAL.test(p) || /\d/.test(p)) return undefined
   let verbo: string | undefined
-  if (/(ar|er|ir)$/.test(p)) verbo = imperativo(primera)
+  if (DE_USTED[p]) verbo = DE_USTED[p]
+  // De usted con cambio de letra: «-que» de -car, «-gue» de -gar, «-ice» de -izar («utilice» → «Utiliza»).
+  // No «sigue» ni «distingue» (tú de -guir) ni «introduce» (tú de -ducir).
+  else if (/[a-z]{2,}(que|gue|ice|ience)$/.test(p) && !/(igue|ingue)$/.test(p)) {
+    const base = primera.toLowerCase().replace(/que$/, 'ca').replace(/gue$/, 'ga').replace(/ce$/, 'za')
+    verbo = base.charAt(0).toUpperCase() + base.slice(1)
+  } else if (/(ar|er|ir)$/.test(p)) verbo = imperativo(primera)
   else if (/[aeé]$/.test(p) && p.length >= 3) verbo = primera.charAt(0).toUpperCase() + primera.slice(1).toLowerCase()
   if (!verbo || VERBOS_PROHIBIDOS.test(quitarTildes(verbo))) return undefined
   // Minúsculas después del verbo, salvo siglas y modelos («E14», «GU10»)
