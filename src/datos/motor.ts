@@ -144,12 +144,14 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       if (e.zona) propios.push(m('c-zona', `Acércate a ${e.zona}`))
       if (!propios.length && a) propios.push(m('c-posit', `Escribe en un pósit «${a}»${donde}`))
     } else if (nivel === 'medio') {
+      // Con la fase elegida, los pasos de la guía no se mezclan: pueden pedir otro objeto
+      // («Subraya…» cuando se estudia con la app del móvil)
       if (e.fase?.medio) propios.push(m('c-fase', e.fase.medio))
-      if (v.pasos?.[0]) propios.push(m('g-paso1', v.pasos[0]))
+      else if (v.pasos?.[0]) propios.push(m('g-paso1', v.pasos[0]))
       if (!propios.length && e.objeto && a) propios.push(m('c-usa', `Usa ${e.objeto} para empezar a ${a}`))
     } else {
       if (e.fase?.ligero) propios.push(m('c-fase-l', e.fase.ligero))
-      if ((v.pasos?.length ?? 0) >= 2) {
+      else if ((v.pasos?.length ?? 0) >= 2) {
         const k = Math.min(3, v.pasos!.length)
         propios.push({ ...m('g-hasta', `Sigue los pasos hasta «${v.pasos![k - 1].charAt(0).toLowerCase()}${v.pasos![k - 1].slice(1)}»`), pasos: v.pasos!.slice(0, k) })
       }
