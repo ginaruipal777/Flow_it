@@ -254,6 +254,46 @@ def habla_de(hit, claves: list[str], necesarias: int) -> bool:
     return sum(f" {c}" in texto for c in claves) >= necesarias
 
 
+# ── Reglas de relevancia de la búsqueda ─────────────────────────
+#   R1. El resultado nombra la acción (raíz del verbo: «pint-», «escrib-») y el objeto de la tarea.
+#   R2. Se puntúa: el título pesa más que el resumen; suman las señales de guía («cómo», «paso a paso»,
+#       «consejos»); restan las de tienda, noticia o definición («comprar», «precio», «significado»).
+#   R3. Solo pasan los resultados con PUNTOS_MINIMOS; se leen primero los que más puntúan.
+#   R4. La página leída tiene que hablar de la tarea (sus palabras salen varias veces) o se descarta.
+#   R5. La página de materiales tiene que hablar de materiales («necesitas», «lista», «herramientas»).
+SENAL_GUIA = re.compile(r"\b(como|paso a paso|guia|tutorial|consejos|trucos|aprende|principiantes|empezar|instrucciones|tecnicas)\b")
+SENAL_RUIDO = re.compile(r"\b(comprar|precio|precios|oferta|ofertas|tienda|venta|rebajas|noticia|noticias|definicion|significado|sinonimo\w*|traduccion|letra|cancion|pelicula|resena|opiniones|wikipedia)\b")
+SENAL_MATERIAL = re.compile(r"\b(necesit\w*|material\w*|herramienta\w*|lista|kit|equipo|utensilio\w*|hace falta|imprescindible\w*)\b")
+PUNTOS_MINIMOS = 3
+MENCIONES_MINIMAS = 3
+
+
+def raiz_verbo(tarea: str) -> str | None:
+    """«pintar la habitación» → «pint» (vale para pintar, pintura, pintado)."""
+    verbo = verbo_de_tarea(tarea)
+    if not verbo or verbo in {"hacer", "tener", "ir", "ver", "dar", "ser"}:
+        return None
+    return verbo[: max(4, len(verbo) - 2)]
+
+
+def puntuar(hit, claves: list[str], raiz: str | None) -> int:
+    titulo = f" {normalizar(hit.title or '')} "
+    resumen = f" {normalizar(hit.snippet or '')} "
+    puntos = sum(3 if f" {c}" in titulo else 1 if f" {c}" in resumen else 0 for c in claves)
+    if raiz:
+        puntos += 3 if f" {raiz}" in titulo else 1 if f" {raiz}" in resumen else -2
+    if SENAL_GUIA.search(titulo):
+        puntos += 2
+    if SENAL_RUIDO.search(titulo):
+        puntos -= 4
+    return puntos
+
+
+def menciones(texto: str, claves: list[str], raiz: str | None) -> int:
+    t = f" {normalizar(texto[:MAX_CARACTERES_PAGINA])} "
+    return sum(t.count(f" {c}") for c in claves + ([raiz] if raiz else []))
+
+
 async def _consultar(consulta: str, **opciones) -> tuple[list, dict]:
     """Una búsqueda con su diagnóstico: qué buscadores respondieron y cuáles fallaron."""
     from webless import search  # importación tardía: si falta la librería, salta el respaldo
@@ -286,13 +326,19 @@ async def _leer(url: str, segundos: float = 8.0, completa: bool = False) -> tupl
 async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[str], dict] | None:
     """Web general: de qué va la tarea y con qué herramienta se hace. Fuentes de confianza primero."""
     claves, necesarias = _claves(tarea)
+    raiz = raiz_verbo(tarea)
     regla = FUENTES_CONFIANZA.get(tipo, {})
     pais = " España" if tipo == "Trámites" else ""
     bloqueados = DOMINIOS_BLOQUEADOS + [UNDERSTOOD]
-    # Dos formulaciones a la vez: si una no da resultados válidos, la otra suele darlos
+    # Dos formulaciones a la vez: si una no da resultados válidos, la otra suele darlos.
+    # Tarea de una palabra («escribir»): se concreta para no traer páginas de cualquier cosa
+    corta = len(normalizar(tema_de(tarea)).split()) <= 1
     consultas = [
-        _consultar(f"cómo {tarea}{pais} primer paso", limit=10, blocked_domains=bloqueados, timeout=12.0),
-        _consultar(f"{tarea}{pais} paso a paso guía", limit=10, blocked_domains=bloqueados, timeout=12.0),
+        _consultar(f"cómo {tarea}{pais} paso a paso", limit=10, blocked_domains=bloqueados, timeout=12.0),
+        _consultar(
+            f"{tarea}{pais} guía para principiantes" if corta else f"{tarea}{pais} paso a paso guía",
+            limit=10, blocked_domains=bloqueados, timeout=12.0,
+        ),
     ]
     if regla.get("dominios"):
         # «site:» en la consulta: así el buscador ya devuelve páginas de las sedes oficiales
@@ -301,23 +347,26 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
     respuestas = await asyncio.gather(*consultas)
 
     vistos, confianza, resto = set(), [], []
-    descartes = {"repetido": 0, "bloqueado": 0, "idioma": 0, "otro_pais": 0, "no_habla_de_la_tarea": 0}
+    descartes = {"repetido": 0, "bloqueado": 0, "idioma": 0, "otro_pais": 0, "no_habla_de_la_tarea": 0, "poco_relevante": 0}
     for hits, _ in reversed(respuestas):  # primero la búsqueda en dominios de confianza
         for h in hits:
+            puntos = puntuar(h, claves, raiz)
             motivo = (
                 "repetido" if h.url in vistos
                 else "bloqueado" if bloqueado(h.url)
                 else "idioma" if not en_espanol(h)
                 else "otro_pais" if tipo == "Trámites" and OTRO_PAIS.search(h.url.lower() + " " + normalizar(f"{h.title} {h.snippet or ''}"))
                 else "no_habla_de_la_tarea" if not habla_de(h, claves, necesarias)
+                else "poco_relevante" if puntos < PUNTOS_MINIMOS and not de_confianza(h, tipo)
                 else None
             )
             if motivo:
                 descartes[motivo] += 1
                 continue
             vistos.add(h.url)
-            (confianza if de_confianza(h, tipo) else resto).append(h)
-    elegidos = (confianza + resto)[:4]
+            (confianza if de_confianza(h, tipo) else resto).append((puntos, h))
+    # Los que más puntúan, primero (dentro de las fuentes de confianza y del resto)
+    elegidos = [h for _, h in sorted(confianza, key=lambda x: -x[0]) + sorted(resto, key=lambda x: -x[0])][:4]
     diagnostico = {
         "tipo": tipo,
         "general": respuestas[0][1],
@@ -332,9 +381,15 @@ async def _buscar_general(tarea: str, tipo: str) -> tuple[str, list[str], list[s
 
     # Se leen hasta 3 páginas a la vez: cada una es un documento independiente
     paginas = await asyncio.gather(*(_leer(h.url) for h in elegidos[:3]))
-    documentos = [f"{h.title}. {h.snippet or ''}\n{p[0]}" for h, p in zip(elegidos, list(paginas) + [("", "")] * 4)]
-    titulo = paginas[0][1] or elegidos[0].title
-    return titulo, documentos, [h.url for h in elegidos], diagnostico
+    leidas = list(zip(elegidos, list(paginas) + [("", "")] * 4))
+    # R4: una página leída que casi no nombra la tarea no habla de ella (menús, portadas, otra cosa)
+    utiles = [(h, p) for h, p in leidas if not p[0] or menciones(p[0], claves, raiz) >= MENCIONES_MINIMAS]
+    diagnostico["paginas_descartadas"] = len(leidas) - len(utiles)
+    if not utiles:
+        return "", [], [], diagnostico
+    documentos = [f"{h.title}. {h.snippet or ''}\n{p[0]}" for h, p in utiles]
+    titulo = utiles[0][1][1] or utiles[0][0].title
+    return titulo, documentos, [h.url for h, _ in utiles], diagnostico
 
 
 ENLACE_UNDERSTOOD = re.compile(r"https://www\.understood\.org/es-mx/[a-z0-9/\-]+")
@@ -400,14 +455,24 @@ async def _buscar_materiales(tarea: str) -> str:
     """Qué hace falta para la tarea (libreta, lápiz, esterilla…): la primera página en español que se pueda leer.
     La app saca de sus listas los materiales y los convierte en retos («Coge la libreta»)."""
     claves, necesarias = _claves(tarea)
+    raiz = raiz_verbo(tarea)
     hits, _ = await _consultar(
-        f"qué necesitas para {tarea} materiales", limit=8, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=10.0
+        f"qué necesitas para {tarea} lista de materiales", limit=8, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=10.0
     )
-    for h in hits[:4]:
-        if bloqueado(h.url) or not en_espanol(h) or not habla_de(h, claves, necesarias):
-            continue
+    # R5: solo páginas que hablan de la tarea Y de materiales, las que más puntúan primero
+    candidatos = sorted(
+        (
+            (puntuar(h, claves, raiz), h) for h in hits
+            if not bloqueado(h.url) and en_espanol(h) and habla_de(h, claves, necesarias)
+            and SENAL_MATERIAL.search(normalizar(f"{h.title} {h.snippet or ''}"))
+        ),
+        key=lambda x: -x[0],
+    )
+    for puntos, h in candidatos[:3]:
+        if puntos < PUNTOS_MINIMOS:
+            break
         contenido, _ = await _leer(h.url, segundos=7.0)
-        if contenido:
+        if contenido and menciones(contenido, claves, raiz) >= MENCIONES_MINIMAS:
             return contenido
     return ""
 
