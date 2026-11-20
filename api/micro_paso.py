@@ -661,8 +661,29 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         fuentes=contexto.fuentes,
         # Lo que encontró la búsqueda (títulos y resúmenes): la app lo usa para catalogar la tarea
         resumen=resumen_de(contexto),
+        lineas_pasos=lineas_de_pasos(contexto),
         diagnostico=contexto.diagnostico,
     )
+
+
+# Líneas numeradas de las guías («1. Vacía el depósito», «Paso 2: Llena…»). La app las limpia
+# (src/datos/pasos.ts) y monta los retos con ellas: los datos reales de cómo se hace la tarea.
+LINEA_PASO = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*\*)?\s*(?:paso\s*)?(\d{1,2})\s*[.):\-–]\s*(.+)$", re.I)
+
+
+def lineas_de_pasos(contexto: Contexto, maximo: int = 60) -> list[dict]:
+    salida: list[dict] = []
+    try:
+        for i, documento in enumerate(contexto.documentos):
+            for linea in documento.splitlines():
+                m = LINEA_PASO.match(linea)
+                if m and len(m.group(2).strip()) > 8:
+                    salida.append({"doc": i, "n": int(m.group(1)), "texto": m.group(2).strip()[:200]})
+                    if len(salida) >= maximo:
+                        return salida
+    except Exception:
+        return salida
+    return salida
 
 
 def resumen_de(contexto: Contexto, maximo: int = 1500) -> str:
