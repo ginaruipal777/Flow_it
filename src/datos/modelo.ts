@@ -1,6 +1,7 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
 import type { Estrategia } from './descartes'
+import type { OpcionContexto } from './contexto'
 
 export type Esfuerzo = 'ligero' | 'medio' | 'pesado'
 
@@ -52,6 +53,8 @@ export type MicroPasoWeb = {
   materiales?: string[]
   /** Técnicas que recomiendan las webs («Repasa sin mirar tus notas») */
   tecnicas?: string[]
+  /** Lo que contestó la persona en las preguntas de contexto (contexto.ts) */
+  eleccion?: OpcionContexto[]
 }
 
 export type Reto = {

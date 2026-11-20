@@ -7,6 +7,7 @@ import { esVerbo } from './filtros.ts'
 import { accionesMotor, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
 import type { Estrategia, OpcionesMotor } from './descartes.ts'
 import { objetoDePaso } from './pasos.ts'
+import { eleccionDe, type OpcionContexto } from './contexto.ts'
 import { conArticulo } from './articulos.ts'
 
 /* ─────────────────────────────────────────────────────────────
@@ -177,13 +178,35 @@ export function partesDe(tarea: string): { verbo: string; objeto: string } | und
 }
 
 /* Retos con lo que encontró la búsqueda web (api/micro_paso.py). */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string; pasos?: string[]; materiales?: string[]; tecnicas?: string[] }
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string; pasos?: string[]; materiales?: string[]; tecnicas?: string[]; eleccion?: OpcionContexto[] }
 
 const MANIPULAR = /^(Coge|Saca|Retira|Quita|Extrae|Llena|Vacía|Coloca|Pon|Mete|Abre|Lava|Limpia|Seca|Monta|Desmonta|Enrosca|Desenrosca|Atornilla|Levanta|Mueve|Gira)$/
 const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|pdf|informe|web|app|sede|cita previa|tramite|trámite|presentaci[oó]n|tfg|tfm)\b/i
 
 /** Variables para el motor: de la web (si es fiable) y de la frase. */
 export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
+  const base = variablesSinEleccion(tarea, web)
+  const e = eleccionDe(web?.eleccion)
+  if (!e) return base
+  // Plantillas de las respuestas con los datos de la tarea: {objeto} (la herramienta elegida),
+  // {tema} (lo que se hace: «el informe») y {zona} («el fregadero»)
+  const p = partesDe(tarea)
+  const tema = p?.objeto ?? base?.tema ?? base?.objeto ?? 'la tarea'
+  const objeto = e.objeto ?? base?.objeto ?? tema
+  const rellenar = (t?: string) =>
+    t && t.replace(/\{objeto\}/g, objeto).replace(/\{tema\}/g, tema).replace(/\{zona\}/g, e.zona ?? 'la zona')
+  const eleccion = {
+    ...(e.objeto && { objeto: e.objeto, verbo: e.verbo }),
+    ...(e.lugar && { lugar: e.lugar }),
+    ...(e.zona && { zona: e.zona }),
+    ...(e.bloqueo && { bloqueo: e.bloqueo }),
+    ...(e.fase && { fase: { medio: rellenar(e.fase.medio), ligero: rellenar(e.fase.ligero) } }),
+  }
+  const tipo = e.tipo ?? base?.tipo ?? 'fisico'
+  return { ...(base ?? { accion: p ? `${p.verbo} ${p.objeto}` : undefined }), tipo, eleccion }
+}
+
+function variablesSinEleccion(tarea: string, web?: DatosWeb): Variables | undefined {
   const p = partesDe(tarea)
   const limpio = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
   const soloVerbo = !p && limpio.split(/\s+/).length === 1 && esVerbo(limpio)

@@ -159,6 +159,45 @@ for (const tarea of tareas) {
   }
 }
 
+// 4b. Con las respuestas de las preguntas de contexto (mismas opciones que api/micro_paso.py)
+const RESPUESTAS: [string, object[]][] = [
+  ['hacer test autoescuela', [
+    { id: 'app', texto: 'App del móvil', icono: 'movil', objeto: 'la app del móvil', verbo: 'Abre', tipo: 'digital' },
+    { id: 'hacer-test', texto: 'Hacer un test', icono: 'test', fase: { medio: 'Contesta la primera pregunta de {objeto}', ligero: 'Contesta 10 preguntas de {objeto}' } },
+    { id: 'miedo', texto: 'Miedo a suspender', icono: 'miedo', bloqueo: 'miedo' },
+  ]],
+  ['limpiar la cocina', [
+    { id: 'fregadero', texto: 'Fregadero', icono: 'fregadero', zona: 'el fregadero' },
+    { id: 'trapo', texto: 'Trapo o bayeta', icono: 'trapo', objeto: 'el trapo', verbo: 'Coge', tipo: 'fisico', fase: { medio: 'Pasa el trapo por una esquina de {zona}', ligero: 'Pasa el trapo por {zona} de un lado al otro' } },
+    { id: 'pereza', texto: 'Pereza', icono: 'pereza', bloqueo: 'pereza' },
+  ]],
+  ['limpiar la cocina', [
+    { id: 'encimera', texto: 'Encimera', icono: 'encimera', zona: 'la encimera' },
+    { id: 'manos', texto: 'Solo mis manos', icono: 'manos', tipo: 'fisico', fase: { medio: 'Recoge 3 cosas de {zona}', ligero: 'Recoge 10 cosas de {zona}' } },
+  ]],
+  ['escribir informe', [
+    { id: 'borrador', texto: 'Escribir el borrador', icono: 'borrador', fase: { medio: 'Escribe la primera frase de {tema}', ligero: 'Escribe un párrafo de {tema}' } },
+    { id: 'ordenador', texto: 'Ordenador', icono: 'ordenador', objeto: 'el ordenador', verbo: 'Enciende', tipo: 'digital' },
+  ]],
+  ['pintar la habitación', [
+    { id: 'movil', texto: 'Móvil', icono: 'movil', objeto: 'el móvil', verbo: 'Coge', tipo: 'digital' },
+    { id: 'cama', texto: 'En la cama', icono: 'cama', lugar: 'desde la cama' },
+  ]],
+]
+for (const [tarea, eleccion] of RESPUESTAS)
+  for (const esfuerzo of NIVELES)
+    for (let m = 0; m < 4; m++) {
+      const web = { microPaso: '', objeto: '', tipo: 'fisico' as const, nivel: esfuerzo, fiable: false, eleccion } as never
+      for (const r of retosDe(tarea, esfuerzo, m, web)) {
+        const origen = `Contexto «${tarea}»/${esfuerzo}/mazo ${m}/${r.tipo}`
+        for (const [re, motivo] of PROHIBIDO) if (re.test(r.titulo)) errores.push(`${origen}: ${motivo} → «${r.titulo}»`)
+        if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo (${r.titulo.length}) → «${r.titulo}»`)
+        if (r.hecho.startsWith('lo has conseguido')) errores.push(`${origen}: sin «Está hecho cuando» → «${r.titulo}»`)
+        if (/\{(objeto|tema|zona)\}/.test(r.titulo)) errores.push(`${origen}: plantilla sin rellenar → «${r.titulo}»`)
+        titulos.add(r.titulo)
+      }
+    }
+
 // 5. Cosas comunes, no métodos concretos: lo que no todo el mundo tiene se queda fuera
 const ESPECIFICOS: [string, string | undefined][] = [
   ['2. Prensa francesa: vierte el agua caliente', undefined],

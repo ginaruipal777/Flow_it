@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Icono } from '../Icono/Icono'
 import { FondoOrganico } from '../UI/UI'
 import { ICONOS_TIPO } from '../Icono/iconos'
@@ -18,8 +18,17 @@ const BARAJA: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia
 
 export type PasoPreparando = { titulo: string; detalle?: string }
 
-/** Pregunta cuando no se encuentra cómo se hace la tarea: «¿De qué tipo es?» */
-export type PreguntaTipo = { opciones: { texto: string }[]; onElegir: (indice: number) => void; onSaltar: () => void }
+/** Pregunta en la pantalla de carga: las de contexto (con icono, «1 de 3») o «¿De qué tipo es?» */
+export type PreguntaTipo = {
+  enunciado: ReactNode
+  /** «Pregunta 1 de 3» */
+  contador?: string
+  /** `icono`: SVG en línea (iconos-contexto.ts); con iconos, cada opción va en una fila */
+  opciones: { texto: string; icono?: string }[]
+  onElegir: (indice: number) => void
+  onSaltar: () => void
+  textoSaltar?: string
+}
 
 export function Preparando({
   tarea,
@@ -70,18 +79,20 @@ export function Preparando({
 
         {pregunta && (
           <div className="preparando__pregunta" role="group" aria-labelledby="preparando-pregunta">
+            {pregunta.contador && <p className="preparando__contador t-texto-cuerpo-s">{pregunta.contador}</p>}
             <p id="preparando-pregunta" className="t-texto-cuerpo">
-              No he encontrado cómo se hace. <strong>¿De qué tipo es esta tarea?</strong>
+              {pregunta.enunciado}
             </p>
-            <div className="preparando__opciones">
+            <div className="preparando__opciones" data-lista={pregunta.opciones.some((o) => o.icono) || undefined}>
               {pregunta.opciones.map((o, i) => (
                 <button key={o.texto} type="button" className="preparando__opcion t-texto-control" onClick={() => pregunta.onElegir(i)}>
-                  {o.texto}
+                  {o.icono && <Icono svg={o.icono} tamano={24} />}
+                  <span>{o.texto}</span>
                 </button>
               ))}
             </div>
             <button type="button" className="preparando__saltar t-texto-control" onClick={pregunta.onSaltar}>
-              Ninguna de estas
+              {pregunta.textoSaltar ?? 'Ninguna de estas'}
             </button>
           </div>
         )}

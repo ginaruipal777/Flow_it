@@ -117,9 +117,10 @@ function conVerbo(frase: string): string | undefined {
 }
 
 /** Una línea de la guía → una acción limpia, o undefined si no sirve para un reto. */
-export function limpiarPaso(texto: string): string | undefined {
+/** `conEspecificos`: también los pasos de un método concreto (para preguntar si la persona lo hace así). */
+export function limpiarPaso(texto: string, conEspecificos = false): string | undefined {
   // Una línea que habla de un método concreto («Prensa francesa: vierte…») es de ese método: fuera entera
-  if (/[¿?]/.test(texto) || esEspecifico(texto)) return undefined
+  if (/[¿?]/.test(texto) || (!conEspecificos && esEspecifico(texto))) return undefined
   const plano = texto
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/[*_`#>]/g, '')
@@ -137,7 +138,7 @@ export function limpiarPaso(texto: string): string | undefined {
     if (palabras < 2 || palabras > 9 || paso.length > 60) continue
     // Medidas («10-12 m² por litro») no son acciones; los modelos («E14») sí se quedan
     if (/(^|\s)\d/.test(paso)) continue
-    if (PROHIBIDO.test(quitarTildes(paso)) || esEspecifico(paso)) continue
+    if (PROHIBIDO.test(quitarTildes(paso)) || (!conEspecificos && esEspecifico(paso))) continue
     if (filtrarTarea(paso, true).status === 'blocked') continue
     return paso
   }
@@ -145,13 +146,13 @@ export function limpiarPaso(texto: string): string | undefined {
 }
 
 /** Los pasos de la mejor guía (la que tiene más pasos que sirven), en orden; como mucho 5. */
-export function pasosDe(lineas: LineaPaso[] | undefined): string[] {
+export function pasosDe(lineas: LineaPaso[] | undefined, conEspecificos = false): string[] {
   if (!lineas?.length) return []
   const porDoc = new Map<number, Map<number, string>>()
   for (const l of lineas) {
     const pasos = porDoc.get(l.doc) ?? new Map<number, string>()
     if (!pasos.has(l.n)) {
-      const limpio = limpiarPaso(l.texto)
+      const limpio = limpiarPaso(l.texto, conEspecificos)
       if (limpio) pasos.set(l.n, limpio)
     }
     porDoc.set(l.doc, pasos)
@@ -183,7 +184,7 @@ const plano = (s: string) =>
     .trim()
 
 /** «**Esterilla de yoga**: Una superficie…» → ['la esterilla de yoga'] */
-function materialesDeLinea(texto: string): string[] {
+function materialesDeLinea(texto: string, conEspecificos = false): string[] {
   if (/\?|https?:|\d{2,}|€|\$/.test(texto)) return []
   const t = plano(texto)
   const negrita = t.match(/^\*\*([^*]{2,40})\*\*/)
@@ -201,7 +202,7 @@ function materialesDeLinea(texto: string): string[] {
       return (
         palabras.length >= 1 && palabras.length <= 4 && n.length <= 35 &&
         !INGLES.has(primera) && !PALABRAS_NO_VERBO.has(primera) && !/(ar|er|ir)$/.test(primera) &&
-        !/^(una?|unos|unas|algun\w*|varios|varias|cualquier)$/.test(primera) && !esEspecifico(n) &&
+        !/^(una?|unos|unas|algun\w*|varios|varias|cualquier)$/.test(primera) && (conEspecificos || !esEspecifico(n)) &&
         filtrarTarea(n, true).status !== 'blocked'
       )
     })
@@ -209,12 +210,12 @@ function materialesDeLinea(texto: string): string[] {
 }
 
 /** Materiales y herramientas que nombran las webs en sus listas («la esterilla de yoga»…); como mucho 4. */
-export function materialesDe(listas: LineaLista[] | undefined): string[] {
+export function materialesDe(listas: LineaLista[] | undefined, conEspecificos = false): string[] {
   const vistos = new Set<string>()
   for (const l of listas ?? []) {
     const s = quitarTildes(l.seccion)
     if (!SECCION_MATERIAL.test(s) || SECCION_RUIDO.test(s)) continue
-    for (const m of materialesDeLinea(l.texto)) vistos.add(m)
+    for (const m of materialesDeLinea(l.texto, conEspecificos)) vistos.add(m)
     if (vistos.size >= 4) break
   }
   return [...vistos].slice(0, 4)

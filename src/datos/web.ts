@@ -3,6 +3,7 @@ import type { Categoria } from '../components/Icono/iconos'
 import { catalogarConWeb } from './reglas'
 import { filtrarTarea, type Filtro } from './filtros'
 import { materialesDe, pasosDe, tecnicasDe, type LineaLista, type LineaPaso } from './pasos'
+import type { PreguntaContexto } from './contexto'
 
 /* Llamada a la función api/micro_paso.py (Vercel): busca en internet cómo se hace la tarea.
    Con lo encontrado la app cataloga la tarea (si sus palabras no bastan) y, si la búsqueda
@@ -98,12 +99,36 @@ function guardarVocabulario(tarea: string, web: MicroPasoWeb): void {
   } catch {}
 }
 
-/** Busca cómo se hace la tarea (o usa la búsqueda guardada si se hizo hace menos de 7 días) */
-export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal): Promise<ResultadoWeb> {
-  const clave = claveDe(tarea, esfuerzo)
+/** Las 3 preguntas de contexto de la tarea (al instante: el servidor no busca nada todavía).
+    undefined si no hay conexión: entonces se busca sin preguntar. */
+export async function pedirPreguntas(tarea: string, senal?: AbortSignal): Promise<PreguntaContexto[] | undefined> {
+  const control = new AbortController()
+  const reloj = setTimeout(() => control.abort(), 8_000)
+  senal?.addEventListener('abort', () => control.abort())
+  try {
+    const r = await fetch(`${import.meta.env.BASE_URL}api/micro_paso`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tarea, accion: 'preguntas' }),
+      signal: control.signal,
+    })
+    if (!r.ok || !(r.headers.get('content-type') ?? '').includes('json')) return undefined
+    const datos = (await r.json()) as { status: string; preguntas?: PreguntaContexto[] }
+    return datos.status === 'success' && datos.preguntas?.length ? datos.preguntas.slice(0, 3) : undefined
+  } catch {
+    return undefined
+  } finally {
+    clearTimeout(reloj)
+  }
+}
+
+/** Busca cómo se hace la tarea (o usa la búsqueda guardada si se hizo hace menos de 7 días).
+    `respuestas`: ids de las opciones elegidas en las preguntas de contexto (afinan la búsqueda). */
+export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal, respuestas: string[] = []): Promise<ResultadoWeb> {
+  const clave = `${claveDe(tarea, esfuerzo)}|${respuestas.join(',')}`
   const guardada = leerGuardadas()[clave]
   if (guardada && Date.now() - guardada.t < DURACION_MS) return guardada.r
-  const resultado = await buscarEnServidor(tarea, esfuerzo, senal)
+  const resultado = await buscarEnServidor(tarea, esfuerzo, senal, respuestas)
   if (resultado.status === 'success') {
     guardar(clave, resultado)
     guardarVocabulario(tarea, resultado.web)
@@ -111,7 +136,7 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
   return resultado
 }
 
-async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal): Promise<ResultadoWeb> {
+async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: AbortSignal, respuestas: string[] = []): Promise<ResultadoWeb> {
   // Se cancela al pulsar «Saltar la búsqueda» o a los 30 s (AbortSignal.any no existe en móviles antiguos)
   const control = new AbortController()
   const reloj = setTimeout(() => control.abort(), LIMITE_MS)
@@ -121,7 +146,7 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
     const r = await fetch(`${import.meta.env.BASE_URL}api/micro_paso`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tarea, esfuerzo }),
+      body: JSON.stringify({ tarea, esfuerzo, ...(respuestas.length && { respuestas }) }),
       signal: cancelar,
     })
     if (!r.ok || !(r.headers.get('content-type') ?? '').includes('json')) return { status: 'sin-conexion' }

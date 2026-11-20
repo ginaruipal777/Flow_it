@@ -7,7 +7,9 @@ import { ContadorRetos, Logotipo, Pantalla, SelectorEsfuerzo } from '../../compo
 import { useFlow } from '../../estado/FlowEstado'
 import { filtrarTarea, type Filtro } from '../../datos/filtros'
 import { analizarTarea, partesDe } from '../../datos/reglas'
-import { buscarMicroPaso } from '../../datos/web'
+import { buscarMicroPaso, pedirPreguntas } from '../../datos/web'
+import type { OpcionContexto } from '../../datos/contexto'
+import { ICONOS_CONTEXTO } from '../../components/Icono/iconos-contexto'
 import { Preparando, type PasoPreparando, type PreguntaTipo } from '../../components/Preparando/Preparando'
 import { TIPOS_TAREA } from '../../datos/tipos-tarea'
 import type { Categoria } from '../../components/Icono/iconos'
@@ -86,8 +88,33 @@ export default function Inicio() {
     const pausa = (ms: number) => new Promise((ok) => setTimeout(ok, ms))
     paso(0)
 
-    // 1. Buscar en internet (máximo 30 s, se puede saltar)
-    const resultado = await buscarMicroPaso(texto, estado.esfuerzo, control.signal)
+    // 0. Preguntas de contexto (como mucho 3, con iconos): afinan la búsqueda y los retos.
+    //    Sin conexión no hay preguntas y se sigue igual. «Saltar» deja de preguntar.
+    const preguntas = await pedirPreguntas(texto, control.signal)
+    const elegidas: OpcionContexto[] = []
+    for (const [i, p] of (preguntas ?? []).entries()) {
+      const indice = await new Promise<number | null>((responder) =>
+        setPreparando({
+          actual: 0,
+          pasos: [...pasos],
+          control,
+          pregunta: {
+            contador: `Pregunta ${i + 1} de ${preguntas!.length}`,
+            enunciado: <strong>{p.texto}</strong>,
+            opciones: p.opciones.map((o) => ({ texto: o.texto, icono: ICONOS_CONTEXTO[o.icono] })),
+            onElegir: (n) => responder(n),
+            onSaltar: () => responder(null),
+            textoSaltar: 'Saltar las preguntas',
+          },
+        }),
+      )
+      if (indice === null) break
+      elegidas.push(p.opciones[indice])
+    }
+    paso(0)
+
+    // 1. Buscar en internet (máximo 30 s, se puede saltar), con lo que ha contestado
+    const resultado = await buscarMicroPaso(texto, estado.esfuerzo, control.signal, elegidas.map((o) => o.id))
     if (resultado.status === 'blocked' || resultado.status === 'incomprehensible') {
       setPreparando(null)
       setAviso(resultado)
@@ -111,13 +138,22 @@ export default function Inicio() {
     let icono: Categoria | undefined = resultado.status === 'success' ? resultado.icono : undefined
     let categoria = regla?.categoria ?? web?.categoria
     // Con verbo y objeto en la frase, el motor ya escribe retos de esa tarea: no hace falta preguntar
-    if (!categoria && !web?.fiable && !partesDe(texto)) {
+    if (!categoria && !web?.fiable && !partesDe(texto) && !elegidas.length) {
       const elegido = await new Promise<number | null>((responder) =>
         setPreparando({
           actual: 1,
           pasos: [...pasos],
           control,
-          pregunta: { opciones: TIPOS_TAREA, onElegir: (i) => responder(i), onSaltar: () => responder(null) },
+          pregunta: {
+            enunciado: (
+              <>
+                No he encontrado cómo se hace. <strong>¿De qué tipo es esta tarea?</strong>
+              </>
+            ),
+            opciones: TIPOS_TAREA,
+            onElegir: (i) => responder(i),
+            onSaltar: () => responder(null),
+          },
         }),
       )
       if (elegido !== null) {
@@ -125,6 +161,14 @@ export default function Inicio() {
         categoria = tipo.categoria
         icono = tipo.icono
         web2 = { ...(web ?? { contexto: texto, microPaso: '', objeto: '', tipo: 'fisico', nivel: estado.esfuerzo }), categoria, fiable: false }
+      }
+    }
+    // Lo contestado viaja con la tarea: el motor usa el objeto, la fase, el lugar y el bloqueo
+    if (elegidas.length) {
+      const herramienta = elegidas.find((o) => o.objeto)
+      web2 = {
+        ...(web2 ?? { contexto: texto, microPaso: '', objeto: '', tipo: herramienta?.tipo ?? 'fisico', nivel: estado.esfuerzo, fiable: false }),
+        eleccion: elegidas,
       }
     }
     pasos[1].detalle = categoria

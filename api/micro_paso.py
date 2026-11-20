@@ -901,7 +901,8 @@ DOMINIOS = [
     ("SOCIAL", re.compile(r"\b(llamar|escribir a|quedar|felicitar|visitar|hablar con|contestar a|mensaje a|cumpleanos|whatsapp)\b")),
     ("ESTUDIO", re.compile(r"\b(test|tests|examen|examenes|estudiar|temario|apuntes|oposicion\w*|autoescuela|deberes|asignatura|repasar|tema \d+|selectividad|evau|ebau)\b")),
     ("TRABAJO", re.compile(r"\b(informe|trabajo|correo|email|presentacion|proyecto|tfg|tfm|escribir|redactar|curriculum|cv|factura\w*|reunion|memoria|ensayo|articulo)\b")),
-    ("CASA", re.compile(r"\b(limpiar|ordenar|lavar|fregar|recoger|barrer|aspirar|cocina|bano|habitacion|cuarto|ropa|platos|polvo|armario|nevera|horno|descalcificar|tender|planchar)\b")),
+    # Casa = limpiar u ordenar (la habitación o la cocina dicen la zona, no el tipo: «pintar la habitación» no es limpiar)
+    ("CASA", re.compile(r"\b(limpiar|ordenar|lavar|fregar|recoger|barrer|aspirar|platos|polvo|descalcificar|tender|planchar|colada|lavadora)\b")),
 ]
 
 
@@ -992,9 +993,9 @@ def generar_preguntas_contexto(tarea: str) -> dict:
             {"id": "zona", "texto": "¿Por dónde empiezas?", "opciones": _zonas_casa(texto)},
             {"id": "herramienta", "texto": "¿Qué tienes a mano?", "opciones": [
                 _op("trapo", "Trapo o bayeta", "trapo", "trapo bayeta", objeto="el trapo", verbo="Coge", tipo="fisico",
-                    fase={"medio": "Pasa el trapo por una parte de {zona}", "ligero": "Pasa el trapo por {zona} de un lado al otro"}),
+                    fase={"medio": "Pasa el trapo por una esquina de {zona}", "ligero": "Pasa el trapo por {zona} de un lado al otro"}),
                 _op("escoba", "Escoba", "escoba", "escoba", objeto="la escoba", verbo="Coge", tipo="fisico",
-                    fase={"medio": "Pasa la escoba por una parte de {zona}", "ligero": "Pasa la escoba por {zona} de un lado al otro"}),
+                    fase={"medio": "Pasa la escoba por una esquina de {zona}", "ligero": "Pasa la escoba por {zona} de un lado al otro"}),
                 # Sin herramienta: el reto Pesado usa la zona («Acércate al fregadero»)
                 _op("manos", "Solo mis manos", "manos", "recoger", tipo="fisico",
                     fase={"medio": "Recoge 3 cosas de {zona}", "ligero": "Recoge 10 cosas de {zona}"}),

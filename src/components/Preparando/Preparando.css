@@ -249,3 +249,32 @@
     width: 20%;
   }
 }
+
+/* Preguntas de contexto: una opción por fila, con su icono de línea */
+.preparando__contador {
+  margin: 0 0 6px;
+  opacity: 0.8;
+}
+.preparando__opciones[data-lista] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.preparando__opciones[data-lista] .preparando__opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 18px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.preparando__opciones[data-lista] .preparando__opcion span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.preparando__opcion .icono {
+  flex-shrink: 0;
+}

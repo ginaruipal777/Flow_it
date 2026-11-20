@@ -38,6 +38,15 @@ export type Variables = {
   tecnicas?: string[]
   /** La tarea cuando es solo un nombre, sin verbo («el café») */
   tema?: string
+  /** Lo que contestó la persona en las preguntas de contexto (contexto.ts), ya con {objeto}/{tema}/{zona} puestos */
+  eleccion?: {
+    objeto?: string
+    verbo?: string
+    lugar?: string
+    zona?: string
+    fase?: { medio?: string; ligero?: string }
+    bloqueo?: string
+  }
 }
 
 type Unidad = {
@@ -124,6 +133,32 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
   const lista: (Pieza | false | undefined)[] = []
   const m = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'mecanica' })
   const i = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
+  // Lo que contestó la persona manda: su herramienta, su zona y su fase (filtro de ubicuidad:
+  // solo objetos que ha dicho que tiene). Se completan con los pasos reales de la guía.
+  const e = v.eleccion
+  if (e) {
+    const propios: Pieza[] = []
+    if (nivel === 'pesado') {
+      const donde = e.lugar ? ` ${e.lugar}` : ''
+      if (e.objeto && e.verbo) propios.push(m('c-herr', `${e.verbo} ${e.objeto}${donde}`))
+      if (e.zona) propios.push(m('c-zona', `Acércate a ${e.zona}`))
+      if (!propios.length && a) propios.push(m('c-posit', `Escribe en un pósit «${a}»${donde}`))
+    } else if (nivel === 'medio') {
+      if (e.fase?.medio) propios.push(m('c-fase', e.fase.medio))
+      if (v.pasos?.[0]) propios.push(m('g-paso1', v.pasos[0]))
+      if (!propios.length && e.objeto && a) propios.push(m('c-usa', `Usa ${e.objeto} para empezar a ${a}`))
+    } else {
+      if (e.fase?.ligero) propios.push(m('c-fase-l', e.fase.ligero))
+      if ((v.pasos?.length ?? 0) >= 2) {
+        const k = Math.min(3, v.pasos!.length)
+        propios.push({ ...m('g-hasta', `Sigue los pasos hasta «${v.pasos![k - 1].charAt(0).toLowerCase()}${v.pasos![k - 1].slice(1)}»`), pasos: v.pasos!.slice(0, k) })
+      }
+      if (!propios.length && e.objeto && a) propios.push(m('c-usa-l', `Usa ${e.objeto} hasta completar 3 pasos para ${a}`))
+    }
+    // Buscar o leer cómo se hace, solo si lo que frena es no saber por dónde empezar
+    if (aprende && e.bloqueo === 'nose') propios.push(nivel === 'pesado' ? i('p-como', `Busca en el móvil cómo ${a}`) : i('m-pasos', `Lee en el móvil los pasos para ${a}`))
+    if (propios.some((p) => p.estrategia === 'mecanica')) return propios
+  }
   // Con lo que trae internet, los conectores se rellenan con datos reales:
   // pasos de la guía, materiales que nombran las webs y técnicas que recomiendan
   const pasos = v.pasos ?? []
@@ -280,8 +315,13 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       if (tipo === 'urgencia') {
         candidatas = mezclar(base, s).map((n) => ({ texto: n.texto, plantilla: `${n.id}`, estrategia: n.estrategia, nucleo: n.estrategia, pasos: n.pasos }))
       } else {
+        // Con una zona elegida (el fregadero) no se cambia de sitio: el fregadero no se mueve
+        const fijo = Boolean(v.eleccion?.zona)
         const mods = MODIFICADORES[tipo].filter(
-          (m) => (!m.niveles || m.niveles.includes(nivel)) && (!m.solo || m.solo === 'unidad' || m.solo === v.tipo),
+          (m) =>
+            (!m.niveles || m.niveles.includes(nivel)) &&
+            (!m.solo || m.solo === 'unidad' || m.solo === v.tipo) &&
+            !(fijo && /^(n-sitio|n-rincon|n-ventana|p-rincon)$/.test(m.id)),
         )
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
         // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
