@@ -62,6 +62,25 @@ const CORTE = /\s*(,|;|\(|\s[–—]\s|\s(y|o|e|u|pero|para|mientras|durante|has
 
 const quitarTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
+/* Cosas comunes, no métodos concretos: cada persona tiene en casa lo suyo (una cafetera
+   distinta, otras herramientas). Lo que nombra un aparato o un método que no todo el mundo
+   tiene no se usa en los retos («Prensa francesa», «Muele los granos», «atornillador a batería»). */
+const ESPECIFICO = new RegExp(
+  '\\b(' +
+    // café y cocina
+    'prensa francesa|francesa|moka|italiana|aeropress|chemex|v60|espresso|expreso|capsulas?|nespresso|dolce gusto|goteo|' +
+    'sifon|cold brew|portafiltro|molinillo|muele|moler|granos?|thermomix|airfryer|freidora|robot de cocina|olla express|' +
+    'olla rapida|batidora|vaporera|horno de vapor|' +
+    // herramientas y aparatos concretos
+    'a bateria|bateria|laser|inalambric[oa]s?|electric[oa]s?|profesional(es)?|de precision|industrial(es)?|' +
+    // marcas y apps concretas
+    'ikea|amazon|notion|trello|evernote|google docs|word|excel|kindle' +
+    ')\\b',
+)
+
+/** true si el texto depende de un aparato o método que no todo el mundo tiene */
+export const esEspecifico = (texto: string) => ESPECIFICO.test(quitarTildes(texto))
+
 /** «retirar» → «Retira»; undefined si no es un infinitivo que se pueda pasar a imperativo. */
 function imperativo(infinitivo: string): string | undefined {
   const v = quitarTildes(infinitivo)
@@ -99,7 +118,8 @@ function conVerbo(frase: string): string | undefined {
 
 /** Una línea de la guía → una acción limpia, o undefined si no sirve para un reto. */
 export function limpiarPaso(texto: string): string | undefined {
-  if (/[¿?]/.test(texto)) return undefined
+  // Una línea que habla de un método concreto («Prensa francesa: vierte…») es de ese método: fuera entera
+  if (/[¿?]/.test(texto) || esEspecifico(texto)) return undefined
   const plano = texto
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/[*_`#>]/g, '')
@@ -117,7 +137,7 @@ export function limpiarPaso(texto: string): string | undefined {
     if (palabras < 2 || palabras > 9 || paso.length > 60) continue
     // Medidas («10-12 m² por litro») no son acciones; los modelos («E14») sí se quedan
     if (/(^|\s)\d/.test(paso)) continue
-    if (PROHIBIDO.test(quitarTildes(paso))) continue
+    if (PROHIBIDO.test(quitarTildes(paso)) || esEspecifico(paso)) continue
     if (filtrarTarea(paso, true).status === 'blocked') continue
     return paso
   }
@@ -167,7 +187,11 @@ function materialesDeLinea(texto: string): string[] {
   if (/\?|https?:|\d{2,}|€|\$/.test(texto)) return []
   const t = plano(texto)
   const negrita = t.match(/^\*\*([^*]{2,40})\*\*/)
-  const nombre = (negrita ? negrita[1] : t.split(/\s*[:–—(.]|\s(con|para|que|si|de precisión|según)\s/)[0]).replace(/\*/g, '').trim()
+  // Solo lo básico del material: «Atornillador a batería con puntas…» → «Atornillador»
+  const nombre = (negrita ? negrita[1] : t)
+    .split(/\s*[:–—(.]|\s(con|para|que|si|a|de precisión|según|tipo)\s/)[0]
+    .replace(/\*/g, '')
+    .trim()
   return nombre
     .split(/\s+[yo]\s+|,\s*/)
     .map((n) => n.trim().replace(/[.:]+$/, ''))
@@ -177,7 +201,8 @@ function materialesDeLinea(texto: string): string[] {
       return (
         palabras.length >= 1 && palabras.length <= 4 && n.length <= 35 &&
         !INGLES.has(primera) && !PALABRAS_NO_VERBO.has(primera) && !/(ar|er|ir)$/.test(primera) &&
-        !/^(una?|unos|unas|algun\w*|varios|varias|cualquier)$/.test(primera) && filtrarTarea(n, true).status !== 'blocked'
+        !/^(una?|unos|unas|algun\w*|varios|varias|cualquier)$/.test(primera) && !esEspecifico(n) &&
+        filtrarTarea(n, true).status !== 'blocked'
       )
     })
     .map((n) => conArticulo(n.charAt(0).toLowerCase() + n.slice(1).toLowerCase()))

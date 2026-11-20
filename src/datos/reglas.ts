@@ -185,7 +185,11 @@ const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|
 /** Variables para el motor: de la web (si es fiable) y de la frase. */
 export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
   const p = partesDe(tarea)
-  const accion = p ? `${p.verbo} ${p.objeto}` : undefined
+  const limpio = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
+  const soloVerbo = !p && limpio.split(/\s+/).length === 1 && esVerbo(limpio)
+  const accion = p ? `${p.verbo} ${p.objeto}` : soloVerbo ? limpio.toLowerCase() : undefined
+  // La tarea como nombre cuando no trae verbo («café» → «el café»): para Novedad sin método concreto
+  const tema = !p && !soloVerbo && limpio ? conArticulo(limpio.replace(/^\p{Lu}(?!\p{Lu})/u, (c) => c.toLowerCase())) : undefined
   // Datos reales de internet (pasos, materiales, técnicas): son el relleno principal de los conectores
   const pasos = web?.fiable ? web.pasos ?? [] : []
   const materiales = web?.fiable ? web.materiales ?? [] : []
@@ -194,21 +198,19 @@ export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefine
     // El objeto, de un paso que manipula algo («Retira la pantalla»), no de «Desconecta la corriente»
     const manipula = pasos.filter((p) => MANIPULAR.test(p.split(' ')[0]))
     const objeto = [...manipula, ...pasos].map(objetoDePaso).find(Boolean) || materiales[0] || web!.objeto || undefined
-    return { objeto, tipo: web!.tipo, pasos, materiales, tecnicas, accion }
+    return { objeto, tipo: web!.tipo, pasos, materiales, tecnicas, accion, tema }
   }
   if (web?.fiable && web.objeto) {
     const paso = web.nivel === 'medio' ? web.microPaso.replace(/^Solo /i, '').replace(/\.$/, '') : undefined
     const verbo = web.verboAccion ?? paso?.split(' ')[0] ?? (web.tipo === 'digital' ? 'Abre' : 'Coge')
-    return { objeto: web.objeto, tipo: web.tipo, verbo, paso, accion }
+    return { objeto: web.objeto, tipo: web.tipo, verbo, paso, accion, tema }
   }
   const tipo = DIGITAL.test(tarea) ? 'digital' : 'fisico'
   if (!p) {
-    const limpio = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '')
-    const palabras = limpio.split(/\s+/)
     // Un verbo suelto («descalcificar») ya es una acción
-    if (palabras.length === 1 && esVerbo(palabras[0])) return { tipo, accion: palabras[0].toLowerCase() }
+    if (soloVerbo) return { tipo, accion }
     // Sin verbo pero con un objeto con unidad («el test de autoescuela»): preguntas, párrafos…
-    if (limpio) return { objeto: conArticulo(limpio.replace(/^\p{Lu}(?!\p{Lu})/u, (c) => c.toLowerCase())), tipo, soloConUnidad: true }
+    if (tema) return { objeto: tema, tipo, soloConUnidad: true, tema }
     return undefined
   }
   // Sin web: el objeto de la frase solo se usa si es algo concreto con unidad («el tema 3», «el email de Carlos»)
@@ -448,7 +450,8 @@ export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?
     return {
       tipo,
       titulo: `${frase}.`,
-      pasos: [frase],
+      // «Sigue los pasos hasta…»: el detalle muestra los pasos reales de la guía
+      pasos: deMotor?.pasos?.length ? deMotor.pasos : [frase],
       hecho: hechoDe(accion),
       permiso: PERMISO[nivel],
       plantilla: deMotor ? deMotor.plantilla : `respaldo:${nivel}:${tipo}`,

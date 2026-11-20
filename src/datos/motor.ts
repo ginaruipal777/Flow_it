@@ -36,6 +36,8 @@ export type Variables = {
   materiales?: string[]
   /** Técnicas que recomiendan las webs («Repasa sin mirar tus notas») */
   tecnicas?: string[]
+  /** La tarea cuando es solo un nombre, sin verbo («el café») */
+  tema?: string
 }
 
 type Unidad = {
@@ -66,7 +68,7 @@ function unidadDe(texto: string): Unidad | undefined {
 }
 
 /* Cada pieza lleva un id (para «No encaja»: retos fallidos) y una estrategia (descartes.ts). */
-type Pieza = { id: string; texto: string; estrategia: Estrategia }
+type Pieza = { id: string; texto: string; estrategia: Estrategia; pasos?: string[] }
 
 /* ── Modificadores INCUP: van detrás del núcleo ─────────────────
    Sin «mano no dominante» ni «de forma distinta» (fricción artificial), sin prisas («ya»,
@@ -133,7 +135,7 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       mats.slice(0, 2).forEach((mat, n) => lista.push(m(`h-coge${n}`, `Coge ${mat}`)))
       if (mats[0]) lista.push(m('h-vista', `Pon ${mats[0]} a la vista`))
       if (pasos.length && o) lista.push(m('g-acercate', `Acércate a ${o}`))
-      if (pasos.length) lista.push(i('g-lee1', `Lee el primer paso de la guía: «${minus(pasos[0])}»`))
+      if (pasos.length) lista.push(i('g-lee1', `Lee el primer paso: «${minus(pasos[0])}»`))
       if (tecs[0]) lista.push(i('t-lee', `Lee la técnica «${minus(tecs[0])}»`), m('t-posit', `Apunta en un pósit «${minus(tecs[0])}»`))
       if (tecs[1]) lista.push(i('t-lee2', `Lee la técnica «${minus(tecs[1])}»`))
     } else if (nivel === 'medio') {
@@ -145,7 +147,8 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
     } else {
       if (pasos.length) {
         const k = Math.min(3, pasos.length)
-        lista.push(m('g-hasta', `Sigue la guía hasta «${minus(pasos[k - 1])}»`), m('g-completa', `Completa los ${k} primeros pasos de la guía`))
+        // Los pasos se ven en el detalle del reto (RetoCarta.pasos)
+        lista.push({ ...m('g-hasta', `Sigue los pasos hasta «${minus(pasos[k - 1])}»`), pasos: pasos.slice(0, k) }, { ...m('g-completa', `Completa los ${k} primeros pasos`), pasos: pasos.slice(0, k) })
       }
       if (tecs[1]) lista.push(m('t-2', tecs[1]))
       if (mats.length >= 2) lista.push(m('h-junta', `Prepara estas ${Math.min(3, mats.length)} cosas (${mats.slice(0, 3).join(', ')})`))
@@ -177,9 +180,23 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
 
 /* Acciones completas que no llevan modificador (más variedad para Interés y Desafío). */
 function enteras(v: Variables, nivel: Nivel, tipo: TipoReto): Pieza[] {
-  const { objeto: o, accion: a } = v
+  const { objeto: o, accion: a, tema } = v
   const social = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'social' })
   const mec = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'mecanica' })
+  const info = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
+  // Novedad con cambios comunes, sin imponer un método: cada persona lo hace con lo que tiene
+  if (tipo === 'novedad') {
+    if (a) {
+      if (nivel === 'pesado') return [info('e-otra', `Busca en el móvil otra manera de ${a}`)]
+      if (nivel === 'medio') return [mec('e-cambia', `Cambia una sola cosa de cómo sueles ${a}`)]
+      return [mec('e-manera', `Prueba a ${a} de una manera que no sueles`)]
+    }
+    if (tema) {
+      if (nivel === 'pesado') return [info('e-idea', `Busca en el móvil una idea nueva para ${tema}`)]
+      if (nivel === 'medio') return [mec('e-cambia-t', `Cambia una sola cosa de lo de siempre con ${tema}`)]
+      return [mec('e-toque', `Prueba ${tema} con un toque distinto al de siempre`)]
+    }
+  }
   if (tipo === 'interes') {
     if (nivel === 'pesado' && a) return [social('e-cuentale', `Cuéntale a alguien de casa que vas a ${a}`)]
     if (nivel === 'medio' && a) return [social('e-mensaje', `Envía un mensaje a alguien de confianza para contarle que vas a ${a}`)]
@@ -226,10 +243,10 @@ const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 const TIPOS: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
 /** De dónde sale cada carta: plantilla (para «No encaja») y estrategia */
-export type Origen = { plantilla: string; estrategia: Estrategia }
+export type Origen = { plantilla: string; estrategia: Estrategia; pasos?: string[] }
 export type ResultadoMotor = { acciones: Acciones; origen: Record<Nivel, Record<TipoReto, Origen>> }
 
-type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nucleo: Estrategia }
+type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nucleo: Estrategia; pasos?: string[] }
 
 /** Orden con lo que falló: fuera las plantillas descartadas; la estrategia descartada al final;
     con descartes, primero la estrategia opuesta (casi siempre la acción mecánica). */
@@ -261,7 +278,7 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       const s = (sem + i * 7919 + NIVELES.indexOf(nivel) * 104729) >>> 0
       let candidatas: Candidata[]
       if (tipo === 'urgencia') {
-        candidatas = mezclar(base, s).map((n) => ({ texto: n.texto, plantilla: `${n.id}`, estrategia: n.estrategia, nucleo: n.estrategia }))
+        candidatas = mezclar(base, s).map((n) => ({ texto: n.texto, plantilla: `${n.id}`, estrategia: n.estrategia, nucleo: n.estrategia, pasos: n.pasos }))
       } else {
         const mods = MODIFICADORES[tipo].filter(
           (m) => (!m.niveles || m.niveles.includes(nivel)) && (!m.solo || m.solo === 'unidad' || m.solo === v.tipo),
@@ -276,11 +293,13 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         const combinadas = mezclar(base, s).flatMap((n) =>
           mezclar(mods, s >>> 3)
             .filter((m) => encaja(n, m))
-            .map((m) => ({ texto: `${n.texto} ${m.texto}`, plantilla: `${n.id}+${m.id}`, estrategia: m.estrategia === 'mecanica' ? n.estrategia : m.estrategia, nucleo: n.estrategia })),
+            .map((m) => ({ texto: `${n.texto} ${m.texto}`, plantilla: `${n.id}+${m.id}`, estrategia: m.estrategia === 'mecanica' ? n.estrategia : m.estrategia, nucleo: n.estrategia, pasos: n.pasos })),
         )
         const sueltas = enteras(v, nivel, tipo).map((e) => ({ texto: e.texto, plantilla: e.id, estrategia: e.estrategia, nucleo: e.estrategia }))
-        // Las frases enteras salen a veces, no siempre: así cambian de un mazo a otro
-        candidatas = s % 3 === 0 ? [...sueltas, ...combinadas] : [...combinadas, ...sueltas]
+        // Las frases enteras salen a veces, no siempre: así cambian de un mazo a otro.
+        // En Novedad, los cambios comunes («cambia una sola cosa…») salen la mitad de las veces
+        const primero = tipo === 'novedad' ? s % 2 === 0 : s % 3 === 0
+        candidatas = primero ? [...sueltas, ...combinadas] : [...combinadas, ...sueltas]
       }
       const elegida =
         conDescartes(candidatas, opciones)
@@ -291,7 +310,7 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         }
       usadas.add(elegida.texto)
       cartas[tipo] = elegida.texto
-      origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia }
+      origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia, ...(elegida.pasos && { pasos: elegida.pasos }) }
     })
     acciones[nivel] = cartas
     origen[nivel] = origenes

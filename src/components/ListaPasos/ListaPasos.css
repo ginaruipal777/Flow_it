@@ -178,3 +178,15 @@
   margin-top: 4px;
   font-weight: 700;
 }
+
+/* Pasos de la guía encontrada en internet («Sigue los pasos hasta…») */
+.lista-pasos__guia {
+  margin: 8px 0 12px;
+  padding-left: 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lista-pasos__guia li::marker {
+  font-weight: 800;
+}

@@ -70,6 +70,15 @@ export function ListaPasos({
         )}
       </div>
 
+      {/* En la carta («Sigue los pasos hasta…»): los pasos de la guía, para tenerlos delante */}
+      {enCarta && pasos.length > 1 && (
+        <ol className="lista-pasos__guia t-texto-cuerpo">
+          {pasos.map((paso, i) => (
+            <li key={i}>{paso}.</li>
+          ))}
+        </ol>
+      )}
+
       {!enCarta && hechos > 0 && (
         <ol className="lista-pasos__hechos" aria-label="Pasos hechos">
           {pasos.slice(0, hechos).map((paso, i) => (

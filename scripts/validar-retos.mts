@@ -5,6 +5,7 @@ import { BANCO, PLAZO, type Acciones, type Nivel } from '../src/datos/banco.ts'
 import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, hechoDe, numMazos, retosDe } from '../src/datos/reglas.ts'
 import { METODOS } from '../src/datos/metodos.ts'
 import { descartarReto, opcionesDe, type RetosFallidos } from '../src/datos/descartes.ts'
+import { limpiarPaso, materialesDe } from '../src/datos/pasos.ts'
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 
@@ -157,6 +158,20 @@ for (const tarea of tareas) {
     }
   }
 }
+
+// 5. Cosas comunes, no métodos concretos: lo que no todo el mundo tiene se queda fuera
+const ESPECIFICOS: [string, string | undefined][] = [
+  ['2. Prensa francesa: vierte el agua caliente', undefined],
+  ['Muele los granos de café justo antes de prepararlo', undefined],
+  ['Introduce la cápsula en la cafetera', undefined],
+  ['Llena el depósito de la cafetera', 'Llena el depósito de la cafetera'],
+]
+for (const [linea, esperado] of ESPECIFICOS) {
+  const limpio = limpiarPaso(linea)
+  if (limpio !== esperado) errores.push(`Método concreto: «${linea}» → «${limpio}» (se esperaba «${esperado}»)`)
+}
+const mats = materialesDe([{ doc: 0, seccion: 'Herramientas necesarias', texto: 'Atornillador a batería con puntas adecuadas' }, { doc: 0, seccion: 'Herramientas', texto: 'Prensa francesa' }])
+if (mats.join('|') !== 'el atornillador') errores.push(`Materiales comunes: ${JSON.stringify(mats)} (se esperaba solo «el atornillador»)`)
 
 console.log(`Retos distintos que puede mostrar la app: ${titulos.size}`)
 if (errores.length) {
