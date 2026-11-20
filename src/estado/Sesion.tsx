@@ -15,8 +15,24 @@ import { auth, firebaseConfigurado } from '../datos/firebase'
 /* Sesión con Firebase Authentication: correo + contraseña y Google.
    Sin configuración de Firebase, `disponible` es false y la app sigue sin cuentas. */
 
+/** Dentro de una app que envuelve la web (Median/GoNative u otra vista web incrustada), Google no
+    deja iniciar sesión («Error 403: disallowed_useragent»): ahí solo se ofrece correo y contraseña. */
+function enVistaWeb(): boolean {
+  if (typeof window === 'undefined') return false
+  const w = window as unknown as { median?: unknown; gonative?: unknown }
+  const ua = navigator.userAgent
+  return (
+    Boolean(w.median || w.gonative) ||
+    /median|gonative/i.test(ua) ||
+    /; wv\)/.test(ua) || // Android WebView
+    (/(iPhone|iPad|iPod)/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/.test(ua)) // iOS WKWebView
+  )
+}
+
 type Sesion = {
   disponible: boolean
+  /** Google se puede usar aquí (no dentro de una app envoltorio como Median) */
+  conGoogle: boolean
   /** null: sin sesión; undefined: todavía comprobando */
   usuario: User | null | undefined
   entrar: (correo: string, clave: string) => Promise<void>
@@ -43,6 +59,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     }
     return {
       disponible: firebaseConfigurado,
+      conGoogle: firebaseConfigurado && !enVistaWeb(),
       usuario,
       entrar: async (correo, clave) => {
         await signInWithEmailAndPassword(necesitaAuth(), correo.trim(), clave)

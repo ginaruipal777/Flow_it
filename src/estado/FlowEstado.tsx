@@ -72,6 +72,8 @@ type Accion =
   | { tipo: 'asignar-propietario'; uid: string }
   /** Al cerrar sesión los datos se quedan en la nube y el móvil vuelve a empezar */
   | { tipo: 'cerrar-sesion' }
+  /** Versión de fábrica: se borra todo (en el móvil y, con cuenta, también en la nube) */
+  | { tipo: 'empezar-de-cero' }
 
 /* Versión de fábrica: la app arranca vacía, como recién descargada.
    Las reglas y el banco de retos están en src/datos; aquí solo se guarda lo que hace cada persona. */
@@ -183,6 +185,9 @@ function reductor(e: Estado, a: Accion): Estado {
       return { ...INICIAL, ...(a.estado as Partial<Estado>), propietario: a.uid, onboardingVisto: true }
     case 'asignar-propietario':
       return { ...e, propietario: a.uid }
+    case 'empezar-de-cero':
+      // Se queda la cuenta: el estado vacío (más reciente) sustituye a la copia de la nube
+      return { ...INICIAL, ...(e.propietario && { propietario: e.propietario }) }
     case 'cerrar-sesion':
       return { ...INICIAL, onboardingVisto: true }
     case 'descartar-reto': {

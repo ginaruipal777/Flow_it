@@ -130,7 +130,7 @@ export default function Entrar() {
           {!sesion.disponible ? 'Entrar sin cuenta' : ocupado ? 'Un momento…' : modo === 'crear' ? 'Crear cuenta' : 'Iniciar sesión'}
         </Boton>
 
-        {sesion.disponible && (
+        {sesion.conGoogle && (
           <>
             <div className="entrar__separador">
               <span />

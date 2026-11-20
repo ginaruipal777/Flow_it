@@ -5,7 +5,7 @@ import { Boton } from '../../components/Boton/Boton'
 import { CartaReverso, IconoConAcentos } from '../../components/Cartas/Cartas'
 import { Icono } from '../../components/Icono/Icono'
 import { ICONOS_CATEGORIA, ICONOS_TIPO, ICONOS_UI, type Categoria } from '../../components/Icono/iconos'
-import { BotonVolver, Pantalla } from '../../components/UI/UI'
+import { BotonVolver, Overlay, Pantalla } from '../../components/UI/UI'
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { haceCuanto } from '../../datos/retos'
 import { useFlow } from '../../estado/FlowEstado'
@@ -93,7 +93,55 @@ function CuentaPerfil() {
   const { estado, despachar } = useFlow()
   const sesion = useSesion()
   const [saliendo, setSaliendo] = useState(false)
-  if (!sesion.disponible) return null
+  const [confirmarBorrado, setConfirmarBorrado] = useState(false)
+
+  // Versión de fábrica: tareas, retos, mazos, aprendizaje, «No encaja» y búsquedas guardadas.
+  // Con cuenta, el estado vacío sustituye también a la copia de la nube (FlowEstado lo guarda).
+  const empezarDeCero = () => {
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('flowit:') && k !== 'flowit:estado:v2')
+        .forEach((k) => localStorage.removeItem(k))
+    } catch {
+      /* sin almacenamiento: no hay nada más que borrar */
+    }
+    despachar({ tipo: 'empezar-de-cero' })
+    setConfirmarBorrado(false)
+    navegar('/', { replace: true })
+  }
+
+  const borrado = (
+    <>
+      <button type="button" className="t-texto-control cuenta__boton cuenta__boton--peligro" onClick={() => setConfirmarBorrado(true)}>
+        Empezar de cero
+      </button>
+      {confirmarBorrado && (
+        <Overlay etiqueta="Empezar de cero" onCerrar={() => setConfirmarBorrado(false)}>
+          <div className="dialogo dialogo--lienzo">
+            <h2 className="t-titular-m">¿Empezar de cero?</h2>
+            <p className="t-texto-cuerpo dialogo__suave">
+              Se borran tus tareas, retos, mazos y lo que ha aprendido la app
+              {sesion.usuario ? ', en este móvil y en tu cuenta' : ' en este móvil'}. La app queda como recién instalada. No se puede
+              deshacer.
+            </p>
+            <Boton conIcono={false} className="boton--ancho" onClick={empezarDeCero}>
+              Sí, borrar todo
+            </Boton>
+            <button type="button" className="t-texto-subtitulo dialogo__enlace" onClick={() => setConfirmarBorrado(false)}>
+              Cancelar
+            </button>
+          </div>
+        </Overlay>
+      )}
+    </>
+  )
+
+  if (!sesion.disponible)
+    return (
+      <section className="cuenta" aria-label="Tus datos">
+        {borrado}
+      </section>
+    )
 
   const cerrar = async () => {
     setSaliendo(true)
@@ -124,6 +172,7 @@ function CuentaPerfil() {
           </button>
         </>
       )}
+      {borrado}
     </section>
   )
 }

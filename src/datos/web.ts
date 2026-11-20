@@ -39,7 +39,13 @@ export type ResultadoWeb =
 
 /* Búsquedas guardadas en el móvil: repetir una tarea es instantáneo y no gasta búsquedas.
    Duran 7 días; se guardan como mucho las 60 últimas. */
-const CLAVE_GUARDADAS = 'flowit:busquedas:v1'
+// v2: búsquedas con las reglas de relevancia y los pasos, materiales y técnicas (las de v1 no los tienen)
+const CLAVE_GUARDADAS = 'flowit:busquedas:v2'
+try {
+  localStorage.removeItem('flowit:busquedas:v1')
+} catch {
+  /* sin almacenamiento */
+}
 const DURACION_MS = 7 * 24 * 3600_000
 const MAXIMO_GUARDADAS = 60
 type Guardada = { t: number; r: Extract<ResultadoWeb, { status: 'success' }> }

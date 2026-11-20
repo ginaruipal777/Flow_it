@@ -447,3 +447,12 @@
 .cuenta__boton:disabled {
   opacity: 0.5;
 }
+.cuenta__boton--peligro {
+  border-color: #b4232a;
+  color: #b4232a;
+}
+.cuenta__boton--peligro:hover,
+.cuenta__boton--peligro:active {
+  background: #b4232a;
+  color: var(--superficie-crema);
+}
