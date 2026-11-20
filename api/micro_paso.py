@@ -159,6 +159,7 @@ class Contexto:
     guia: str = ""  # texto de understood.org/es-mx (estrategias para arrancar con TDAH)
     url_guia: str = ""
     enciclopedia: str = ""  # Wikipedia: qué es la cosa de la tarea (solo para catalogar)
+    materiales: str = ""  # página de «qué necesitas para…»: sus listas dan los materiales de los retos
     diagnostico: dict = field(default_factory=dict)
 
     @property
@@ -395,11 +396,28 @@ async def _buscar_wikipedia(tarea: str) -> tuple[str, str, dict] | None:
     return texto, url, {"resultados": len(resultados)}
 
 
+async def _buscar_materiales(tarea: str) -> str:
+    """Qué hace falta para la tarea (libreta, lápiz, esterilla…): la primera página en español que se pueda leer.
+    La app saca de sus listas los materiales y los convierte en retos («Coge la libreta»)."""
+    claves, necesarias = _claves(tarea)
+    hits, _ = await _consultar(
+        f"qué necesitas para {tarea} materiales", limit=8, blocked_domains=DOMINIOS_BLOQUEADOS + [UNDERSTOOD], timeout=10.0
+    )
+    for h in hits[:4]:
+        if bloqueado(h.url) or not en_espanol(h) or not habla_de(h, claves, necesarias):
+            continue
+        contenido, _ = await _leer(h.url, segundos=7.0)
+        if contenido:
+            return contenido
+    return ""
+
+
 async def _buscar(tarea: str) -> Contexto:
-    """Las dos búsquedas a la vez: web general (qué es la tarea) y understood.org (cómo arrancar)."""
+    """Las búsquedas a la vez: web general (qué es la tarea), materiales, understood.org (cómo arrancar) y Wikipedia."""
     tipo = tipo_de_busqueda(tarea)
-    general, guia, wiki = await asyncio.gather(
-        _buscar_general(tarea, tipo), _buscar_understood(tarea), _buscar_wikipedia(tarea), return_exceptions=True
+    general, guia, wiki, materiales = await asyncio.gather(
+        _buscar_general(tarea, tipo), _buscar_understood(tarea), _buscar_wikipedia(tarea), _buscar_materiales(tarea),
+        return_exceptions=True,
     )
     texto_wiki, url_wiki, diag_wiki = wiki if wiki and not isinstance(wiki, BaseException) else ("", "", {"error": "fallo"})
     error_general = repr(general)[:120] if isinstance(general, BaseException) else None
@@ -412,6 +430,7 @@ async def _buscar(tarea: str) -> Contexto:
     return Contexto(
         titulo=titulo,
         documentos=documentos,
+        materiales=materiales if isinstance(materiales, str) else "",
         fuentes=fuentes + ([url_guia] if url_guia else []),
         tipo_busqueda=tipo,
         guia=texto_guia,
@@ -696,7 +715,9 @@ ENCABEZADO = re.compile(r"^\s*(#{1,6}\s+.{3,90}|\*\*[^*]{3,80}\*\*:?\s*|[^.\n]{3
 def lineas_de_listas(contexto: Contexto, maximo: int = 150) -> list[dict]:
     salida: list[dict] = []
     try:
-        for i, documento in enumerate(contexto.documentos):
+        # Primero la página de materiales: así su lista entra aunque las guías tengan muchas viñetas
+        documentos = ([contexto.materiales] if contexto.materiales else []) + contexto.documentos
+        for i, documento in enumerate(documentos):
             seccion = ""
             for linea in documento.splitlines():
                 m = LINEA_LISTA.match(linea)
