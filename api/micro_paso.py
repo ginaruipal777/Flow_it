@@ -192,6 +192,9 @@ DOMINIOS_BLOQUEADOS = [
     # foros y redes
     "reddit.com", "pinterest.com", "pinterest.es", "quora.com", "forocoches.com", "facebook.com",
     "instagram.com", "tiktok.com", "x.com", "twitter.com", "youtube.com",
+    # diccionarios y conjugadores: definen la palabra, no explican cómo se hace la tarea
+    "rae.es", "dle.rae.es", "reverso.net", "wordreference.com", "conjugacion.es", "conjugador.reverso.net",
+    "spanishdict.com", "linguee.es", "definicion.de", "significados.com", "thefreedictionary.com",
 ]
 RUTA_FORO_O_TIENDA = re.compile(r"(/foro|foro\.|forum|/tienda/|/shop/|/producto|/product/|/comprar/|/carrito)")
 PALABRAS_ES = {"de", "la", "el", "en", "los", "las", "para", "con", "por", "que", "del", "una", "como", "tu", "paso"}
@@ -262,7 +265,7 @@ def habla_de(hit, claves: list[str], necesarias: int) -> bool:
 #   R4. La página leída tiene que hablar de la tarea (sus palabras salen varias veces) o se descarta.
 #   R5. La página de materiales tiene que hablar de materiales («necesitas», «lista», «herramientas»).
 SENAL_GUIA = re.compile(r"\b(como|paso a paso|guia|tutorial|consejos|trucos|aprende|principiantes|empezar|instrucciones|tecnicas)\b")
-SENAL_RUIDO = re.compile(r"\b(comprar|precio|precios|oferta|ofertas|tienda|venta|rebajas|noticia|noticias|definicion|significado|sinonimo\w*|traduccion|letra|cancion|pelicula|resena|opiniones|wikipedia)\b")
+SENAL_RUIDO = re.compile(r"\b(comprar|precio|precios|oferta|ofertas|tienda|venta|rebajas|noticia|noticias|definicion|significado|sinonimo\w*|traduccion|letra|cancion|pelicula|resena|opiniones|wikipedia|conjugacion|conjugar|diccionario|rae)\b")
 SENAL_MATERIAL = re.compile(r"\b(necesit\w*|material\w*|herramienta\w*|lista|kit|equipo|utensilio\w*|hace falta|imprescindible\w*)\b")
 PUNTOS_MINIMOS = 3
 MENCIONES_MINIMAS = 3
