@@ -1,5 +1,6 @@
 import type { Categoria } from '../components/Icono/iconos'
 import type { TipoReto } from '../components/CartaReto/tipos'
+import type { Estrategia } from './descartes'
 
 export type Esfuerzo = 'ligero' | 'medio' | 'pesado'
 
@@ -59,6 +60,10 @@ export type Reto = {
   permiso?: string
   /** Si el reto es un método para TDAH: su nombre y la web de la que sale */
   metodo?: { nombre: string; fuente: { nombre: string; url: string } }
+  /** Plantilla del motor de la que sale (para «No encaja», descartes.ts) */
+  plantilla?: string
+  /** Estrategia del reto: mecánica, informativa, emocional o social */
+  estrategia?: Estrategia
 }
 
 export type Mazo = {

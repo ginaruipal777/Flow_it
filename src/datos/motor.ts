@@ -16,6 +16,7 @@
 
 import type { TipoReto } from '../components/CartaReto/tipos'
 import type { Acciones, Nivel } from './banco.ts'
+import type { Estrategia, OpcionesMotor } from './descartes.ts'
 
 export type Variables = {
   /** Objeto concreto con artículo («la app del test», «la cafetera») */
@@ -58,37 +59,45 @@ function unidadDe(texto: string): Unidad | undefined {
   return UNIDADES.find(([re]) => re.test(t))?.[1]
 }
 
+/* Cada pieza lleva un id (para «No encaja»: retos fallidos) y una estrategia (descartes.ts). */
+type Pieza = { id: string; texto: string; estrategia: Estrategia }
+
 /* ── Modificadores INCUP: van detrás del núcleo ─────────────────
    Sin «mano no dominante» ni «de forma distinta» (fricción artificial), sin prisas («ya»,
    «sin pensarlo») y sin juicios («te lo mereces»): lo pide la investigación de la app. */
-type Modificador = { texto: string; solo?: 'fisico' | 'digital' | 'unidad'; niveles?: Nivel[] }
+type Modificador = Pieza & { solo?: 'fisico' | 'digital' | 'unidad'; niveles?: Nivel[] }
 
 const MODIFICADORES: Record<Exclude<TipoReto, 'urgencia'>, Modificador[]> = {
   novedad: [
-    { texto: 'desde otro sitio de la casa' },
-    { texto: 'en un sitio de la casa donde casi nunca estás' },
-    { texto: 'empezando por el final', solo: 'unidad', niveles: ['medio', 'ligero'] },
-    { texto: 'con la pantalla en modo oscuro', solo: 'digital' },
-    { texto: 'junto a una ventana' },
+    { id: 'n-sitio', texto: 'desde otro sitio de la casa', estrategia: 'mecanica' },
+    { id: 'n-rincon', texto: 'en un sitio de la casa donde casi nunca estás', estrategia: 'mecanica' },
+    { id: 'n-final', texto: 'empezando por el final', estrategia: 'mecanica', solo: 'unidad', niveles: ['medio', 'ligero'] },
+    { id: 'n-oscuro', texto: 'con la pantalla en modo oscuro', estrategia: 'mecanica', solo: 'digital' },
+    { id: 'n-ventana', texto: 'junto a una ventana', estrategia: 'mecanica' },
   ],
   desafio: [
-    { texto: 'contando cada paso en voz alta', niveles: ['medio', 'ligero'] },
-    { texto: 'sin moverte de donde estás', niveles: ['pesado'] },
-    { texto: 'con el móvil boca abajo', solo: 'fisico' },
-    { texto: 'sin mirar el móvil ni una vez', solo: 'fisico' },
-    { texto: 'con las notificaciones silenciadas', solo: 'digital' },
-    { texto: 'sin levantarte hasta terminar', niveles: ['medio', 'ligero'] },
+    { id: 'd-voz', texto: 'contando cada paso en voz alta', estrategia: 'mecanica', niveles: ['medio', 'ligero'] },
+    { id: 'd-quieto', texto: 'sin moverte de donde estás', estrategia: 'mecanica', niveles: ['pesado'] },
+    { id: 'd-movil', texto: 'con el móvil boca abajo', estrategia: 'mecanica', solo: 'fisico' },
+    { id: 'd-sinmovil', texto: 'sin mirar el móvil ni una vez', estrategia: 'mecanica', solo: 'fisico' },
+    { id: 'd-avisos', texto: 'con las notificaciones silenciadas', estrategia: 'mecanica', solo: 'digital' },
+    { id: 'd-hasta', texto: 'sin levantarte hasta terminar', estrategia: 'mecanica', niveles: ['medio', 'ligero'] },
   ],
   pasion: [
-    { texto: 'con tu música favorita de fondo' },
-    { texto: 'con tu bebida favorita al lado' },
-    { texto: 'con tu canción favorita sonando' },
-    { texto: 'en tu rincón favorito de la casa' },
+    { id: 'p-musica', texto: 'con tu música favorita de fondo', estrategia: 'emocional' },
+    { id: 'p-bebida', texto: 'con tu bebida favorita al lado', estrategia: 'emocional' },
+    { id: 'p-cancion', texto: 'con tu canción favorita sonando', estrategia: 'emocional' },
+    { id: 'p-rincon', texto: 'en tu rincón favorito de la casa', estrategia: 'emocional' },
+    // Pasión como juego (mecánica): sale primero cuando lo emocional no encajó
+    { id: 'p-puntos', texto: 'sumando un punto por cada movimiento', estrategia: 'mecanica' },
+    { id: 'p-juego', texto: 'como en un juego de contar movimientos', estrategia: 'mecanica' },
   ],
   interes: [
-    { texto: 'con alguien de casa cerca' },
-    { texto: 'con una persona de confianza al lado' },
-    { texto: 'en una videollamada con alguien de confianza', niveles: ['medio', 'ligero'] },
+    { id: 'i-casa', texto: 'con alguien de casa cerca', estrategia: 'social' },
+    { id: 'i-confianza', texto: 'con una persona de confianza al lado', estrategia: 'social' },
+    { id: 'i-video', texto: 'en una videollamada con alguien de confianza', estrategia: 'social', niveles: ['medio', 'ligero'] },
+    // Interés sin persona (curiosidad por el objeto): sale primero cuando lo social no encajó
+    { id: 'i-detalle', texto: 'fijándote en un detalle que no habías visto', estrategia: 'mecanica' },
   ],
 }
 
@@ -98,42 +107,46 @@ const MODIFICADORES: Record<Exclude<TipoReto, 'urgencia'>, Modificador[]> = {
    montar…) sí se aprenden, y ahí «busca un vídeo» o «lee los pasos» es un primer paso real. */
 const COTIDIANOS = /^(llamar|responder|contestar|escribir|leer|estudiar|comer|cenar|desayunar|almorzar|merendar|duchar\w*|banar\w*|ir|salir|comprar|hablar|quedar|enviar|mandar|ver|jugar|dormir|descansar|pasear|caminar|correr|recoger|ordenar|visitar|felicitar|pedir|repasar|tender|doblar|fregar|regar|sacar|beber|tomar)\b/
 
-function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): string[] {
+function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[] {
   const o = v.objeto
   const a = v.accion
   // El objeto de la frase sin web puede ser abstracto («el tema 3»): no se toca ni se mira, se abre
   const tocable = o && !v.soloConUnidad
   const aprende = a && !COTIDIANOS.test(quitarTildes(a))
-  const lista: (string | undefined)[] = []
+  const lista: (Pieza | false | undefined)[] = []
+  const m = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'mecanica' })
+  const i = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
   if (nivel === 'pesado') {
-    if (tocable) lista.push(v.tipo === 'digital' ? `Abre ${o}` : `Toca ${o}`, v.tipo === 'digital' ? `Busca ${o} en el móvil` : `Mira ${o}`)
-    if (unidad && o) lista.push(unidad.pesado(o))
-    if (aprende) lista.push(`Busca en el móvil cómo ${a}`, `Busca en el móvil un vídeo sobre cómo ${a}`)
-    if (a && !lista.length) lista.push(`Escribe en un pósit «${a}»`, `Apunta en tu libreta «${a}»`)
+    if (tocable) lista.push(v.tipo === 'digital' ? m('p-abre', `Abre ${o}`) : m('p-toca', `Toca ${o}`), v.tipo === 'digital' ? m('p-busca', `Busca ${o} en el móvil`) : m('p-mira', `Mira ${o}`))
+    if (unidad && o) lista.push(m('p-unidad', unidad.pesado(o)))
+    if (aprende) lista.push(i('p-como', `Busca en el móvil cómo ${a}`), i('p-video', `Busca en el móvil un vídeo sobre cómo ${a}`))
+    if (a) lista.push(m('p-vista', `Pon a la vista una cosa que necesitas para ${a}`), m('p-posit', `Escribe en un pósit «${a}»`), !lista.length && m('p-libreta', `Apunta en tu libreta «${a}»`))
   } else if (nivel === 'medio') {
-    if (unidad && o) lista.push(unidad.uno(o))
-    if (v.paso) lista.push(v.paso)
-    else if (tocable && v.verbo) lista.push(`${v.verbo} ${o}`)
-    if (a) lista.push(`Coge lo que necesitas para ${a}`, aprende ? `Lee en el móvil los pasos para ${a}` : `Ve al sitio donde vas a ${a}`)
+    if (unidad && o) lista.push(m('m-unidad', unidad.uno(o)))
+    if (v.paso) lista.push(m('m-paso', v.paso))
+    else if (tocable && v.verbo) lista.push(m('m-verbo', `${v.verbo} ${o}`))
+    if (a) lista.push(m('m-coge', `Coge lo que necesitas para ${a}`), aprende ? i('m-pasos', `Lee en el móvil los pasos para ${a}`) : m('m-sitio', `Ve al sitio donde vas a ${a}`))
   } else {
-    if (unidad && o) lista.push(unidad.varios(o, 3), unidad.varios(o, 5))
-    if (a) lista.push(aprende ? `Completa 3 pasos para ${a}` : `Dedica un rato a ${a}`, `Empieza a ${a}`)
-    else if (tocable && !unidad) lista.push(`Usa ${o} hasta terminar el primer paso`)
+    if (unidad && o) lista.push(m('l-unidad3', unidad.varios(o, 3)), m('l-unidad5', unidad.varios(o, 5)))
+    if (a) lista.push(aprende ? m('l-pasos', `Completa 3 pasos para ${a}`) : m('l-rato', `Dedica un rato a ${a}`), m('l-empieza', `Empieza a ${a}`))
+    else if (tocable && !unidad) lista.push(m('l-usa', `Usa ${o} hasta terminar el primer paso`))
   }
-  return [...new Set(lista.filter((x): x is string => Boolean(x)))]
+  const vistos = new Set<string>()
+  return lista.filter((p): p is Pieza => Boolean(p) && !vistos.has((p as Pieza).texto) && Boolean(vistos.add((p as Pieza).texto)))
 }
 
 /* Acciones completas que no llevan modificador (más variedad para Interés y Desafío). */
-function enteras(v: Variables, nivel: Nivel, tipo: TipoReto): string[] {
+function enteras(v: Variables, nivel: Nivel, tipo: TipoReto): Pieza[] {
   const { objeto: o, accion: a } = v
-  if (o && v.soloConUnidad && tipo === 'interes' && nivel === 'medio') return a ? [`Envía un mensaje a alguien de confianza para contarle que vas a ${a}`] : []
+  const social = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'social' })
+  const mec = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'mecanica' })
   if (tipo === 'interes') {
-    if (nivel === 'pesado' && a) return [`Cuéntale a alguien de casa que vas a ${a}`]
-    if (nivel === 'medio' && a) return [`Envía un mensaje a alguien de confianza para contarle que vas a ${a}`]
-    if (nivel === 'medio' && o && v.tipo === 'fisico') return [`Envía una foto de ${o} a una persona de confianza`]
+    if (nivel === 'pesado' && a) return [social('e-cuentale', `Cuéntale a alguien de casa que vas a ${a}`)]
+    if (nivel === 'medio' && a) return [social('e-mensaje', `Envía un mensaje a alguien de confianza para contarle que vas a ${a}`)]
+    if (nivel === 'medio' && o && v.tipo === 'fisico' && !v.soloConUnidad) return [social('e-foto', `Envía una foto de ${o} a una persona de confianza`)]
   }
-  if (tipo === 'desafio' && nivel === 'pesado' && a) return [`Apunta 2 cosas que necesitas para ${a}`]
-  if (tipo === 'desafio' && nivel === 'medio' && a) return [`Junta 3 cosas que necesitas para ${a}`]
+  if (tipo === 'desafio' && nivel === 'pesado' && a) return [mec('e-apunta2', `Apunta 2 cosas que necesitas para ${a}`)]
+  if (tipo === 'desafio' && nivel === 'medio' && a) return [mec('e-junta3', `Junta 3 cosas que necesitas para ${a}`)]
   return []
 }
 
@@ -157,6 +170,7 @@ function mezclar<T>(lista: T[], semilla: number): T[] {
 }
 
 const NUCLEO_UNIDAD = /^(Lee|Contesta|Escribe|Rellena) \d/
+const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-verbo|l-unidad|l-usa)/
 
 const contraer = (s: string) => s.replace(/\b(a|de) el\b/g, (_, p: string) => (p === 'a' ? 'al' : 'del'))
 const MAXIMO = 100 // la carta admite ~110 con «Solo…»
@@ -164,40 +178,70 @@ const MAXIMO = 100 // la carta admite ~110 con «Solo…»
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 const TIPOS: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
-/** 15 retos (3 niveles × 5 cartas INCUP) montados con las variables de la tarea; undefined si no hay piezas. */
-export function accionesMotor(variables: Variables, texto: string, semilla: number): Acciones | undefined {
+/** De dónde sale cada carta: plantilla (para «No encaja») y estrategia */
+export type Origen = { plantilla: string; estrategia: Estrategia }
+export type ResultadoMotor = { acciones: Acciones; origen: Record<Nivel, Record<TipoReto, Origen>> }
+
+type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nucleo: Estrategia }
+
+/** Orden con lo que falló: fuera las plantillas descartadas; la estrategia descartada al final;
+    con descartes, primero la estrategia opuesta (casi siempre la acción mecánica). */
+function conDescartes(lista: Candidata[], op?: OpcionesMotor): Candidata[] {
+  if (!op) return lista
+  const libres = lista.filter((c) => !op.descartadas.has(c.plantilla))
+  const pool = libres.length ? libres : lista
+  const puntos = (c: Candidata) =>
+    (c.estrategia === op.estrategiaDescartada || c.nucleo === op.estrategiaDescartada ? 2 : 0) +
+    (c.nucleo === (op.preferida ?? 'mecanica') ? 0 : 1)
+  return pool.map((c, i) => ({ c, i })).sort((x, y) => puntos(x.c) - puntos(y.c) || x.i - y.i).map((x) => x.c)
+}
+
+/** 15 retos (3 niveles × 5 cartas INCUP) montados con las variables de la tarea; undefined si no hay piezas.
+    `opciones`: lo que falló en esta tarea («No encaja», descartes.ts). */
+export function accionesMotor(variables: Variables, texto: string, semilla: number, opciones?: OpcionesMotor): ResultadoMotor | undefined {
   const unidad = unidadDe(`${variables.objeto ?? ''} ${texto}`)
   const v = variables.soloConUnidad && !unidad ? { ...variables, objeto: undefined } : variables
   const acciones = {} as Acciones
+  const origen = {} as ResultadoMotor['origen']
+  const sem = semilla + (opciones?.vuelta ?? 0) * 15485863
   for (const nivel of NIVELES) {
     const base = nucleos(v, nivel, unidad)
     if (!base.length) return undefined
     const usadas = new Set<string>()
     const cartas = {} as Acciones[Nivel]
+    const origenes = {} as Record<TipoReto, Origen>
     TIPOS.forEach((tipo, i) => {
-      const s = semilla + i * 7919 + NIVELES.indexOf(nivel) * 104729
-      let elegida: string | undefined
+      const s = (sem + i * 7919 + NIVELES.indexOf(nivel) * 104729) >>> 0
+      let candidatas: Candidata[]
       if (tipo === 'urgencia') {
-        elegida = mezclar(base, s).find((n) => !usadas.has(n))
+        candidatas = mezclar(base, s).map((n) => ({ texto: n.texto, plantilla: `${n.id}`, estrategia: n.estrategia, nucleo: n.estrategia }))
       } else {
         const mods = MODIFICADORES[tipo].filter(
           (m) => (!m.niveles || m.niveles.includes(nivel)) && (!m.solo || m.solo === 'unidad' || m.solo === v.tipo),
         )
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
-        const encaja = (n: string, m: Modificador) => m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n)
-        const candidatas = [
-          ...enteras(v, nivel, tipo),
-          ...mezclar(base, s).flatMap((n) => mezclar(mods, s >>> 3).filter((m) => encaja(n, m)).map((m) => `${n} ${m.texto}`)),
-        ]
+        // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
+        const encaja = (n: Pieza, m: Modificador) =>
+          (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) && (m.id !== 'i-detalle' || CON_OBJETO.test(n.id))
+        const combinadas = mezclar(base, s).flatMap((n) =>
+          mezclar(mods, s >>> 3)
+            .filter((m) => encaja(n, m))
+            .map((m) => ({ texto: `${n.texto} ${m.texto}`, plantilla: `${n.id}+${m.id}`, estrategia: m.estrategia === 'mecanica' ? n.estrategia : m.estrategia, nucleo: n.estrategia })),
+        )
+        const sueltas = enteras(v, nivel, tipo).map((e) => ({ texto: e.texto, plantilla: e.id, estrategia: e.estrategia, nucleo: e.estrategia }))
         // Las frases enteras salen a veces, no siempre: así cambian de un mazo a otro
-        const orden = s % 3 === 0 ? candidatas : [...candidatas.slice(enteras(v, nivel, tipo).length), ...enteras(v, nivel, tipo)]
-        elegida = orden.map(contraer).find((c) => c.length <= MAXIMO && !usadas.has(c))
+        candidatas = s % 3 === 0 ? [...sueltas, ...combinadas] : [...combinadas, ...sueltas]
       }
-      elegida = contraer(elegida ?? base[0])
-      usadas.add(elegida)
-      cartas[tipo] = elegida
+      const elegida =
+        conDescartes(candidatas, opciones)
+          .map((c) => ({ ...c, texto: contraer(c.texto) }))
+          .find((c) => c.texto.length <= MAXIMO && !usadas.has(c.texto)) ?? { ...candidatas[0], texto: contraer(candidatas[0].texto) }
+      usadas.add(elegida.texto)
+      cartas[tipo] = elegida.texto
+      origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia }
     })
     acciones[nivel] = cartas
+    origen[nivel] = origenes
   }
-  return acciones
+  return { acciones, origen }
 }

@@ -3,6 +3,7 @@ import type { TipoReto } from '../components/CartaReto/tipos'
 import { NOMBRE_CATEGORIA, type Reto, type Tarea } from './modelo'
 import { analizarTarea, retosDe } from './reglas'
 import { leerSituacion } from './situacion'
+import { opcionesDe, type RetosFallidos } from './descartes'
 
 /* Los retos salen del banco escrito a mano (banco.ts y reglas.ts). El orden de las cartas
    depende de la situación probable de la persona (situacion.ts) y de lo que la app ha aprendido
@@ -13,11 +14,13 @@ export function generarRetos(
   tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web'>>,
   mazo = 0,
   ordenAprendido?: TipoReto[] | null,
+  fallidos?: RetosFallidos,
 ): Reto[] {
   // Un reto distinto por carta INCUP (ver retosDe en reglas.ts).
   // Cada mazo nuevo de la misma tarea sigue la numeración: 01–05, 06–10…
+  // Con «No encaja» (fallidos) no se repiten esas plantillas y se fuerza la estrategia opuesta.
   const orden = ordenAprendido?.length === 5 ? ordenAprendido : leerSituacion(tarea.texto, tarea.esfuerzo).orden
-  const retos = retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web)
+  const retos = retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web, opcionesDe(fallidos, tarea.texto))
   return orden
     .map((tipo) => retos.find((r) => r.tipo === tipo)!)
     .map((r, i) => ({

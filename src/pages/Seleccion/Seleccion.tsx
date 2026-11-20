@@ -7,7 +7,7 @@ import { AccionesCarta, BotonVolver, Overlay, Pantalla } from '../../components/
 import { NOMBRE_CATEGORIA } from '../../datos/modelo'
 import { generarRetos, tituloTarea } from '../../datos/retos'
 import { numMazos } from '../../datos/reglas'
-import { leerSituacion } from '../../datos/situacion'
+import { opcionesDe } from '../../datos/descartes'
 import { useFlow } from '../../estado/FlowEstado'
 import './Seleccion.css'
 
@@ -35,27 +35,41 @@ export default function Seleccion() {
 
   const mazo = estado.mazo ?? 0
   const orden = estado.ordenCartas
-  const situacion = tareaActual ? leerSituacion(tareaActual.texto, tareaActual.esfuerzo) : null
-  const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo, orden) : []), [tareaActual, mazo, orden])
-  const totalMazos = tareaActual ? numMazos(tareaActual.texto, tareaActual.esfuerzo, tareaActual.web) : 1
+  const fallidos = estado.retosFallidos
+  const retos = useMemo(() => (tareaActual ? generarRetos(tareaActual, mazo, orden, fallidos) : []), [tareaActual, mazo, orden, fallidos])
+  const opciones = tareaActual ? opcionesDe(fallidos, tareaActual.texto) : undefined
+  const totalMazos = tareaActual ? numMazos(tareaActual.texto, tareaActual.esfuerzo, tareaActual.web, opciones) : 1
   const indice = Math.min(estado.indiceReto, 4)
   // Aviso «¿Se te atasca esta tarea?»: se abre cada 9 cartas rechazadas seguidas
   const agotado = Boolean(estado.avisoRechazos)
 
-  // Aviso cuando llega un mazo nuevo de la misma tarea (se oculta solo a los 4 s)
+  // Aviso cuando llega un mazo nuevo de la misma tarea (se oculta solo a los 4 s).
+  // Con «No encaja» el mazo cambia aunque el número sea el mismo: cuenta también los descartes.
   const [avisoMazo, setAvisoMazo] = useState(false)
-  const mazoAnterior = useRef(mazo)
+  const claveMazo = `${mazo}-${opciones?.vuelta ?? 0}`
+  const mazoAnterior = useRef(claveMazo)
   useEffect(() => {
-    if (mazo === mazoAnterior.current) return
-    mazoAnterior.current = mazo
-    if (mazo === 0) return
+    if (claveMazo === mazoAnterior.current) return
+    mazoAnterior.current = claveMazo
+    if (claveMazo === '0-0') return
     const mostrar = window.setTimeout(() => setAvisoMazo(true), 0)
     const ocultar = window.setTimeout(() => setAvisoMazo(false), 4000)
     return () => {
       window.clearTimeout(mostrar)
       window.clearTimeout(ocultar)
     }
-  }, [mazo])
+  }, [claveMazo])
+
+  const noEncaja = () => {
+    if (salida || agotado || !retos[indice]) return
+    const r = retos[indice]
+    setSalida('izquierda')
+    window.setTimeout(() => {
+      despachar({ tipo: 'descartar-reto', reto: { tipo: r.tipo, plantilla: r.plantilla, estrategia: r.estrategia } })
+      setSalida(null)
+      setArrastre(0)
+    }, 320)
+  }
 
   const decidir = useCallback(
     (lado: 'izquierda' | 'derecha') => {
@@ -127,12 +141,9 @@ export default function Seleccion() {
             </span>
           </button>
         </div>
-        <p className="seleccion__situacion t-texto-cuerpo-s">
-          {situacion?.frase}{' '}
-          <a href={situacion?.fuente.url} target="_blank" rel="noopener noreferrer" title={situacion?.fuente.nombre}>
-            ¿Por qué?
-          </a>
-        </p>
+        <button type="button" className="seleccion__no-encaja t-texto-control" onClick={noEncaja} disabled={Boolean(salida) || agotado}>
+          Este reto no encaja: dame otros
+        </button>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
             Mazo {mazo + 1} de {totalMazos} · carta {Math.min(indice + 1, 5)} de 5
@@ -145,7 +156,11 @@ export default function Seleccion() {
 
       <main className="seleccion__cuerpo">
         <p className="aviso-mazo t-texto-control" role="status" data-visible={avisoMazo || undefined}>
-          {avisoMazo ? `Mazo nuevo: 5 retos distintos para la misma tarea (${mazo + 1} de ${totalMazos}).` : ''}
+          {avisoMazo
+            ? estado.mazoPorDescarte
+              ? 'Mazo nuevo, sin lo que no encajaba: retos más de acción directa.'
+              : `Mazo nuevo: 5 retos distintos para la misma tarea (${mazo + 1} de ${totalMazos}).`
+            : ''}
         </p>
         <div className="mazo">
           {siguiente && !agotado && (

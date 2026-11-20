@@ -4,6 +4,7 @@
 import { BANCO, PLAZO, type Acciones, type Nivel } from '../src/datos/banco.ts'
 import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, hechoDe, numMazos, retosDe } from '../src/datos/reglas.ts'
 import { METODOS } from '../src/datos/metodos.ts'
+import { descartarReto, opcionesDe, type RetosFallidos } from '../src/datos/descartes.ts'
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 
@@ -106,6 +107,25 @@ for (const tarea of tareas) {
           errores.push(`${origen}: «Solo…» solo en el nivel Pesado → «${r.titulo}»`)
         if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo para la carta (${r.titulo.length}) → «${r.titulo}»`)
       }
+    }
+  }
+}
+
+// 4. «No encaja»: tras cada descarte el mazo nuevo cumple las reglas y no repite la plantilla descartada
+for (const tarea of tareas) {
+  for (const esfuerzo of NIVELES) {
+    let registro: RetosFallidos = {}
+    for (let ronda = 0; ronda < 6; ronda++) {
+      const op = opcionesDe(registro, tarea)
+      const retos = retosDe(tarea, esfuerzo, ronda, undefined, op)
+      for (const r of retos) {
+        const origen = `No encaja «${tarea}»/${esfuerzo}/ronda ${ronda}/${r.tipo}`
+        if (op?.descartadas.has(r.plantilla) && !r.plantilla.startsWith('banco:')) errores.push(`${origen}: repite una plantilla descartada → ${r.plantilla}`)
+        if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo (${r.titulo.length}) → «${r.titulo}»`)
+        for (const [re, motivo] of PROHIBIDO) if (re.test(r.titulo)) errores.push(`${origen}: ${motivo} → «${r.titulo}»`)
+        titulos.add(r.titulo)
+      }
+      registro = descartarReto(registro, tarea, retos[ronda % 5])
     }
   }
 }

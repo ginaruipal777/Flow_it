@@ -4,7 +4,8 @@ import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
 import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, METODOS, type Actividad } from './metodos.ts'
 import { leerSituacion, type Fuente } from './situacion.ts'
 import { esVerbo } from './filtros.ts'
-import { accionesMotor, semillaDe, type Variables } from './motor.ts'
+import { accionesMotor, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
+import type { Estrategia, OpcionesMotor } from './descartes.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -209,7 +210,7 @@ export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefine
 
 /** Retos montados por el motor universal (sirve para cualquier tarea, sin categoría). */
 export function accionesWeb(w: DatosWeb, tarea = '', semilla = 0): Acciones {
-  return accionesMotor(variablesDe(tarea, { ...w, fiable: true })!, tarea, semilla)!
+  return accionesMotor(variablesDe(tarea, { ...w, fiable: true })!, tarea, semilla)!.acciones
 }
 
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
@@ -350,6 +351,10 @@ export type RetoCarta = {
   permiso: string
   /** Si el reto es un método para TDAH: su nombre y la web de la que sale */
   metodo?: { nombre: string; fuente: Fuente }
+  /** Plantilla de la que sale (para «No encaja») */
+  plantilla: string
+  /** Estrategia del reto: mecánica, informativa, emocional o social */
+  estrategia: Estrategia
 }
 
 export const ORDEN: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
@@ -395,48 +400,62 @@ export function actividadDe(tarea: string, esfuerzo: Nivel = 'medio', web?: Dato
 
 /** Acciones de la tarea y si son del motor universal (entonces no se mezclan métodos genéricos).
     1) Motor (motor.ts) con lo que encontró la web y las palabras de la frase: cualquier tarea.
+       `opciones`: lo que no encajó antes en esta tarea (descartes.ts).
     2) Solo si la frase no trae verbo ni la web encontró nada («café»): banco de su categoría,
        categoría según la web o respaldo. */
-function accionesDeTarea(tarea: string, web?: DatosWeb, mazo = 0): { acciones: Acciones; especificas: boolean } {
+function accionesDeTarea(
+  tarea: string,
+  web?: DatosWeb,
+  mazo = 0,
+  opciones?: OpcionesMotor,
+): { acciones: Acciones; especificas: boolean; origen?: ResultadoMotor['origen'] } {
   const variables = variablesDe(tarea, web)
-  const motor = variables && accionesMotor(variables, tarea, semillaDe(tarea, mazo))
-  if (motor) return { acciones: motor, especificas: true }
+  const motor = variables && accionesMotor(variables, tarea, semillaDe(tarea, mazo), opciones)
+  if (motor) return { acciones: motor.acciones, especificas: true, origen: motor.origen }
   const analisis = analizarTarea(tarea)
   if (analisis.regla) return { acciones: analisis.acciones, especificas: false }
   const categoria = categoriaDe(tarea, web)
   return { acciones: categoria ? BANCO[categoria] : analisis.acciones, especificas: false }
 }
 
-function actividadConMetodos(tarea: string, esfuerzo: Nivel, web?: DatosWeb) {
-  return accionesDeTarea(tarea, web).especificas ? undefined : actividadDe(tarea, esfuerzo, web)
+/** Estrategia de una carta del banco o de un método según su tipo INCUP */
+const ESTRATEGIA_DE_TIPO: Record<TipoReto, Estrategia> = { novedad: 'mecanica', desafio: 'mecanica', pasion: 'emocional', interes: 'social', urgencia: 'mecanica' }
+
+/** Los métodos para TDAH no se mezclan si la tarea ya tuvo un «No encaja»: se pasa a acción directa */
+function actividadConMetodos(tarea: string, esfuerzo: Nivel, web?: DatosWeb, opciones?: OpcionesMotor) {
+  return accionesDeTarea(tarea, web).especificas || opciones ? undefined : actividadDe(tarea, esfuerzo, web)
 }
 
-function mazosDeTarea(tarea: string, esfuerzo: Nivel, web?: DatosWeb) {
+function mazosDeTarea(tarea: string, esfuerzo: Nivel, web?: DatosWeb, opciones?: OpcionesMotor) {
   const conCategoria = Boolean(categoriaDe(tarea, web)) || Boolean(web?.fiable)
-  return mazosDe(esfuerzo, conCategoria, Boolean(actividadConMetodos(tarea, esfuerzo, web)))
+  return mazosDe(esfuerzo, conCategoria, Boolean(actividadConMetodos(tarea, esfuerzo, web, opciones)))
 }
 
 /** Número de mazos distintos que tiene una tarea (depende del esfuerzo, de la categoría y de si tiene métodos). */
-export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb): number {
-  return mazosDeTarea(tarea, esfuerzo, web).length
+export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWeb, opciones?: OpcionesMotor): number {
+  return mazosDeTarea(tarea, esfuerzo, web, opciones).length
 }
 
-export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
-  const propias = accionesDeTarea(tarea, web, mazo).acciones
-  const mazos = mazosDeTarea(tarea, esfuerzo, web)
+/** Las 5 cartas de un mazo. `opciones` (estrategia_descartada y retos fallidos): ver descartes.ts. */
+export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb, opciones?: OpcionesMotor): RetoCarta[] {
+  const { acciones: propias, origen } = accionesDeTarea(tarea, web, mazo, opciones)
+  const mazos = mazosDeTarea(tarea, esfuerzo, web, opciones)
   const fuente = mazos[mazo % mazos.length]
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
-  const actividad = actividadConMetodos(tarea, esfuerzo, web)
+  const actividad = actividadConMetodos(tarea, esfuerzo, web, opciones)
   return ORDEN.map((tipo) => {
     const metodo = actividad && fuente.metodos?.includes(tipo) ? METODOS[actividad][tipo] : undefined
     const accion = metodo ? metodo.retos[fuente.nivel] : acciones[fuente.nivel][tipo]
     const frase = fraseReto(accion, fuente.nivel, tipo)
+    const deMotor = !metodo && origen?.[fuente.nivel][tipo]
     return {
       tipo,
       titulo: `${frase}.`,
       pasos: [frase],
       hecho: hechoDe(accion),
       permiso: PERMISO[fuente.nivel],
+      plantilla: deMotor ? deMotor.plantilla : metodo ? `metodo:${metodo.nombre}:${fuente.nivel}` : `banco:${fuente.nivel}:${tipo}:${accion}`,
+      estrategia: deMotor ? deMotor.estrategia : metodo ? 'informativa' : ESTRATEGIA_DE_TIPO[tipo],
       ...(metodo && { metodo: { nombre: metodo.nombre, fuente: metodo.fuente } }),
     }
   })

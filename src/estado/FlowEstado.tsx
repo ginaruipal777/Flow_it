@@ -6,6 +6,7 @@ import { detectarCategoria } from '../datos/retos'
 import { numMazos } from '../datos/reglas'
 import { leerSituacion } from '../datos/situacion'
 import { APRENDIZAJE_VACIO, ordenar, registrar, type Aprendizaje, type Evento } from '../datos/aprendizaje'
+import { descartarReto, opcionesDe, type Estrategia, type RetosFallidos } from '../datos/descartes'
 
 /* Estado de la app guardado en el navegador (localStorage).
    Más adelante se cambiará por una base de datos con cuentas. */
@@ -33,6 +34,10 @@ type Estado = {
   rechazosSeguidos: number
   /** Aviso «¿Se te atasca esta tarea?» abierto */
   avisoRechazos: boolean
+  /** Retos fallidos por tarea («No encaja», descartes.ts) */
+  retosFallidos: RetosFallidos
+  /** El mazo actual llegó tras pulsar «No encaja» (cambia el aviso de mazo nuevo) */
+  mazoPorDescarte: boolean
 }
 
 type Accion =
@@ -54,6 +59,8 @@ type Accion =
   | { tipo: 'premio'; premio: string | undefined }
   | { tipo: 'borrar-aprendizaje' }
   | { tipo: 'cerrar-aviso' }
+  /** «No encaja»: guarda el reto en retos fallidos y reparte un mazo nuevo sin esa lógica */
+  | { tipo: 'descartar-reto'; reto: { tipo: TipoReto; plantilla?: string; estrategia?: Estrategia } }
 
 /* Versión de fábrica: la app arranca vacía, como recién descargada.
    Las reglas y el banco de retos están en src/datos; aquí solo se guarda lo que hace cada persona. */
@@ -72,6 +79,8 @@ const INICIAL: Estado = {
   ordenCartas: null,
   rechazosSeguidos: 0,
   avisoRechazos: false,
+  retosFallidos: {},
+  mazoPorDescarte: false,
 }
 
 /** El aviso «¿Se te atasca esta tarea?» se abre cada 9 cartas rechazadas seguidas */
@@ -80,7 +89,7 @@ export const RECHAZOS_PARA_AVISO = 9
 /** Mazos distintos de la tarea actual (dependen del esfuerzo y de si tiene categoría) */
 function mazosDeTarea(e: Estado) {
   const t = e.tareas.find((x) => x.id === e.tareaActual)
-  return t ? numMazos(t.texto, t.esfuerzo, t.web) : 1
+  return t ? numMazos(t.texto, t.esfuerzo, t.web, opcionesDe(e.retosFallidos, t.texto)) : 1
 }
 
 /** Situación de la tarea actual (situacion.ts) */
@@ -158,6 +167,15 @@ function reductor(e: Estado, a: Accion): Estado {
       return conOrden({ ...e, indiceReto: 0, mazo: ((e.mazo ?? 0) + 1) % mazosDeTarea(e), avisoRechazos: false })
     case 'cerrar-aviso':
       return { ...e, avisoRechazos: false }
+    case 'descartar-reto': {
+      const t = e.tareas.find((x) => x.id === e.tareaActual)
+      if (!t) return e
+      const n = aprender(e, a.reto.tipo, 'rechazada')
+      const retosFallidos = descartarReto(n.retosFallidos, t.texto, a.reto, NOMBRE_CATEGORIA[t.categoria])
+      const conDescarte = { ...n, retosFallidos }
+      // Mazo nuevo al momento: la semilla cambia con cada descarte, así que nunca es el mismo
+      return conOrden({ ...conDescarte, indiceReto: 0, mazo: ((n.mazo ?? 0) + 1) % mazosDeTarea(conDescarte), avisoRechazos: false, mazoPorDescarte: true })
+    }
     case 'aceptar-reto':
       return aprender({ ...cambiarTarea(e, (t) => ({ ...t, ultimoTipo: a.reto })), retoAceptado: a.reto, rechazosSeguidos: 0 }, a.reto, 'aceptada')
     case 'reto-conseguido': {
@@ -211,8 +229,14 @@ type Contexto = {
 
 const Ctx = createContext<Contexto | null>(null)
 
+/** El aviso «No encaja» solo vale para el mazo que llegó con él */
+function reductorFlow(e: Estado, a: Accion): Estado {
+  const n = reductor(e, a)
+  return a.tipo !== 'descartar-reto' && n.mazoPorDescarte && (n.mazo !== e.mazo || n.tareaActual !== e.tareaActual) ? { ...n, mazoPorDescarte: false } : n
+}
+
 export function FlowEstado({ children }: { children: ReactNode }) {
-  const [estado, despachar] = useReducer(reductor, undefined, cargar)
+  const [estado, despachar] = useReducer(reductorFlow, undefined, cargar)
 
   useEffect(() => {
     try {

@@ -352,9 +352,9 @@
   .mazo {
     zoom: 0.6;
   }
-  .seleccion__situacion {
+  .seleccion__no-encaja {
     margin-top: 6px;
-    font-size: 12.5px;
+    min-height: 40px;
   }
 }
 @media (max-height: 720px) {
@@ -390,18 +390,31 @@
   text-decoration: underline;
 }
 
-/* Lectura de la situación: qué puede estar frenando y qué hace la app (situacion.ts) */
-.seleccion__situacion {
+/* «No encaja»: descarta el reto y reparte un mazo nuevo sin esa lógica (descartes.ts) */
+.seleccion__no-encaja {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
   margin-top: 8px;
   padding: 6px 12px;
+  border: 2px solid var(--marca-tinta);
   border-radius: 12px;
   background: var(--superficie-crema);
   color: var(--marca-tinta);
-  font-size: 13.5px;
-  line-height: 1.3;
-}
-.seleccion__situacion a {
-  color: var(--marca-violeta);
   font-weight: 700;
-  white-space: nowrap;
+  cursor: pointer;
+}
+.seleccion__no-encaja:hover,
+.seleccion__no-encaja:active {
+  background: var(--marca-lima);
+}
+.seleccion__no-encaja:focus-visible {
+  outline: 3px solid var(--marca-violeta);
+  outline-offset: 2px;
+}
+.seleccion__no-encaja:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
