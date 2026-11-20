@@ -53,6 +53,8 @@ export type MicroPasoWeb = {
   materiales?: string[]
   /** Técnicas que recomiendan las webs («Repasa sin mirar tus notas») */
   tecnicas?: string[]
+  /** Métodos que comparan las guías («Cafetera de filtro», «Prensa francesa»): para preguntar */
+  metodos?: string[]
   /** Lo que contestó la persona en las preguntas de contexto (contexto.ts) */
   eleccion?: OpcionContexto[]
 }

@@ -188,22 +188,14 @@ export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefine
   const base = variablesSinEleccion(tarea, web)
   const e = eleccionDe(web?.eleccion)
   if (!e) return base
-  // Plantillas de las respuestas con los datos de la tarea: {objeto} (la herramienta elegida),
-  // {tema} (lo que se hace: «el informe») y {zona} («el fregadero»)
   const p = partesDe(tarea)
-  const tema = p?.objeto ?? base?.tema ?? base?.objeto ?? 'la tarea'
-  const objeto = e.objeto ?? base?.objeto ?? tema
-  const rellenar = (t?: string) =>
-    t && t.replace(/\{objeto\}/g, objeto).replace(/\{tema\}/g, tema).replace(/\{zona\}/g, e.zona ?? 'la zona')
   const eleccion = {
     ...(e.objeto && { objeto: e.objeto, verbo: e.verbo }),
-    ...(e.lugar && { lugar: e.lugar }),
-    ...(e.zona && { zona: e.zona }),
+    ...(e.metodo && { metodo: e.metodo }),
+    ...(e.experiencia && { experiencia: e.experiencia }),
     ...(e.bloqueo && { bloqueo: e.bloqueo }),
-    ...(e.fase && { fase: { medio: rellenar(e.fase.medio), ligero: rellenar(e.fase.ligero) } }),
   }
-  const tipo = e.tipo ?? base?.tipo ?? 'fisico'
-  return { ...(base ?? { accion: p ? `${p.verbo} ${p.objeto}` : undefined }), tipo, eleccion }
+  return { ...(base ?? { accion: p ? `${p.verbo} ${p.objeto}` : undefined, tipo: 'fisico' }), eleccion }
 }
 
 function variablesSinEleccion(tarea: string, web?: DatosWeb): Variables | undefined {

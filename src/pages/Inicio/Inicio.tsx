@@ -7,8 +7,8 @@ import { ContadorRetos, Logotipo, Pantalla, SelectorEsfuerzo } from '../../compo
 import { useFlow } from '../../estado/FlowEstado'
 import { filtrarTarea, type Filtro } from '../../datos/filtros'
 import { analizarTarea, partesDe } from '../../datos/reglas'
-import { buscarMicroPaso, pedirPreguntas } from '../../datos/web'
-import type { OpcionContexto } from '../../datos/contexto'
+import { buscarMicroPaso } from '../../datos/web'
+import { preguntasDe, type OpcionContexto } from '../../datos/contexto'
 import { ICONOS_CONTEXTO } from '../../components/Icono/iconos-contexto'
 import { Preparando, type PasoPreparando, type PreguntaTipo } from '../../components/Preparando/Preparando'
 import { TIPOS_TAREA } from '../../datos/tipos-tarea'
@@ -88,33 +88,8 @@ export default function Inicio() {
     const pausa = (ms: number) => new Promise((ok) => setTimeout(ok, ms))
     paso(0)
 
-    // 0. Preguntas de contexto (como mucho 3, con iconos): afinan la búsqueda y los retos.
-    //    Sin conexión no hay preguntas y se sigue igual. «Saltar» deja de preguntar.
-    const preguntas = await pedirPreguntas(texto, control.signal)
-    const elegidas: OpcionContexto[] = []
-    for (const [i, p] of (preguntas ?? []).entries()) {
-      const indice = await new Promise<number | null>((responder) =>
-        setPreparando({
-          actual: 0,
-          pasos: [...pasos],
-          control,
-          pregunta: {
-            contador: `Pregunta ${i + 1} de ${preguntas!.length}`,
-            enunciado: <strong>{p.texto}</strong>,
-            opciones: p.opciones.map((o) => ({ texto: o.texto, icono: ICONOS_CONTEXTO[o.icono] })),
-            onElegir: (n) => responder(n),
-            onSaltar: () => responder(null),
-            textoSaltar: 'Saltar las preguntas',
-          },
-        }),
-      )
-      if (indice === null) break
-      elegidas.push(p.opciones[indice])
-    }
-    paso(0)
-
-    // 1. Buscar en internet (máximo 30 s, se puede saltar), con lo que ha contestado
-    const resultado = await buscarMicroPaso(texto, estado.esfuerzo, control.signal, elegidas.map((o) => o.id))
+    // 1. Buscar en internet (máximo 30 s, se puede saltar)
+    const resultado = await buscarMicroPaso(texto, estado.esfuerzo, control.signal)
     if (resultado.status === 'blocked' || resultado.status === 'incomprehensible') {
       setPreparando(null)
       setAviso(resultado)
@@ -130,7 +105,33 @@ export default function Inicio() {
           ? 'Búsqueda saltada'
           : 'Sin conexión: uso lo que ya sé'
     paso(1)
-    await pausa(500)
+    await pausa(300)
+
+    // 1b. Preguntas de contexto (como mucho 3, con iconos): salen de lo que encontró la búsqueda
+    // sobre ESTA tarea («¿Cómo lo haces?» con los métodos reales), así siempre tienen sentido.
+    // Sin resultados no hay preguntas. «Saltar» deja de preguntar.
+    const preguntas = web ? preguntasDe(texto, { metodos: web.metodos, materiales: web.materiales }) : []
+    const elegidas: OpcionContexto[] = []
+    for (const [i, p] of preguntas.entries()) {
+      const indice = await new Promise<number | null>((responder) =>
+        setPreparando({
+          actual: 1,
+          pasos: [...pasos],
+          control,
+          pregunta: {
+            contador: `Pregunta ${i + 1} de ${preguntas.length}`,
+            enunciado: <strong>{p.texto}</strong>,
+            opciones: p.opciones.map((o) => ({ texto: o.texto, icono: ICONOS_CONTEXTO[o.icono] })),
+            onElegir: (n) => responder(n),
+            onSaltar: () => responder(null),
+            textoSaltar: 'Saltar las preguntas',
+          },
+        }),
+      )
+      if (indice === null) break
+      elegidas.push(p.opciones[indice])
+    }
+    paso(1)
 
     // 2. Reconocer la tarea (por sus palabras o por lo que encontró la búsqueda).
     //    Si no hay forma de saber cómo se hace, se pregunta de qué tipo es: nada de retos genéricos.
@@ -163,14 +164,8 @@ export default function Inicio() {
         web2 = { ...(web ?? { contexto: texto, microPaso: '', objeto: '', tipo: 'fisico', nivel: estado.esfuerzo }), categoria, fiable: false }
       }
     }
-    // Lo contestado viaja con la tarea: el motor usa el objeto, la fase, el lugar y el bloqueo
-    if (elegidas.length) {
-      const herramienta = elegidas.find((o) => o.objeto)
-      web2 = {
-        ...(web2 ?? { contexto: texto, microPaso: '', objeto: '', tipo: herramienta?.tipo ?? 'fisico', nivel: estado.esfuerzo, fiable: false }),
-        eleccion: elegidas,
-      }
-    }
+    // Lo contestado viaja con la tarea: el motor usa el método u objeto elegido, la experiencia y el bloqueo
+    if (elegidas.length && web2) web2 = { ...web2, eleccion: elegidas }
     pasos[1].detalle = categoria
       ? `${categoria}${!regla && web?.categoria ? ' (según lo encontrado)' : !regla ? ' (lo has elegido tú)' : ''}`
       : web2?.fiable

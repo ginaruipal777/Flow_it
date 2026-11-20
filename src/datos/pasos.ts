@@ -235,6 +235,59 @@ export function tecnicasDe(listas: LineaLista[] | undefined): string[] {
   return [...vistas]
 }
 
+/* ── Métodos: las formas de hacer la tarea que comparan las guías ──
+   «1. Cafetera de filtro o goteo · 2. Prensa francesa · 3. Cafetera italiana o moka»
+   → ['Cafetera de filtro', 'Prensa francesa', 'Cafetera italiana']. Son nombres cortos (no acciones),
+   al menos 2 en la misma página. Sirven para preguntar «¿Cómo lo haces?» (contexto.ts). */
+const SECCION_METODO = /(metodo|tipo|forma|manera|opcion|elige|escoge|herramienta|utensilio|alternativa|sistema)/
+const NO_METODO = /^(paso|consejo|truco|resumen|introduccion|conclusion|nota|importante|ventaja|inconveniente|beneficio|indice)/
+
+function metodoDeLinea(texto: string): string | undefined {
+  if (/[¿?]|https?:|€|\$/.test(texto)) return undefined
+  const t = plano(texto).replace(/^\s*(paso\s*)?\d{1,2}\s*[.):\-–]\s*/i, '').replace(/\*/g, '')
+  // Solo el nombre: antes de «:», «(», «–», «.» y de la alternativa «o …»
+  const nombre = t.split(/\s*[:(–—.]|\s+o\s+|,/)[0].trim()
+  const palabras = nombre.split(/\s+/)
+  const primera = quitarTildes(palabras[0] ?? '')
+  if (palabras.length > 4 || nombre.length < 3 || nombre.length > 30 || /\d/.test(nombre)) return undefined
+  if (PALABRAS_NO_VERBO.has(primera) || NOMINAL.test(primera) || NO_METODO.test(primera) || INGLES.has(primera)) return undefined
+  // Es una acción si tras la primera palabra va un artículo o preposición («Llena el depósito»),
+  // no un adjetivo («Prensa francesa», «Cafetera italiana»)
+  const segunda = quitarTildes(palabras[1] ?? '')
+  const accion = conVerbo(nombre) && /^(el|la|los|las|un|una|unos|unas|tu|tus|a|al|con|en|del|por|sobre)$/.test(segunda)
+  if (accion || /(ar|er|ir)$/.test(primera)) return undefined
+  if (filtrarTarea(nombre, true).status === 'blocked') return undefined
+  return nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase()
+}
+
+/** Métodos o formas de hacer la tarea que nombran las guías (como mucho 3). Solo listas que hablan
+    de la tarea: alguno de sus nombres la menciona («Cafetera de filtro» para «hacer café»), así no
+    entran las fases del cultivo del café ni las funciones de una app. */
+export function metodosDe(pasos: LineaPaso[] | undefined, listas: LineaLista[] | undefined, tarea = ''): string[] {
+  const raices = quitarTildes(tarea)
+    .replace(/[^a-zñ\s]/g, ' ')
+    .split(/\s+/)
+    .filter((p) => p.length >= 4 && !/^(hacer|preparar|tengo|quiero|poner|para|como|cosas)$/.test(p) && !/(ar|er|ir)$/.test(p))
+    .map((p) => p.slice(0, 4))
+  const hablaDeLaTarea = (metodos: Set<string>) =>
+    [...metodos].some((m) => raices.some((r) => quitarTildes(m).includes(r)))
+  const porDoc = new Map<number, Set<string>>()
+  const sumar = (doc: number, m?: string) => {
+    if (!m) return
+    porDoc.set(doc, (porDoc.get(doc) ?? new Set()).add(m))
+  }
+  // Líneas numeradas que son nombres (las guías que comparan métodos los numeran)
+  for (const l of pasos ?? []) sumar(l.doc, metodoDeLinea(l.texto))
+  // Listas de secciones como «Métodos», «Tipos», «Elige tu cafetera»
+  for (const l of listas ?? []) {
+    const s = quitarTildes(l.seccion)
+    if (SECCION_METODO.test(s) && !SECCION_RUIDO.test(s) && !SECCION_MATERIAL.test(s)) sumar(100 + l.doc, metodoDeLinea(l.texto))
+  }
+  // La página que más alternativas compara y habla de la tarea; al menos 2
+  const mejor = [...porDoc.values()].filter(hablaDeLaTarea).sort((a, b) => b.size - a.size)[0]
+  return mejor && mejor.size >= 2 ? [...mejor].slice(0, 3) : []
+}
+
 const PARADA_OBJETO = new Set(['con', 'en', 'a', 'al', 'para', 'por', 'hasta', 'sin', 'sobre', 'desde', 'hacia', 'entre', 'que', 'y', 'o', 'dentro', 'fuera', 'encima', 'debajo', 'junto', 'cerca', 'justo', 'bien', 'siempre', 'primero', 'despues', 'antes', 'muy', 'si', 'segun'])
 const ARTICULO = /^(el|la|los|las|un|una|tu|tus)$/
 
