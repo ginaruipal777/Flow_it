@@ -43,10 +43,13 @@ const VERBOS_CORTOS = new Set(['ir', 'ver', 'dar', 'oir', 'leer', 'ser', 'reir']
 const NO_VERBOS = new Set(['lugar', 'hogar', 'azucar', 'collar', 'altar', 'dolar', 'bar', 'par', 'mar', 'militar', 'popular', 'mujer', 'taller', 'placer', 'ayer', 'primer', 'tercer', 'alfiler', 'cancer', 'caracter', 'elixir', 'nadir'])
 const VERBO = /^[a-zñ]{2,}(ar|er|ir)(me|te|se|lo|la|le|los|las|les|nos)?$/
 
+export const esVerbo = (palabra: string) => {
+  const p = normalizar(palabra)
+  return VERBOS_CORTOS.has(p) || (!NO_VERBOS.has(p) && VERBO.test(p))
+}
+
 export function tieneVerbo(texto: string) {
-  return normalizar(texto)
-    .split(' ')
-    .some((p) => VERBOS_CORTOS.has(p) || (!NO_VERBOS.has(p) && VERBO.test(p)))
+  return normalizar(texto).split(' ').some(esVerbo)
 }
 
 export function esGalimatias(texto: string) {

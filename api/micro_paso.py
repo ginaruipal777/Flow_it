@@ -642,7 +642,8 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         tipo_objeto=tipo,
         # «web» solo si la búsqueda encontró una herramienta concreta en 2 resultados (o en la tarea):
         # nunca se inventa «la web de café» para algo que se hace con las manos
-        origen="web" if contexto.documentos and herramienta else "respaldo",
+        # o si la propia frase la nombra («descalcificar cafetera»), aunque el buscador no responda
+        origen="web" if herramienta and (contexto.documentos or herramienta.patron.search(normalizar(tarea))) else "respaldo",
         verbo_tarea=verbo_de_tarea(tarea),
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=contexto.url_guia or None,

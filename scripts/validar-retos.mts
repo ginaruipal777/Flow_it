@@ -77,10 +77,11 @@ for (const w of WEB)
   for (const n of NIVELES) {
     const web = { ...w, microPaso: n === 'pesado' ? `Solo abre ${w.objeto}` : `Coge ${w.objeto}`, nivel: n }
     revisarAcciones(`Web «${w.objeto}» (${n})`, accionesWeb(web))
+    revisarAcciones(`Web «${w.objeto}» + frase (${n})`, accionesWeb(web, 'descalcificar cafetera'))
   }
 
 // 3. Retos tal como se ven en la app: todos los mazos de cada tarea
-const tareas = [...REGLAS.map((r) => r.palabras[0]), 'buscar piso', 'arreglar la persiana']
+const tareas = [...REGLAS.map((r) => r.palabras[0]), 'buscar piso', 'arreglar la persiana', 'descalcificar cafetera', 'limpiar el horno', 'cambiar la bombilla', 'purgar los radiadores', 'regar mis plantas']
 for (const tarea of tareas) {
   for (const esfuerzo of NIVELES) {
     const vistos = new Set<string>()

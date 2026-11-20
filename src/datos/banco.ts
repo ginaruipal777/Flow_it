@@ -319,6 +319,12 @@ export const BANCO: Record<string, Acciones> = {
     c('Pon el cuenco en un sitio nuevo', 'Llena 2 cuencos', 'Juega con tu mascota con su juguete favorito', 'Juega con tu mascota con una persona de casa', 'Llena el cuenco de agua'),
     c('Juega con tu mascota con un juguete nuevo', 'Cepilla a tu mascota 10 veces', 'Cepilla a tu mascota con tu música favorita', 'Cepilla a tu mascota con una persona de casa', 'Limpia el arenero'),
   ),
+  // Solo si la frase no trae verbo y objeto («bombilla»): si los trae, reglas.ts escribe los retos con ellos
+  Mantenimiento: a(
+    c('Busca en el móvil un vídeo con los pasos del arreglo', 'Apunta 2 cosas que vas a necesitar', 'Busca las instrucciones con tu canción favorita sonando', 'Cuéntale a alguien de casa lo que vas a arreglar', 'Busca las instrucciones en el móvil'),
+    c('Lee en el móvil los pasos del arreglo', 'Junta 3 cosas que vas a necesitar', 'Saca las herramientas con tu música favorita de fondo', 'Envía un mensaje a alguien de confianza para contarle lo que vas a arreglar', 'Saca las herramientas'),
+    c('Lee las instrucciones en voz alta', 'Completa 3 pasos de las instrucciones', 'Sigue las instrucciones con tu música favorita de fondo', 'Sigue las instrucciones con alguien de casa cerca', 'Completa el primer paso de las instrucciones'),
+  ),
 }
 
 /** Frase de permiso por nivel: baja la exigencia sin juzgar (se ve en el detalle del reto). */

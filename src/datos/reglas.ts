@@ -3,6 +3,7 @@ import type { TipoReto } from '../components/CartaReto/tipos'
 import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
 import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, METODOS, type Actividad } from './metodos.ts'
 import { leerSituacion, type Fuente } from './situacion.ts'
+import { esVerbo } from './filtros.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -62,7 +63,7 @@ export const REGLAS: Regla[] = [
   r('ordenador, portátil, archivo, carpeta, móvil, fotos del móvil, escritorio del ordenador, descargas, backup, copia de seguridad, actualizar, contraseña, nube, drive', 'Digital', 'trabajo', 'Abre la carpeta y mira el primer archivo', 'has abierto el primer archivo de la carpeta'),
 
   // 2.2 Tareas del Hogar y Vida Cotidiana
-  r('limpiar, ordenar, recoger, fregar, limpieza, cuarto, habitación, casa, piso, baño, polvo, aspirar, barrer, fregona, platos, lavavajillas, basura, armario, desorden, ordenar mi cuarto, hacer la cama, cambiar las sábanas, sábanas, descalcificar, descalcificar, desatascar, bombilla, cambiar la bombilla, mantenimiento, limpiar el horno, horno, descongelar, nevera, limpiar la nevera, limpiar el baño', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
+  r('limpiar, ordenar, recoger, fregar, limpieza, cuarto, habitación, casa, piso, baño, polvo, aspirar, barrer, fregona, platos, lavavajillas, basura, armario, desorden, ordenar mi cuarto, hacer la cama, cambiar las sábanas, sábanas, limpiar el baño', 'Doméstico', 'limpieza', 'Recoge solo 3 cosas de la mesa', 'hay 3 cosas menos encima de la mesa'),
   r('comprar, tienda, supermercado, compra, super, súper, mercado, lista de la compra, hacer la compra, comprar comida, pedido online', 'Compra', 'alimentacion', 'Escribe la lista de 3 cosas que necesitas', 'la lista tiene 3 cosas apuntadas'),
   r('café, cafe, preparar café, preparar cafe, hacerme un café, cafetera, té, hacerme un té, infusión, cappuccino, café con leche, cola cao, colacao, chocolate caliente', 'Café', 'alimentacion', 'Coge la cafetera', 'has cogido la cafetera'),
   r('cocinar, comida, cena, receta, cocinar algo, almuerzo, guisar, hornear, preparar la comida, tupper, tuppers, batch cooking, cocina', 'Cocina', 'alimentacion', 'Abre la nevera y saca un ingrediente', 'hay un ingrediente fuera de la nevera'),
@@ -120,7 +121,13 @@ export const REGLAS: Regla[] = [
   r('test, autoescuela, carnet de conducir, examen teórico, examen de conducir, tests, test de conducir, teórico, dgt', 'Test', 'estudios', 'Abre la app del test', 'has abierto la app del test'),
   r('veterinario, vacuna, revisión, vete, desparasitar, castrar, esterilizar', 'Veterinario', 'mascotas', 'Busca el teléfono del veterinario y tenlo listo', 'tienes el número en la pantalla, listo para llamar'),
   r('gato, mascota, cuidar a mi mascota, gata, gatito, arenero, pienso, acuario, hámster, conejo', 'Mascotas', 'mascotas', 'Llena el cuenco de agua de tu mascota', 'el cuenco de agua está lleno'),
+  // Mantenimiento de la casa y aparatos: los retos salen del verbo y el objeto de la propia frase
+  r('descalcificar, desatascar, bombilla, cambiar la bombilla, mantenimiento, limpiar el horno, horno, descongelar, nevera, limpiar la nevera, congelador, filtro, cambiar el filtro, purgar, radiador, radiadores, grifo, cisterna, persiana, enchufe, reparar, microondas', 'Mantenimiento', 'casa', 'Busca las instrucciones en el móvil', 'tienes las instrucciones en la pantalla'),
 ]
+
+/* Categorías en las que los retos se escriben con el verbo y el objeto de la frase
+   («descalcificar la cafetera»): su banco es solo para cuando la frase no los trae. */
+const POR_TAREA = new Set(['Mantenimiento'])
 
 /* ── 3. Respaldo: tareas sin regla ──────────────────────────────
    Si ninguna palabra clave encaja, los retos nombran la tarea entre comillas
@@ -156,63 +163,87 @@ export const RESPALDO = (t: string): Acciones => ({
   },
 })
 
-/* Retos con lo que encontró la búsqueda web (api/micro_paso.py): el objeto concreto
-   («la app de test autoescuela») sustituye al texto de la tarea, y el micro-paso de la web
-   es la carta Urgencia de su nivel. */
+/* ── 3b. Retos con las palabras de la propia frase ─────────────
+   «descalcificar cafetera» → verbo «descalcificar» + objeto «la cafetera». Las cartas nombran
+   siempre esa acción y ese objeto: nada de «recoge la habitación» para una cafetera. */
+
+const ARTICULO = /^(el|la|los|las|un|una|unos|unas|mi|mis|tu|tus|su|sus)\s/i
+const FEMENINAS = new Set(['llave', 'leche', 'calle', 'noche', 'carne', 'fuente', 'frase', 'clase', 'nube', 'piel', 'sal', 'red', 'luz', 'flor', 'sarten', 'sartén', 'nariz', 'mano', 'foto', 'moto', 'radio', 'tele', 'web', 'app', 'cama', 'torre'])
+const MASCULINAS_EN_A = new Set(['dia', 'día', 'mapa', 'sofa', 'sofá', 'problema', 'sistema', 'programa', 'agua', 'tema', 'planeta', 'idioma', 'clima', 'pijama'])
+
+/** Artículo que le toca a un nombre sin artículo («cafetera» → «la cafetera»). */
+function conArticulo(nombre: string): string {
+  if (ARTICULO.test(`${nombre} `)) return nombre.replace(/^mi(s?)\s/i, 'tu$1 ')
+  const primera = nombre.split(' ')[0].toLowerCase()
+  const plural = /[^aeiou]s$|[aeiou]s$/.test(primera) && primera.length > 3 && !/(is|us)$/.test(primera)
+  const fem = FEMENINAS.has(primera) || (/(a|ión|ion|dad|tad|tud|umbre)s?$/.test(primera) && !MASCULINAS_EN_A.has(primera))
+  return `${plural ? (fem ? 'las' : 'los') : fem ? 'la' : 'el'} ${nombre}`
+}
+
+const contraer = (s: string) => s.replace(/\b(a|de) el\b/g, (_, p: string) => (p === 'a' ? 'al' : 'del'))
+
+/** Verbo (infinitivo) y objeto con artículo de la frase; undefined si no trae los dos. */
+export function partesDe(tarea: string): { verbo: string; objeto: string } | undefined {
+  const [verbo, ...resto] = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '').toLowerCase().split(/\s+/)
+  if (!verbo || !resto.length || !esVerbo(verbo)) return undefined
+  return { verbo, objeto: conArticulo(resto.join(' ')) }
+}
+
+/** 15 retos (3 niveles × 5 cartas) con el verbo y el objeto de la frase. */
+export function accionesTarea(tarea: string): Acciones | undefined {
+  const p = partesDe(tarea)
+  if (!p) return undefined
+  const a = `${p.verbo} ${p.objeto}`
+  const o = p.objeto
+  const acciones: Acciones = {
+    pesado: {
+      novedad: `Busca en el móvil un vídeo sobre cómo ${a}`,
+      desafio: `Apunta 2 cosas que necesitas para ${a}`,
+      pasion: `Mira ${o} con tu canción favorita sonando`,
+      interes: `Cuéntale a alguien de casa que vas a ${a}`,
+      urgencia: `Toca ${o}`,
+    },
+    medio: {
+      novedad: `Lee en el móvil los pasos para ${a}`,
+      desafio: `Junta 3 cosas que necesitas para ${a}`,
+      pasion: `Coge lo que necesitas para ${a} con tu música favorita de fondo`,
+      interes: `Envía un mensaje a alguien de confianza para contarle que vas a ${a}`,
+      urgencia: `Coge lo que necesitas para ${a}`,
+    },
+    ligero: {
+      novedad: `Empieza a ${a} por el paso que más te apetece`,
+      desafio: `Completa 3 pasos para ${a}`,
+      pasion: `Empieza a ${a} con tu música favorita de fondo`,
+      interes: `Empieza a ${a} con alguien de casa cerca`,
+      urgencia: `Empieza a ${a}`,
+    },
+  }
+  for (const n of Object.values(acciones)) for (const t of ORDEN) n[t] = contraer(n[t])
+  return acciones
+}
+
+/* Retos con lo que encontró la búsqueda web (api/micro_paso.py): las cartas usan la acción y el
+   objeto de la frase, y el micro-paso de la web (el primer paso real) es Pasión y Urgencia de su nivel. */
 export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string }
 
-export function accionesWeb(w: DatosWeb): Acciones {
+export function accionesWeb(w: DatosWeb, tarea?: string): Acciones {
   const o = w.objeto
-  // microPaso sin «Solo» ni punto: acción concreta que el servidor calculó para w.nivel
-  const pasoBase = w.microPaso.replace(/^Solo /i, '').replace(/\.$/, '')
-  const vT = w.verboTarea  // «descalcificar», «limpiar»… (puede ser undefined)
-
-  // Bloque específico: usa el microPaso real como acción base con variantes INCUP
-  const especifico =
-    w.tipo === 'digital'
-      ? {
-          novedad: `${pasoBase} en el ordenador`,
-          desafio: `${pasoBase} y completa el paso siguiente`,
-          pasion: `${pasoBase} con tu música favorita de fondo`,
-          interes: `${pasoBase} con alguien de casa cerca`,
-          urgencia: pasoBase,
-        }
-      : {
-          novedad: `${pasoBase} desde otro sitio de la habitación`,
-          desafio: `${pasoBase} y prepara lo que necesitas para el paso siguiente`,
-          pasion: `${pasoBase} con tu música favorita de fondo`,
-          interes: `${pasoBase} con alguien de casa cerca`,
-          urgencia: pasoBase,
-        }
-
-  // Plantillas para los niveles sin microPaso propio (mejores que antes gracias a verboTarea)
-  const plantillas: Acciones =
-    w.tipo === 'digital'
+  const paso = w.microPaso.replace(/^Solo /i, '').replace(/\.$/, '')
+  const base: Acciones =
+    (tarea && accionesTarea(tarea)) ||
+    (w.tipo === 'digital'
       ? {
           pesado: { novedad: `Abre ${o} con la pantalla en modo oscuro`, desafio: `Mira 2 pantallas de ${o}`, pasion: `Abre ${o} con tu canción favorita sonando`, interes: `Mira el menú de ${o}`, urgencia: `Abre ${o}` },
           medio: { novedad: `Entra en ${o} desde el ordenador`, desafio: `Pulsa el primer botón de ${o}`, pasion: `Entra en ${o} con tu bebida favorita al lado`, interes: `Lee el título de ${o}`, urgencia: `Entra en ${o}` },
           ligero: { novedad: `Lee la primera pantalla de ${o} desde el ordenador`, desafio: `Rellena la primera casilla de ${o}`, pasion: `Lee la primera pantalla de ${o} con tu música favorita de fondo`, interes: `Apunta en tu libreta lo que pide ${o}`, urgencia: `Lee la primera pantalla de ${o}` },
         }
       : {
-          pesado: {
-            novedad: vT ? `Busca en el móvil cómo ${vT}` : `Mira ${o} desde otro sitio de la habitación`,
-            desafio: `Saca ${o} y ponlo donde lo puedas ver`,
-            pasion: `Saca ${o} con tu canción favorita sonando`,
-            interes: vT ? `Dile a alguien de casa que vas a ${vT}` : `Señala ${o} a una persona de casa`,
-            urgencia: `Toca ${o}`,
-          },
+          pesado: { novedad: `Mira ${o} desde otro sitio de la habitación`, desafio: `Toca ${o} 2 veces`, pasion: `Toca ${o} con tu canción favorita sonando`, interes: `Señala ${o} a una persona de casa`, urgencia: `Toca ${o}` },
           medio: { novedad: `Pon ${o} en un sitio distinto de la mesa`, desafio: `Pon ${o} junto a 2 cosas que vas a usar`, pasion: `Coge ${o} con tu música favorita de fondo`, interes: `Enséñale ${o} a una persona de casa`, urgencia: `Coge ${o}` },
-          ligero: {
-            novedad: `Usa ${o} empezando por el lado contrario`,
-            desafio: `Usa ${o} hasta terminar todo el proceso`,
-            pasion: `Usa ${o} con tu música favorita de fondo`,
-            interes: `Usa ${o} con alguien de casa cerca`,
-            urgencia: `Usa ${o}`,
-          },
-        }
-
-  // El nivel del servidor usa el bloque específico; el resto usa las plantillas
-  return { ...plantillas, [w.nivel]: especifico }
+          ligero: { novedad: `Usa ${o} empezando por el lado contrario`, desafio: `Usa ${o} 3 veces`, pasion: `Usa ${o} con tu música favorita de fondo`, interes: `Usa ${o} con una persona de casa cerca`, urgencia: `Usa ${o} una vez` },
+        })
+  const fondo = w.nivel === 'pesado' ? 'con tu canción favorita sonando' : 'con tu música favorita de fondo'
+  return { ...base, [w.nivel]: { ...base[w.nivel], pasion: `${paso} ${fondo}`, urgencia: paso } }
 }
 
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
@@ -230,7 +261,7 @@ const sinPunto = (s: string) => s.trim().replace(/[.!?]+$/, '')
     `pron`: pronombre que va delante («te has puesto», «le has escrito»). */
 export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
   abre: { part: 'abierto' }, añade: { part: 'añadido' }, afina: { part: 'afinado' }, aguanta: { part: 'aguantado' }, consigue: { part: 'conseguido' }, archiva: { part: 'archivado' }, comparte: { part: 'compartido' }, pela: { part: 'pelado' }, activa: { part: 'activado' }, silencia: { part: 'silenciado' }, sirve: { part: 'servido' }, echa: { part: 'echado' }, tómate: { part: 'tomado', pron: 'te' },
-  cuenta: { part: 'contado' }, dicta: { part: 'dictado' }, estudia: { part: 'estudiado' }, huele: { part: 'olido' },
+  cuenta: { part: 'contado' }, cuéntale: { part: 'contado', pron: 'le' }, empieza: { part: 'empezado' }, junta: { part: 'juntado' }, dicta: { part: 'dictado' }, estudia: { part: 'estudiado' }, huele: { part: 'olido' },
   muévete: { part: 'movido', pron: 'te' }, queda: { part: 'quedado' }, separa: { part: 'separado' }, apaga: { part: 'apagado' },
   aprende: { part: 'aprendido' }, apunta: { part: 'apuntado' }, arrastra: { part: 'arrastrado' }, asómate: { part: 'asomado', pron: 'te' },
   baila: { part: 'bailado' }, baja: { part: 'bajado' }, bebe: { part: 'bebido' }, busca: { part: 'buscado' },
@@ -392,9 +423,26 @@ export function actividadDe(tarea: string, esfuerzo: Nivel = 'medio', web?: Dato
   return ACTIVIDAD_DE_SITUACION[leerSituacion(tarea, esfuerzo).id]
 }
 
+/** Acciones de la tarea y si son propias de su frase (entonces no se mezclan métodos genéricos).
+    Orden: 1) web fiable; 2) verbo + objeto de la frase si no hay regla o es de POR_TAREA;
+    3) banco de su categoría; 4) categoría según la web; 5) respaldo. */
+function accionesDeTarea(tarea: string, web?: DatosWeb): { acciones: Acciones; especificas: boolean } {
+  if (web?.fiable) return { acciones: accionesWeb(web, tarea), especificas: true }
+  const analisis = analizarTarea(tarea)
+  const deFrase = !analisis.regla || POR_TAREA.has(analisis.regla.categoria) ? accionesTarea(tarea) : undefined
+  if (deFrase) return { acciones: deFrase, especificas: true }
+  if (analisis.regla) return { acciones: analisis.acciones, especificas: false }
+  const categoria = categoriaDe(tarea, web)
+  return { acciones: categoria ? BANCO[categoria] : analisis.acciones, especificas: false }
+}
+
+function actividadConMetodos(tarea: string, esfuerzo: Nivel, web?: DatosWeb) {
+  return accionesDeTarea(tarea, web).especificas ? undefined : actividadDe(tarea, esfuerzo, web)
+}
+
 function mazosDeTarea(tarea: string, esfuerzo: Nivel, web?: DatosWeb) {
   const conCategoria = Boolean(categoriaDe(tarea, web)) || Boolean(web?.fiable)
-  return mazosDe(esfuerzo, conCategoria, Boolean(actividadDe(tarea, esfuerzo, web)))
+  return mazosDe(esfuerzo, conCategoria, Boolean(actividadConMetodos(tarea, esfuerzo, web)))
 }
 
 /** Número de mazos distintos que tiene una tarea (depende del esfuerzo, de la categoría y de si tiene métodos). */
@@ -403,22 +451,11 @@ export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWe
 }
 
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
-  const analisis = analizarTarea(tarea)
-  const categoria = categoriaDe(tarea, web)
-  // Cuando la web encontró cómo se hace la tarea, TODAS las cartas son del objeto concreto
-  // («el descalcificador», «la cafetera»…) aunque haya una categoría del banco que coincida.
-  // Si no hay web fiable: 1) categoría propia; 2) categoría web; 3) respaldo.
-  const propias = web?.fiable
-    ? accionesWeb(web)
-    : analisis.regla
-      ? analisis.acciones
-      : categoria
-        ? BANCO[categoria]
-        : analisis.acciones
+  const propias = accionesDeTarea(tarea, web).acciones
   const mazos = mazosDeTarea(tarea, esfuerzo, web)
   const fuente = mazos[mazo % mazos.length]
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias
-  const actividad = actividadDe(tarea, esfuerzo, web)
+  const actividad = actividadConMetodos(tarea, esfuerzo, web)
   return ORDEN.map((tipo) => {
     const metodo = actividad && fuente.metodos?.includes(tipo) ? METODOS[actividad][tipo] : undefined
     const accion = metodo ? metodo.retos[fuente.nivel] : acciones[fuente.nivel][tipo]
