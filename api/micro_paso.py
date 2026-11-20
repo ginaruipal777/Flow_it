@@ -631,6 +631,12 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
     paso = paso.replace(" de el ", " del ").replace(" a el ", " al ")
     if PROHIBIDO_EN_PASO.search(normalizar(paso)):  # nunca debería pasar; por si la web cuela algo raro
         paso = f"Solo abre en el móvil la web de {tema}"
+    # Verbo de acción para el motor de retos de la app: el del primer paso de la guía o el natural del objeto
+    verbo_accion = verbo or ("Abre" if tipo == "digital" else "Coge")
+    # Filtro de seguridad también sobre lo extraído de la web
+    if filtrar_seguridad(objeto):
+        objeto, tipo, herramienta, verbo_accion = f"la web de {tema}", "digital", None, "Abre"
+        paso = f"Solo abre en el móvil la web de {tema}"
 
     return respuesta(
         "success",
@@ -645,6 +651,7 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         # o si la propia frase la nombra («descalcificar cafetera»), aunque el buscador no responda
         origen="web" if herramienta and (contexto.documentos or herramienta.patron.search(normalizar(tarea))) else "respaldo",
         verbo_tarea=verbo_de_tarea(tarea),
+        verbo_accion=verbo_accion,
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=contexto.url_guia or None,
         fuentes=contexto.fuentes,
@@ -726,6 +733,7 @@ def micro_paso_tramite(tarea: str, esfuerzo: str, tramite: Tramite) -> dict:
         origen="oficial",
         enlace=tramite.url,
         verbo_tarea=verbo_de_tarea(tarea),
+        verbo_accion="Entra en",
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=url_guia or None,
         fuentes=[tramite.url] + ([url_guia] if url_guia else []),

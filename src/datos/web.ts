@@ -1,7 +1,7 @@
 import type { Esfuerzo, MicroPasoWeb } from './modelo'
 import type { Categoria } from '../components/Icono/iconos'
 import { catalogarConWeb } from './reglas'
-import type { Filtro } from './filtros'
+import { filtrarTarea, type Filtro } from './filtros'
 
 /* Llamada a la función api/micro_paso.py (Vercel): busca en internet cómo se hace la tarea.
    Con lo encontrado la app cataloga la tarea (si sus palabras no bastan) y, si la búsqueda
@@ -25,6 +25,7 @@ type Respuesta =
       estrategia?: string | null
       fuente_estrategia?: string | null
       verbo_tarea?: string | null
+      verbo_accion?: string | null
     }
   | Exclude<Filtro, { status: 'ok' }>
 
@@ -118,6 +119,8 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
     const datos = (await r.json()) as Respuesta
     if (datos.status !== 'success') return datos
     if (datos.origen === 'emergencia') return { status: 'sin-conexion' }
+    // Lo que llega de internet pasa el mismo filtro de seguridad que la tarea
+    if (filtrarTarea(datos.objeto, true).status === 'blocked') return { status: 'sin-conexion' }
     const fiable = datos.origen === 'web' || datos.origen === 'oficial'
     const catalogo = catalogarConWeb(tarea, datos.resumen ?? '')
     if (!fiable && !catalogo) return { status: 'sin-conexion' }
@@ -133,6 +136,7 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
         tipo: datos.tipo_objeto,
         nivel: esfuerzo,
         ...(datos.verbo_tarea && { verboTarea: datos.verbo_tarea }),
+        ...(datos.verbo_accion && { verboAccion: datos.verbo_accion }),
         ...(datos.estrategia && { estrategia: datos.estrategia }),
         ...(datos.fuente_estrategia && { fuenteEstrategia: datos.fuente_estrategia }),
         ...(datos.enlace && { enlace: datos.enlace }),

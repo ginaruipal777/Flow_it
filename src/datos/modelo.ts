@@ -43,6 +43,8 @@ export type MicroPasoWeb = {
   categoria?: string
   /** Verbo principal de la tarea («descalcificar», «limpiar», «estudiar»…) */
   verboTarea?: string
+  /** Verbo del primer paso en imperativo («Abre», «Vacía», «Coge»…) para el motor de retos */
+  verboAccion?: string
 }
 
 export type Reto = {

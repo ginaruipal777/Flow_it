@@ -6,7 +6,7 @@ import { ICONOS_CATEGORIA, ICONOS_UI } from '../../components/Icono/iconos'
 import { ContadorRetos, Logotipo, Pantalla, SelectorEsfuerzo } from '../../components/UI/UI'
 import { useFlow } from '../../estado/FlowEstado'
 import { filtrarTarea, type Filtro } from '../../datos/filtros'
-import { analizarTarea } from '../../datos/reglas'
+import { analizarTarea, partesDe } from '../../datos/reglas'
 import { buscarMicroPaso } from '../../datos/web'
 import { Preparando, type PasoPreparando, type PreguntaTipo } from '../../components/Preparando/Preparando'
 import { TIPOS_TAREA } from '../../datos/tipos-tarea'
@@ -110,7 +110,8 @@ export default function Inicio() {
     let web2: MicroPasoWeb | undefined = web
     let icono: Categoria | undefined = resultado.status === 'success' ? resultado.icono : undefined
     let categoria = regla?.categoria ?? web?.categoria
-    if (!categoria && !web?.fiable) {
+    // Con verbo y objeto en la frase, el motor ya escribe retos de esa tarea: no hace falta preguntar
+    if (!categoria && !web?.fiable && !partesDe(texto)) {
       const elegido = await new Promise<number | null>((responder) =>
         setPreparando({
           actual: 1,

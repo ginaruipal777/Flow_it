@@ -4,6 +4,7 @@ import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
 import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, METODOS, type Actividad } from './metodos.ts'
 import { leerSituacion, type Fuente } from './situacion.ts'
 import { esVerbo } from './filtros.ts'
+import { accionesMotor, semillaDe, type Variables } from './motor.ts'
 
 /* ─────────────────────────────────────────────────────────────
    Sistema de Retos Anti-Procrastinación
@@ -125,9 +126,6 @@ export const REGLAS: Regla[] = [
   r('descalcificar, desatascar, bombilla, cambiar la bombilla, mantenimiento, limpiar el horno, horno, descongelar, nevera, limpiar la nevera, congelador, filtro, cambiar el filtro, purgar, radiador, radiadores, grifo, cisterna, persiana, enchufe, reparar, microondas', 'Mantenimiento', 'casa', 'Busca las instrucciones en el móvil', 'tienes las instrucciones en la pantalla'),
 ]
 
-/* Categorías en las que los retos se escriben con el verbo y el objeto de la frase
-   («descalcificar la cafetera»): su banco es solo para cuando la frase no los trae. */
-const POR_TAREA = new Set(['Mantenimiento'])
 
 /* ── 3. Respaldo: tareas sin regla ──────────────────────────────
    Si ninguna palabra clave encaja, los retos nombran la tarea entre comillas
@@ -163,87 +161,55 @@ export const RESPALDO = (t: string): Acciones => ({
   },
 })
 
-/* ── 3b. Retos con las palabras de la propia frase ─────────────
-   «descalcificar cafetera» → verbo «descalcificar» + objeto «la cafetera». Las cartas nombran
-   siempre esa acción y ese objeto: nada de «recoge la habitación» para una cafetera. */
+/* ── 3b. Variables de la tarea para el motor (motor.ts) ────────
+   «descalcificar cafetera» → acción «descalcificar la cafetera»; si la web encontró cómo se hace,
+   también su objeto («la cafetera»), su verbo («Vacía») y su primer paso. */
 
 const ARTICULO = /^(el|la|los|las|un|una|unos|unas|mi|mis|tu|tus|su|sus)\s/i
+const PREPOSICION = /^(a|al|con|en|de|del|para|por|sobre|hasta)\s/i
 const FEMENINAS = new Set(['llave', 'leche', 'calle', 'noche', 'carne', 'fuente', 'frase', 'clase', 'nube', 'piel', 'sal', 'red', 'luz', 'flor', 'sarten', 'sartén', 'nariz', 'mano', 'foto', 'moto', 'radio', 'tele', 'web', 'app', 'cama', 'torre'])
 const MASCULINAS_EN_A = new Set(['dia', 'día', 'mapa', 'sofa', 'sofá', 'problema', 'sistema', 'programa', 'agua', 'tema', 'planeta', 'idioma', 'clima', 'pijama'])
 
-/** Artículo que le toca a un nombre sin artículo («cafetera» → «la cafetera»). */
+/** Artículo que le toca a un nombre sin artículo («cafetera» → «la cafetera»); «mi» pasa a «tu». */
 function conArticulo(nombre: string): string {
-  if (ARTICULO.test(`${nombre} `)) return nombre.replace(/^mi(s?)\s/i, 'tu$1 ')
-  const primera = nombre.split(' ')[0].toLowerCase()
-  const plural = /[^aeiou]s$|[aeiou]s$/.test(primera) && primera.length > 3 && !/(is|us)$/.test(primera)
+  const n = nombre.replace(/(^|\s)mi(s?)\s/gi, '$1tu$2 ')
+  if (ARTICULO.test(`${n} `) || PREPOSICION.test(`${n} `)) return n
+  const primera = n.split(' ')[0].toLowerCase()
+  const plural = /s$/.test(primera) && primera.length > 3 && !/(is|us)$/.test(primera)
   const fem = FEMENINAS.has(primera) || (/(a|ión|ion|dad|tad|tud|umbre)s?$/.test(primera) && !MASCULINAS_EN_A.has(primera))
-  return `${plural ? (fem ? 'las' : 'los') : fem ? 'la' : 'el'} ${nombre}`
+  return `${plural ? (fem ? 'las' : 'los') : fem ? 'la' : 'el'} ${n}`
 }
-
-const contraer = (s: string) => s.replace(/\b(a|de) el\b/g, (_, p: string) => (p === 'a' ? 'al' : 'del'))
 
 /** Verbo (infinitivo) y objeto con artículo de la frase; undefined si no trae los dos. */
 export function partesDe(tarea: string): { verbo: string; objeto: string } | undefined {
-  const [verbo, ...resto] = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '').toLowerCase().split(/\s+/)
+  const [verbo, ...resto] = tarea.trim().replace(/[.!?]+$/, '').replace(ABSTRACTOS, '').split(/\s+/)
   if (!verbo || !resto.length || !esVerbo(verbo)) return undefined
-  return { verbo, objeto: conArticulo(resto.join(' ')) }
+  const objeto = conArticulo(resto.join(' ').replace(/^\p{Lu}(?!\p{Lu})/u, (c) => c.toLowerCase()))
+  return { verbo: verbo.toLowerCase(), objeto }
 }
 
-/** 15 retos (3 niveles × 5 cartas) con el verbo y el objeto de la frase. */
-export function accionesTarea(tarea: string): Acciones | undefined {
+/* Retos con lo que encontró la búsqueda web (api/micro_paso.py). */
+export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string }
+
+const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|pdf|informe|web|app|sede|cita previa|tramite|trámite|presentaci[oó]n|tfg|tfm)\b/i
+
+/** Variables para el motor: de la web (si es fiable) y de la frase. */
+export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
   const p = partesDe(tarea)
-  if (!p) return undefined
-  const a = `${p.verbo} ${p.objeto}`
-  const o = p.objeto
-  const acciones: Acciones = {
-    pesado: {
-      novedad: `Busca en el móvil un vídeo sobre cómo ${a}`,
-      desafio: `Apunta 2 cosas que necesitas para ${a}`,
-      pasion: `Mira ${o} con tu canción favorita sonando`,
-      interes: `Cuéntale a alguien de casa que vas a ${a}`,
-      urgencia: `Toca ${o}`,
-    },
-    medio: {
-      novedad: `Lee en el móvil los pasos para ${a}`,
-      desafio: `Junta 3 cosas que necesitas para ${a}`,
-      pasion: `Coge lo que necesitas para ${a} con tu música favorita de fondo`,
-      interes: `Envía un mensaje a alguien de confianza para contarle que vas a ${a}`,
-      urgencia: `Coge lo que necesitas para ${a}`,
-    },
-    ligero: {
-      novedad: `Empieza a ${a} por el paso que más te apetece`,
-      desafio: `Completa 3 pasos para ${a}`,
-      pasion: `Empieza a ${a} con tu música favorita de fondo`,
-      interes: `Empieza a ${a} con alguien de casa cerca`,
-      urgencia: `Empieza a ${a}`,
-    },
+  const accion = p ? `${p.verbo} ${p.objeto}` : undefined
+  if (web?.fiable && web.objeto) {
+    const paso = web.nivel === 'medio' ? web.microPaso.replace(/^Solo /i, '').replace(/\.$/, '') : undefined
+    const verbo = web.verboAccion ?? paso?.split(' ')[0] ?? (web.tipo === 'digital' ? 'Abre' : 'Coge')
+    return { objeto: web.objeto, tipo: web.tipo, verbo, paso, accion }
   }
-  for (const n of Object.values(acciones)) for (const t of ORDEN) n[t] = contraer(n[t])
-  return acciones
+  if (!p) return undefined
+  // Sin web: el objeto de la frase solo se usa si es algo concreto con unidad («el tema 3», «el email de Carlos»)
+  return { objeto: p.objeto, tipo: DIGITAL.test(tarea) ? 'digital' : 'fisico', accion, soloConUnidad: true }
 }
 
-/* Retos con lo que encontró la búsqueda web (api/micro_paso.py): las cartas usan la acción y el
-   objeto de la frase, y el micro-paso de la web (el primer paso real) es Pasión y Urgencia de su nivel. */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string }
-
-export function accionesWeb(w: DatosWeb, tarea?: string): Acciones {
-  const o = w.objeto
-  const paso = w.microPaso.replace(/^Solo /i, '').replace(/\.$/, '')
-  const base: Acciones =
-    (tarea && accionesTarea(tarea)) ||
-    (w.tipo === 'digital'
-      ? {
-          pesado: { novedad: `Abre ${o} con la pantalla en modo oscuro`, desafio: `Mira 2 pantallas de ${o}`, pasion: `Abre ${o} con tu canción favorita sonando`, interes: `Mira el menú de ${o}`, urgencia: `Abre ${o}` },
-          medio: { novedad: `Entra en ${o} desde el ordenador`, desafio: `Pulsa el primer botón de ${o}`, pasion: `Entra en ${o} con tu bebida favorita al lado`, interes: `Lee el título de ${o}`, urgencia: `Entra en ${o}` },
-          ligero: { novedad: `Lee la primera pantalla de ${o} desde el ordenador`, desafio: `Rellena la primera casilla de ${o}`, pasion: `Lee la primera pantalla de ${o} con tu música favorita de fondo`, interes: `Apunta en tu libreta lo que pide ${o}`, urgencia: `Lee la primera pantalla de ${o}` },
-        }
-      : {
-          pesado: { novedad: `Mira ${o} desde otro sitio de la habitación`, desafio: `Toca ${o} 2 veces`, pasion: `Toca ${o} con tu canción favorita sonando`, interes: `Señala ${o} a una persona de casa`, urgencia: `Toca ${o}` },
-          medio: { novedad: `Pon ${o} en un sitio distinto de la mesa`, desafio: `Pon ${o} junto a 2 cosas que vas a usar`, pasion: `Coge ${o} con tu música favorita de fondo`, interes: `Enséñale ${o} a una persona de casa`, urgencia: `Coge ${o}` },
-          ligero: { novedad: `Usa ${o} empezando por el lado contrario`, desafio: `Usa ${o} 3 veces`, pasion: `Usa ${o} con tu música favorita de fondo`, interes: `Usa ${o} con una persona de casa cerca`, urgencia: `Usa ${o} una vez` },
-        })
-  const fondo = w.nivel === 'pesado' ? 'con tu canción favorita sonando' : 'con tu música favorita de fondo'
-  return { ...base, [w.nivel]: { ...base[w.nivel], pasion: `${paso} ${fondo}`, urgencia: paso } }
+/** Retos montados por el motor universal (sirve para cualquier tarea, sin categoría). */
+export function accionesWeb(w: DatosWeb, tarea = '', semilla = 0): Acciones {
+  return accionesMotor(variablesDe(tarea, { ...w, fiable: true })!, tarea, semilla)!
 }
 
 /* ── 4. Cómo se dice cada reto ───────────────────────────────────
@@ -289,13 +255,17 @@ export const PARTICIPIOS: Record<string, { part: string; pron?: string }> = {
   señala: { part: 'señalado' }, siéntate: { part: 'sentado', pron: 'te' }, sigue: { part: 'seguido' }, sube: { part: 'subido' },
   subraya: { part: 'subrayado' }, supera: { part: 'superado' }, tápate: { part: 'tapado', pron: 'te' }, termina: { part: 'terminado' },
   tiende: { part: 'tendido' }, tira: { part: 'tirado' }, toca: { part: 'tocado' }, túmbate: { part: 'tumbado', pron: 'te' },
+  friega: { part: 'fregado' }, dedica: { part: 'dedicado' }, moja: { part: 'mojado' }, descarga: { part: 'descargado' }, vierte: { part: 'vertido' },
   usa: { part: 'usado' }, vacía: { part: 'vaciado' }, ve: { part: 'ido' }, vístete: { part: 'vestido', pron: 'te' },
 }
 
 /** «Abre la app del test» → «has abierto la app del test»; «Ponte los zapatos» → «te has puesto los zapatos». */
 export function hechoDe(accion: string): string {
   const [verbo, ...resto] = sinPunto(accion).replace(/^Solo /i, '').split(' ')
-  const p = PARTICIPIOS[verbo.toLowerCase()]
+  // Verbos que trae la web y no están en la lista: participio regular («Descalcifica» → «descalcificado»)
+  const v = verbo.toLowerCase()
+  const regular = /[^aeiouáéíóú]a$/.test(v) ? { part: `${v.slice(0, -1)}ado` } : /[^aeiouáéíóú]e$/.test(v) ? { part: `${v.slice(0, -1)}ido` } : undefined
+  const p = PARTICIPIOS[v] ?? regular
   if (!p) return 'lo has conseguido una vez'
   return `${p.pron ? `${p.pron} ` : ''}has ${p.part}${resto.length ? ` ${resto.join(' ')}` : ''}`
 }
@@ -423,14 +393,15 @@ export function actividadDe(tarea: string, esfuerzo: Nivel = 'medio', web?: Dato
   return ACTIVIDAD_DE_SITUACION[leerSituacion(tarea, esfuerzo).id]
 }
 
-/** Acciones de la tarea y si son propias de su frase (entonces no se mezclan métodos genéricos).
-    Orden: 1) web fiable; 2) verbo + objeto de la frase si no hay regla o es de POR_TAREA;
-    3) banco de su categoría; 4) categoría según la web; 5) respaldo. */
-function accionesDeTarea(tarea: string, web?: DatosWeb): { acciones: Acciones; especificas: boolean } {
-  if (web?.fiable) return { acciones: accionesWeb(web, tarea), especificas: true }
+/** Acciones de la tarea y si son del motor universal (entonces no se mezclan métodos genéricos).
+    1) Motor (motor.ts) con lo que encontró la web y las palabras de la frase: cualquier tarea.
+    2) Solo si la frase no trae verbo ni la web encontró nada («café»): banco de su categoría,
+       categoría según la web o respaldo. */
+function accionesDeTarea(tarea: string, web?: DatosWeb, mazo = 0): { acciones: Acciones; especificas: boolean } {
+  const variables = variablesDe(tarea, web)
+  const motor = variables && accionesMotor(variables, tarea, semillaDe(tarea, mazo))
+  if (motor) return { acciones: motor, especificas: true }
   const analisis = analizarTarea(tarea)
-  const deFrase = !analisis.regla || POR_TAREA.has(analisis.regla.categoria) ? accionesTarea(tarea) : undefined
-  if (deFrase) return { acciones: deFrase, especificas: true }
   if (analisis.regla) return { acciones: analisis.acciones, especificas: false }
   const categoria = categoriaDe(tarea, web)
   return { acciones: categoria ? BANCO[categoria] : analisis.acciones, especificas: false }
@@ -451,7 +422,7 @@ export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWe
 }
 
 export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb): RetoCarta[] {
-  const propias = accionesDeTarea(tarea, web).acciones
+  const propias = accionesDeTarea(tarea, web, mazo).acciones
   const mazos = mazosDeTarea(tarea, esfuerzo, web)
   const fuente = mazos[mazo % mazos.length]
   const acciones = fuente.generico ? RESPALDO(minuscula(objetoDe(tarea)) || 'esto') : propias

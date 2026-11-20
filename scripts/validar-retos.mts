@@ -76,19 +76,27 @@ const WEB = [
 for (const w of WEB)
   for (const n of NIVELES) {
     const web = { ...w, microPaso: n === 'pesado' ? `Solo abre ${w.objeto}` : `Coge ${w.objeto}`, nivel: n }
-    revisarAcciones(`Web «${w.objeto}» (${n})`, accionesWeb(web))
-    revisarAcciones(`Web «${w.objeto}» + frase (${n})`, accionesWeb(web, 'descalcificar cafetera'))
+    for (let s = 0; s < 12; s++) {
+      revisarAcciones(`Web «${w.objeto}» (${n}, semilla ${s})`, accionesWeb(web, '', s * 7777))
+      revisarAcciones(`Web «${w.objeto}» + frase (${n}, semilla ${s})`, accionesWeb(web, 'descalcificar cafetera', s * 7777))
+    }
   }
 
 // 3. Retos tal como se ven en la app: todos los mazos de cada tarea
-const tareas = [...REGLAS.map((r) => r.palabras[0]), 'buscar piso', 'arreglar la persiana', 'descalcificar cafetera', 'limpiar el horno', 'cambiar la bombilla', 'purgar los radiadores', 'regar mis plantas']
+const tareas = [
+  ...REGLAS.map((r) => r.palabras[0]),
+  'buscar piso', 'arreglar la persiana', 'descalcificar cafetera', 'limpiar el horno', 'cambiar la bombilla',
+  'purgar los radiadores', 'regar mis plantas', 'estudiar el tema 3', 'responder el email de Carlos',
+  'llamar a mi madre', 'hacer el test de autoescuela', 'rellenar el formulario de la beca', 'fregar los platos',
+  'doblar la ropa', 'pintar la habitación', 'preparar la presentación', 'leer un libro', 'montar la estantería',
+]
 for (const tarea of tareas) {
   for (const esfuerzo of NIVELES) {
     const vistos = new Set<string>()
-    for (let m = 0; m < numMazos(tarea, esfuerzo); m++) {
+    for (let m = 0; m < numMazos(tarea, esfuerzo) * 3; m++) {
       for (const r of retosDe(tarea, esfuerzo, m)) {
         const origen = `«${tarea}»/${esfuerzo}/mazo ${m + 1}/${r.tipo}`
-        if (vistos.has(r.titulo)) errores.push(`${origen}: reto repetido en la misma tarea → «${r.titulo}»`)
+        if (m < numMazos(tarea, esfuerzo) && vistos.has(r.titulo)) errores.push(`${origen}: reto repetido en la misma tarea → «${r.titulo}»`)
         vistos.add(r.titulo)
         titulos.add(r.titulo)
         const plazo = Object.values(PLAZO).find((p) => r.titulo.includes(p))
