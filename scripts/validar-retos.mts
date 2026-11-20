@@ -168,6 +168,9 @@ const RESPUESTAS: [string, object[]][] = [
   ['limpiar la cocina', [{ id: 'material:el trapo', texto: 'Trapo', icono: 'trapo', objeto: 'el trapo', verbo: 'Coge' }, { id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' }]],
   ['escribir informe', [{ id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' }, { id: 'pereza', texto: 'Pereza', icono: 'pereza', bloqueo: 'pereza' }]],
   ['pintar la habitación', [{ id: 'mucha', texto: 'Muchas veces', icono: 'repasar', experiencia: 'mucha' }]],
+  // Independencia del lugar: solo las tareas dependientes preguntan dónde está la persona
+  ['limpiar la cocina', [{ id: 'material:el trapo', texto: 'Trapo', icono: 'trapo', objeto: 'el trapo', verbo: 'Coge' }, { id: 'cama', texto: 'En la cama', icono: 'cama', lugar: 'cama' }]],
+  ['hacer ejercicio', [{ id: 'cama', texto: 'En la cama', icono: 'cama', lugar: 'cama' }, { id: 'pereza', texto: 'Pereza', icono: 'pereza', bloqueo: 'pereza' }]],
 ]
 for (const [tarea, eleccion] of RESPUESTAS)
   for (const esfuerzo of NIVELES)

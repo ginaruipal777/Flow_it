@@ -57,6 +57,11 @@ export type MicroPasoWeb = {
   metodos?: string[]
   /** Lo que contestó la persona en las preguntas de contexto (contexto.ts) */
   eleccion?: OpcionContexto[]
+  /** true si la tarea necesita un sitio físico concreto (limpiar, hacer ejercicio…): solo
+      entonces se pregunta dónde está la persona. Las independientes (estudiar, llamar…) no. */
+  requiereLugar?: boolean
+  /** Sitio orientativo de la tarea cuando requiereLugar es true («la cocina») */
+  lugarProbable?: string
 }
 
 export type Reto = {

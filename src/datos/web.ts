@@ -29,6 +29,8 @@ type Respuesta =
       verbo_accion?: string | null
       lineas_pasos?: LineaPaso[]
       lineas_listas?: LineaLista[]
+      requiere_lugar?: boolean
+      lugar_probable?: string
     }
   | Exclude<Filtro, { status: 'ok' }>
 
@@ -162,6 +164,8 @@ async function buscarEnServidor(tarea: string, esfuerzo: Esfuerzo, senal?: Abort
         nivel: esfuerzo,
         ...(datos.verbo_tarea && { verboTarea: datos.verbo_tarea }),
         ...(datos.verbo_accion && { verboAccion: datos.verbo_accion }),
+        ...(datos.requiere_lugar !== undefined && { requiereLugar: datos.requiere_lugar }),
+        ...(datos.lugar_probable && { lugarProbable: datos.lugar_probable }),
         ...(datos.estrategia && { estrategia: datos.estrategia }),
         ...(datos.fuente_estrategia && { fuenteEstrategia: datos.fuente_estrategia }),
         ...(datos.enlace && { enlace: datos.enlace }),

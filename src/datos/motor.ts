@@ -47,6 +47,8 @@ export type Variables = {
     metodo?: string
     experiencia?: 'mucha' | 'alguna' | 'nunca'
     bloqueo?: string
+    /** Dónde está ahora («cama», «mesa», «de-pie»); solo si la tarea requiere un lugar físico */
+    lugar?: string
   }
 }
 
@@ -145,6 +147,8 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       if (e.objeto && e.verbo) propios.push(m('c-herr', `${e.verbo} ${e.objeto}`))
       else if (e.metodo) propios.push(i('c-metodo-p', `Busca en el móvil información sobre ${e.metodo}`))
       if (!propios.length && nombrar) propios.push(m('c-posit', `Escribe en un pósit «${nombrar}»`))
+      // Si la tarea necesita un sitio y la persona está en la cama, el contacto mínimo es levantarse
+      if (e.lugar === 'cama') propios.push(m('c-ponte', 'Ponte de pie'))
     } else if (nivel === 'medio') {
       if (e.objeto) propios.push(m('c-usa', complemento ? `Usa ${e.objeto} ${complemento}` : `Coge ${e.objeto}`))
       else if (e.metodo) propios.push(m('c-metodo-m', `Prueba el estilo ${e.metodo}`))
@@ -195,7 +199,12 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
     lista.length = 0
   }
   if (nivel === 'pesado') {
-    if (tocable) lista.push(v.tipo === 'digital' ? m('p-abre', `Abre ${o}`) : m('p-toca', `Toca ${o}`), v.tipo === 'digital' ? m('p-busca', `Busca ${o} en el móvil`) : m('p-mira', `Mira ${o}`))
+    if (tocable)
+      lista.push(
+        v.tipo === 'digital' ? m('p-abre', `Abre ${o}`) : m('p-toca', `Toca ${o}`),
+        v.tipo === 'digital' ? m('p-busca', `Busca ${o} en el móvil`) : m('p-mira', `Mira ${o}`),
+        v.tipo === 'fisico' && m('p-acerca', `Acércate a ${o}`),
+      )
     if (unidad && o) lista.push(m('p-unidad', unidad.pesado(o)), m('p-vista-o', `Pon ${o} a la vista`), i('p-info', `Busca en el móvil información sobre ${o}`))
     if (aprende) lista.push(i('p-como', `Busca en el móvil cómo ${a}`), i('p-video', `Busca en el móvil un vídeo sobre cómo ${a}`))
     if (a) lista.push(m('p-vista', `Pon a la vista una cosa que necesitas para ${a}`), m('p-posit', `Escribe en un pósit «${a}»`), !lista.length && m('p-libreta', `Apunta en tu libreta «${a}»`))

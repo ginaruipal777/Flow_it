@@ -23,12 +23,14 @@ export type OpcionContexto = {
   experiencia?: 'mucha' | 'alguna' | 'nunca'
   /** Qué le frena: pereza, cansancio, agobio */
   bloqueo?: string
+  /** Dónde está ahora («cama», «mesa», «de-pie»): solo se pregunta si la tarea requiere un lugar */
+  lugar?: string
 }
 
 export type PreguntaContexto = { id: string; texto: string; opciones: OpcionContexto[] }
 
 /** Lo elegido, junto, listo para el motor de retos */
-export type Eleccion = Pick<OpcionContexto, 'objeto' | 'verbo' | 'metodo' | 'experiencia' | 'bloqueo'>
+export type Eleccion = Pick<OpcionContexto, 'objeto' | 'verbo' | 'metodo' | 'experiencia' | 'bloqueo' | 'lugar'>
 
 const quitarTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
@@ -44,8 +46,13 @@ function iconoDe(nombre: string): string {
   return 'metodo'
 }
 
-/** Las preguntas para esta tarea con lo que encontró la búsqueda (como mucho 3). */
-export function preguntasDe(tarea: string, datos: { metodos?: string[]; materiales?: string[] }): PreguntaContexto[] {
+/** Las preguntas para esta tarea con lo que encontró la búsqueda (como mucho 3).
+    `requiereLugar`: solo entonces se pregunta dónde está la persona (independencia del lugar:
+    api/micro_paso.py, requiere_lugar_tarea). Tareas como estudiar o llamar no lo necesitan. */
+export function preguntasDe(
+  tarea: string,
+  datos: { metodos?: string[]; materiales?: string[]; requiereLugar?: boolean },
+): PreguntaContexto[] {
   const palabrasTarea = new Set(quitarTildes(tarea).split(/[^a-zñ]+/).filter((p) => p.length >= 4))
   const preguntas: PreguntaContexto[] = []
   const metodos = datos.metodos ?? []
@@ -81,16 +88,28 @@ export function preguntasDe(tarea: string, datos: { metodos?: string[]; material
       ],
     })
   }
+  // Solo si la tarea depende de un sitio físico concreto (limpiar, hacer ejercicio…) se pregunta
+  // dónde está la persona: así, si dice «en la cama», el reto más pesado es simplemente ponerse de pie.
   preguntas.push(
-    {
-      id: 'antes',
-      texto: '¿Lo has hecho antes?',
-      opciones: [
-        { id: 'mucha', texto: 'Muchas veces', icono: 'repasar', experiencia: 'mucha' },
-        { id: 'alguna', texto: 'Alguna vez', icono: 'ideas', experiencia: 'alguna' },
-        { id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' },
-      ],
-    },
+    datos.requiereLugar
+      ? {
+          id: 'lugar',
+          texto: '¿Dónde estás ahora?',
+          opciones: [
+            { id: 'cama', texto: 'En la cama', icono: 'cama', lugar: 'cama' },
+            { id: 'mesa', texto: 'En una mesa', icono: 'mesa', lugar: 'mesa' },
+            { id: 'de-pie', texto: 'De pie', icono: 'de-pie', lugar: 'de-pie' },
+          ],
+        }
+      : {
+          id: 'antes',
+          texto: '¿Lo has hecho antes?',
+          opciones: [
+            { id: 'mucha', texto: 'Muchas veces', icono: 'repasar', experiencia: 'mucha' },
+            { id: 'alguna', texto: 'Alguna vez', icono: 'ideas', experiencia: 'alguna' },
+            { id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' },
+          ],
+        },
     {
       id: 'bloqueo',
       texto: '¿Qué te frena?',
@@ -112,6 +131,7 @@ export function eleccionDe(opciones: OpcionContexto[] | undefined): Eleccion | u
     if (o.metodo) e.metodo = o.metodo
     if (o.experiencia) e.experiencia = o.experiencia
     if (o.bloqueo) e.bloqueo = o.bloqueo
+    if (o.lugar) e.lugar = o.lugar
   }
   return e
 }

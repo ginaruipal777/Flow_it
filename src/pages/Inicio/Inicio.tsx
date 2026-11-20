@@ -110,7 +110,7 @@ export default function Inicio() {
     // 1b. Preguntas de contexto (como mucho 3, con iconos): salen de lo que encontró la búsqueda
     // sobre ESTA tarea («¿Cómo lo haces?» con los métodos reales), así siempre tienen sentido.
     // Sin resultados no hay preguntas. «Saltar» deja de preguntar.
-    const preguntas = web ? preguntasDe(texto, { metodos: web.metodos, materiales: web.materiales }) : []
+    const preguntas = web ? preguntasDe(texto, { metodos: web.metodos, materiales: web.materiales, requiereLugar: web.requiereLugar }) : []
     const elegidas: OpcionContexto[] = []
     for (const [i, p] of preguntas.entries()) {
       const indice = await new Promise<number | null>((responder) =>

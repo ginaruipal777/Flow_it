@@ -681,6 +681,35 @@ def verbo_del_primer_paso(contexto: Contexto) -> str | None:
     return None
 
 
+# ── Independencia del lugar ──────────────────────────────────────
+# Tareas que dependen de un sitio físico concreto (limpiar la cocina, hacer ejercicio): se
+# pregunta dónde está la persona para avisar de que hace falta moverse. Las demás (estudiar,
+# escribir, llamar) se pueden hacer desde cualquier sitio: no se pregunta ni se asume un lugar.
+REQUIERE_LUGAR = re.compile(
+    r"\b(limpiar|fregar|barrer|aspirar|ordenar|recoger|tender|planchar|colada|lavadora|cocinar|"
+    r"guisar|hornear|regar|pintar|montar|desmontar|arreglar|reparar|taladrar|lijar|atornillar|"
+    r"ejercicio|entrenar|gimnasio|pesas|correr|caminar|pasear|nadar|bici|yoga|estirar|bailar|"
+    r"ducharme|ducha|bano|afeitarme|maquillarme|pasear al perro|sacar al perro|jardin|huerto|"
+    r"descalcificar|desatascar|lavar los platos|lavar el coche|aparcar)\b"
+)
+LUGAR_DE_TAREA = [
+    (re.compile(r"\b(cocina|platos|nevera|horno|fregadero)\b"), "la cocina"),
+    (re.compile(r"\b(bano|ducha|lavabo)\b"), "el baño"),
+    (re.compile(r"\b(jardin|huerto|plantas|terraza)\b"), "el jardín o la terraza"),
+    (re.compile(r"\b(gimnasio|pesas|ejercicio|entrenar)\b"), "el gimnasio o donde entrenes"),
+    (re.compile(r"\b(coche|garaje)\b"), "el garaje"),
+]
+
+
+def requiere_lugar_tarea(tarea: str) -> tuple[bool, str]:
+    """true si la tarea necesita un sitio físico concreto, y cuál (orientativo, para la pregunta)."""
+    texto = normalizar(tarea)
+    if not REQUIERE_LUGAR.search(texto):
+        return False, "cualquiera"
+    lugar = next((l for patron, l in LUGAR_DE_TAREA if patron.search(texto)), "ese sitio")
+    return True, lugar
+
+
 def categoria_de(tarea: str, contexto: Contexto | None) -> str:
     texto = normalizar(tarea + " " + (contexto.titulo if contexto else ""))
     for nombre, patron in CATEGORIAS:
@@ -701,6 +730,7 @@ def contexto_corto(contexto: Contexto, tema: str) -> str:
 def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
     """Extrae UN micro-paso físico calibrado por el esfuerzo. Nunca el proceso entero."""
     tema = nombre_de(tema_de(tarea))
+    requiere_lugar, lugar_probable = requiere_lugar_tarea(tarea)
     herramienta, recuento = elegir_herramienta(tarea, contexto)
     if herramienta:
         objeto, tipo = herramienta.objeto.format(tema=tema), herramienta.tipo
@@ -746,6 +776,8 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         origen="web" if herramienta and (contexto.documentos or herramienta.patron.search(normalizar(tarea))) else "respaldo",
         verbo_tarea=verbo_de_tarea(tarea),
         verbo_accion=verbo_accion,
+        requiere_lugar=requiere_lugar,
+        lugar_probable=lugar_probable,
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=contexto.url_guia or None,
         fuentes=contexto.fuentes,
@@ -878,6 +910,9 @@ def micro_paso_tramite(tarea: str, esfuerzo: str, tramite: Tramite) -> dict:
         enlace=tramite.url,
         verbo_tarea=verbo_de_tarea(tarea),
         verbo_accion="Entra en",
+        # Un trámite se hace con el móvil o el ordenador: independiente del lugar
+        requiere_lugar=False,
+        lugar_probable="cualquiera",
         estrategia=elegir_estrategia(contexto),
         fuente_estrategia=url_guia or None,
         fuentes=[tramite.url] + ([url_guia] if url_guia else []),
