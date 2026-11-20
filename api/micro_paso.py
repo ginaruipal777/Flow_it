@@ -662,6 +662,7 @@ def generar_micro_paso(tarea: str, esfuerzo: str, contexto: Contexto) -> dict:
         # Lo que encontró la búsqueda (títulos y resúmenes): la app lo usa para catalogar la tarea
         resumen=resumen_de(contexto),
         lineas_pasos=lineas_de_pasos(contexto),
+        lineas_listas=lineas_de_listas(contexto),
         diagnostico=contexto.diagnostico,
     )
 
@@ -681,6 +682,32 @@ def lineas_de_pasos(contexto: Contexto, maximo: int = 60) -> list[dict]:
                     salida.append({"doc": i, "n": int(m.group(1)), "texto": m.group(2).strip()[:200]})
                     if len(salida) >= maximo:
                         return salida
+    except Exception:
+        return salida
+    return salida
+
+
+# Listas con viñetas y el título de su sección («Materiales», «Consejos», «Técnicas»…). La app saca
+# de ellas los materiales y las técnicas que recomiendan las webs (src/datos/pasos.ts).
+LINEA_LISTA = re.compile(r"^\s*[-*•+]\s+(.+)$")
+ENCABEZADO = re.compile(r"^\s*(#{1,6}\s+.{3,90}|\*\*[^*]{3,80}\*\*:?\s*|[^.\n]{3,80}:\s*)$")
+
+
+def lineas_de_listas(contexto: Contexto, maximo: int = 150) -> list[dict]:
+    salida: list[dict] = []
+    try:
+        for i, documento in enumerate(contexto.documentos):
+            seccion = ""
+            for linea in documento.splitlines():
+                m = LINEA_LISTA.match(linea)
+                if m:
+                    texto = m.group(1).strip()
+                    if 2 < len(texto) <= 160:
+                        salida.append({"doc": i, "seccion": seccion, "texto": texto})
+                        if len(salida) >= maximo:
+                            return salida
+                elif ENCABEZADO.match(linea):
+                    seccion = re.sub(r"[#*:]", "", linea).strip()[:90]
     except Exception:
         return salida
     return salida
