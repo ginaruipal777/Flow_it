@@ -12,7 +12,7 @@ import { eleccionDe, ORDEN_BLOQUEO } from './contexto'
 
 /** `orden`: orden de cartas del mazo calculado con lo aprendido (aprendizaje.ts); si no llega, el de la situación. */
 export function generarRetos(
-  tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web'>>,
+  tarea: Pick<Tarea, 'texto'> & Partial<Pick<Tarea, 'esfuerzo' | 'web' | 'semilla'>>,
   mazo = 0,
   ordenAprendido?: TipoReto[] | null,
   fallidos?: RetosFallidos,
@@ -24,7 +24,7 @@ export function generarRetos(
   const bloqueo = eleccionDe(tarea.web?.eleccion)?.bloqueo
   const orden =
     (bloqueo && ORDEN_BLOQUEO[bloqueo]) || (ordenAprendido?.length === 5 ? ordenAprendido : leerSituacion(tarea.texto, tarea.esfuerzo).orden)
-  const retos = retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web, opcionesDe(fallidos, tarea.texto))
+  const retos = retosDe(tarea.texto, tarea.esfuerzo, mazo, tarea.web, opcionesDe(fallidos, tarea.texto), tarea.semilla)
   return orden
     .map((tipo) => retos.find((r) => r.tipo === tipo)!)
     .map((r, i) => ({

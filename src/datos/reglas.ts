@@ -4,7 +4,7 @@ import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
 import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, type Actividad } from './metodos.ts'
 import { leerSituacion, type Fuente } from './situacion.ts'
 import { esVerbo } from './filtros.ts'
-import { accionesMotor, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
+import { accionesMotor, mezclarMazo, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
 import type { Estrategia, OpcionesMotor } from './descartes.ts'
 import { objetoDePaso } from './pasos.ts'
 import { eleccionDe, type OpcionContexto } from './contexto.ts'
@@ -439,9 +439,11 @@ function accionesDeTarea(
   web?: DatosWeb,
   mazo = 0,
   opciones?: OpcionesMotor,
+  semillaBase?: number,
 ): { acciones: Acciones; especificas: boolean; origen?: ResultadoMotor['origen'] } {
   const variables = variablesDe(tarea, web)
-  const motor = variables && accionesMotor(variables, tarea, semillaDe(tarea, mazo), opciones)
+  const semilla = semillaBase === undefined ? semillaDe(tarea, mazo) : mezclarMazo(semillaBase, mazo)
+  const motor = variables && accionesMotor(variables, tarea, semilla, opciones)
   if (motor) return { acciones: motor.acciones, especificas: true, origen: motor.origen }
   // Sin pasos de internet ni verbo en la frase («café» sin conexión): conectores con las palabras
   // de la tarea. Nunca retos fijos de una categoría.
@@ -457,9 +459,18 @@ export function numMazos(tarea: string, esfuerzo: Nivel = 'medio', web?: DatosWe
   return mazosDe(esfuerzo, Boolean(categoriaDe(tarea, web)) || Boolean(web?.fiable)).length
 }
 
-/** Las 5 cartas de un mazo. `opciones` (estrategia_descartada y retos fallidos): ver descartes.ts. */
-export function retosDe(tarea: string, esfuerzo: Nivel = 'medio', mazo = 0, web?: DatosWeb, opciones?: OpcionesMotor): RetoCarta[] {
-  const { acciones, origen } = accionesDeTarea(tarea, web, mazo, opciones)
+/** Las 5 cartas de un mazo. `opciones` (estrategia_descartada y retos fallidos): ver descartes.ts.
+    `semillaBase`: al azar de verdad por tarea (se guarda con ella, FlowEstado); sin ella, se deriva
+    del texto (reproducible: para scripts y pruebas). */
+export function retosDe(
+  tarea: string,
+  esfuerzo: Nivel = 'medio',
+  mazo = 0,
+  web?: DatosWeb,
+  opciones?: OpcionesMotor,
+  semillaBase?: number,
+): RetoCarta[] {
+  const { acciones, origen } = accionesDeTarea(tarea, web, mazo, opciones, semillaBase)
   const mazos = mazosDe(esfuerzo, true)
   const nivel = mazos[mazo % mazos.length].nivel
   return ORDEN.map((tipo) => {

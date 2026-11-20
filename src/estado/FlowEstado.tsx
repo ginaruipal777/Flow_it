@@ -149,6 +149,8 @@ function reductor(e: Estado, a: Accion): Estado {
         estado: 'en-curso',
         ultimoTipo: 'novedad',
         actualizada: Date.now(),
+        // Al azar de verdad, no derivada del texto: la misma tarea escrita otra vez suena distinta
+        semilla: Math.floor(Math.random() * 0x7fffffff),
         ...(a.web && { web: a.web }),
       }
       return conOrden({ ...e, tareas: [t, ...e.tareas], tareaActual: t.id, indiceReto: 0, mazo: 0, retoAceptado: null, rechazosSeguidos: 0, avisoRechazos: false })

@@ -22,6 +22,11 @@ export type Tarea = {
   premio?: string
   /** Primer paso encontrado en internet (solo tareas sin categoría; ver api/micro_paso.py). */
   web?: MicroPasoWeb
+  /** Al azar de verdad (Math.random(), al crear la tarea en FlowEstado): con qué fórmulas y
+      modificadores se arman sus frases. Se guarda con la tarea para que, dentro del mismo mazo,
+      la carta no cambie de texto sola al re-renderizar; la misma tarea escrita otra vez no repite
+      las mismas frases (motor.ts, semillaDe/mezclarMazo). */
+  semilla?: number
 }
 
 export type MicroPasoWeb = {

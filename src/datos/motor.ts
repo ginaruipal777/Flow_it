@@ -253,11 +253,22 @@ function enteras(v: Variables, nivel: Nivel, tipo: TipoReto): Pieza[] {
   return []
 }
 
-/* ── Semilla: misma tarea + mismo mazo → mismas cartas ───────── */
+/* ── Semilla ──────────────────────────────────────────────────
+   Cada tarea nueva tira una semilla al azar de verdad (Math.random(), al crearla en
+   FlowEstado), no una derivada de su texto: la misma tarea escrita dos veces no repite
+   las mismas frases. Esa semilla se MEZCLA con el número de mazo (mezclarMazo) para que,
+   dentro de la misma tarea, cada mazo siga sonando distinto, y se GUARDA con la tarea para
+   que, mientras la estás mirando, la carta no te cambie de frase sola al re-renderizar.
+   Donde no hay una tarea con semilla propia (scripts, pruebas, retosDe suelto) se cae a un
+   hash del texto: ahí interesa que sea reproducible, no al azar. */
 export function semillaDe(texto: string, mazo = 0): number {
   let h = 2166136261
   for (const c of quitarTildes(texto)) h = Math.imul(h ^ c.charCodeAt(0), 16777619)
-  return (h ^ Math.imul(mazo + 1, 2654435761)) >>> 0
+  return mezclarMazo(h, mazo)
+}
+
+export function mezclarMazo(base: number, mazo = 0): number {
+  return (base ^ Math.imul(mazo + 1, 2654435761)) >>> 0
 }
 
 /** Barajado estable (mulberry32): la misma semilla da siempre el mismo orden */
