@@ -323,7 +323,8 @@ function mezclar<T>(lista: T[], semilla: number): T[] {
 const NUCLEO_UNIDAD = /^(Lee|Contesta|Escribe|Rellena) \d/
 const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-verbo|l-unidad|l-usa|g-acercate|g-paso1|h-coge|h-vista|h-prepara)/
 
-const contraer = (s: string) => s.replace(/\b(a|de) el\b/g, (_, p: string) => (p === 'a' ? 'al' : 'del'))
+// (^|\s) en vez de \b: \b no ve letra con tilde como letra, así que «Vacía el» contraía a «Vacíal»
+const contraer = (s: string) => s.replace(/(^|\s)(a|de) el(?=\s|$)/g, (_, pre: string, p: string) => `${pre}${p === 'a' ? 'al' : 'del'}`)
 const MAXIMO = 100 // la carta admite ~110 con «Solo…»
 const MAXIMO_URGENCIA = 75 // Urgencia lleva además el plazo («antes de que pase una hora»)
 
