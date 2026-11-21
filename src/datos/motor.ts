@@ -57,6 +57,8 @@ export type Variables = {
     bloqueo?: string
     /** Dónde está ahora («cama», «mesa», «de-pie»); solo si la tarea requiere un lugar físico */
     lugar?: string
+    /** Ambiente elegido cuando no hay lugar físico: se fija en Pasión e Interés */
+    situacion?: string
   }
 }
 
@@ -138,6 +140,20 @@ const MODIFICADORES: Record<Exclude<TipoReto, 'urgencia'>, Modificador[]> = {
    montar…) sí se aprenden, y ahí «busca un vídeo» o «lee los pasos» es un primer paso real. */
 const COTIDIANOS = /^(llamar|responder|contestar|escribir|leer|estudiar|comer|cenar|desayunar|almorzar|merendar|duchar\w*|banar\w*|ir|salir|comprar|hablar|quedar|enviar|mandar|ver|jugar|dormir|descansar|pasear|caminar|correr|recoger|ordenar|visitar|felicitar|pedir|repasar|tender|doblar|fregar|regar|sacar|beber|tomar)\b/
 
+// Si está en la cama o el sofá (eleccion.lugar), un núcleo que ya dé por hecho estar de pie en
+// otro sitio concreto (el grifo, la encimera…) no tiene sentido todavía: se descarta.
+const FIJO_SITIO = /\b(grifo|encimera|fregadero|horno|lavadora|microondas)\b/i
+
+/** Las Acciones_[Nivel] de la Guía Maestra que no nombran OTRO objeto distinto del elegido
+    (filtro de ubicuidad: solo lo que la persona dijo que tiene). */
+function sinOtrosObjetos(nucleos: string[], materiales: string[] | undefined, elegido: string): string[] {
+  const otros = (materiales ?? [])
+    .filter((mat) => quitarTildes(mat) !== quitarTildes(elegido))
+    .map((mat) => quitarTildes(mat.replace(/^(el|la|los|las)\s+/, '')))
+    .filter((o) => o.length > 2)
+  return nucleos.filter((texto) => !otros.some((o) => quitarTildes(texto).includes(o)))
+}
+
 function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[] {
   const o = v.objeto
   const a = v.accion
@@ -149,6 +165,8 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
   const i = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
   // Lo que contestó la persona manda (filtro de ubicuidad: solo lo que ha dicho que tiene o hace).
   const e = v.eleccion
+  const reposo = Boolean(e?.lugar && /cama|sofa/.test(e.lugar))
+  const sinSitioFijo = (lista: string[]) => (reposo ? lista.filter((t) => !FIJO_SITIO.test(t)) : lista)
   if (e) {
     const propios: Pieza[] = []
     // Sin una frase con verbo («café»), se completa con el tema («el café»): «Usa X para el café»
@@ -191,12 +209,24 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       const sobre = a ? `cómo ${a}` : v.tema ? `información sobre ${v.tema}` : undefined
       if (sobre) propios.push(nivel === 'pesado' ? i('p-como', `Busca en el móvil ${sobre}`) : i('m-pasos', `Lee en el móvil ${sobre}`))
     }
+    // Enriquece sin sustituir: detrás del núcleo con el objeto elegido, se suman (filtradas) las
+    // Acciones_[Nivel] del Sheet, para que las otras 4 cartas INCUP sigan siendo variadas.
+    if (propios.length && e.objeto) {
+      const guia = nivel === 'pesado' ? v.nucleosPesado : nivel === 'medio' ? v.nucleosMedio : v.nucleosLigero
+      if (guia?.length) {
+        const filtradas = sinSitioFijo(sinOtrosObjetos(guia, v.materiales, e.objeto))
+        propios.push(...filtradas.map((texto, n) => m(`sheet-${nivel[0]}${n}-e`, texto)))
+      }
+    }
     if (propios.length) return propios
   }
   // Núcleos ya escritos para esta tarea en la Guía Maestra (Sheet): más naturales que construirlos,
   // se usan tal cual en vez de los conectores genéricos de abajo.
   const nucleosGuia = nivel === 'pesado' ? v.nucleosPesado : nivel === 'medio' ? v.nucleosMedio : v.nucleosLigero
-  if (nucleosGuia?.length) return nucleosGuia.map((texto, n) => m(`sheet-${nivel[0]}${n}`, texto))
+  if (nucleosGuia?.length) {
+    const filtrados = sinSitioFijo(nucleosGuia)
+    if (filtrados.length) return filtrados.map((texto, n) => m(`sheet-${nivel[0]}${n}`, texto))
+  }
   // Con lo que trae internet, los conectores se rellenan con datos reales:
   // pasos de la guía, materiales que nombran las webs y técnicas que recomiendan
   const pasos = v.pasos ?? []
@@ -409,15 +439,22 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       } else {
         // Con un objeto o método elegido, el reto ya tiene sitio propio: no se cambia de sitio
         const fijo = Boolean(v.eleccion?.objeto || v.eleccion?.metodo)
-        const mods = MODIFICADORES[tipo].filter(
-          (m) =>
-            (!m.niveles || m.niveles.includes(nivel)) &&
-            (!m.solo || m.solo === 'unidad' || m.solo === v.tipo) &&
-            !(fijo && /^(n-sitio|n-rincon|n-ventana|p-rincon)$/.test(m.id)),
-        )
+        // El ambiente que eligió la persona (pregunta «¿Qué te acompaña mejor?», sin lugar físico)
+        // es EL modificador de Pasión e Interés, no uno más entre los genéricos.
+        const situacionElegida = v.eleccion?.situacion
+        const mods =
+          situacionElegida && (tipo === 'pasion' || tipo === 'interes')
+            ? [{ id: 'eleccion-situacion', texto: situacionElegida, estrategia: tipo === 'pasion' ? 'emocional' : 'social' } as Modificador]
+            : MODIFICADORES[tipo].filter(
+                (m) =>
+                  (!m.niveles || m.niveles.includes(nivel)) &&
+                  (!m.solo || m.solo === 'unidad' || m.solo === v.tipo) &&
+                  !(fijo && /^(n-sitio|n-rincon|n-ventana|p-rincon)$/.test(m.id)),
+              )
         // Frases de ambiente ya escritas para esta tarea (Sheet): candidatas de más, además
         // de las genéricas, para cualquier carta (no son de un tipo INCUP en concreto)
-        if (v.situaciones?.length) mods.push(...v.situaciones.map((texto, n): Modificador => ({ id: `sheet-sit-${n}`, texto, estrategia: 'emocional' })))
+        if (!situacionElegida && v.situaciones?.length)
+          mods.push(...v.situaciones.map((texto, n): Modificador => ({ id: `sheet-sit-${n}`, texto, estrategia: 'emocional' })))
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
         // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
         // y nada de «sin mirar el móvil» cuando el núcleo se hace con el móvil o con la guía

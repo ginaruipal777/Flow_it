@@ -26,12 +26,15 @@ export type OpcionContexto = {
   bloqueo?: string
   /** Dónde está ahora («cama», «mesa», «de-pie»): solo se pregunta si la tarea requiere un lugar */
   lugar?: string
+  /** Ambiente elegido cuando la tarea NO depende de un lugar físico («con música de fondo»):
+      el motor lo fija como modificador en Pasión e Interés, en vez de uno al azar */
+  situacion?: string
 }
 
 export type PreguntaContexto = { id: string; texto: string; opciones: OpcionContexto[] }
 
 /** Lo elegido, junto, listo para el motor de retos */
-export type Eleccion = Pick<OpcionContexto, 'objeto' | 'verbo' | 'metodo' | 'experiencia' | 'bloqueo' | 'lugar'>
+export type Eleccion = Pick<OpcionContexto, 'objeto' | 'verbo' | 'metodo' | 'experiencia' | 'bloqueo' | 'lugar' | 'situacion'>
 
 const quitarTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
@@ -52,7 +55,17 @@ function iconoDe(nombre: string): string {
     api/micro_paso.py, requiere_lugar_tarea). Tareas como estudiar o llamar no lo necesitan. */
 export function preguntasDe(
   tarea: string,
-  datos: { metodos?: string[]; materiales?: string[]; requiereLugar?: boolean; lugares?: string[]; bloqueos?: string[] },
+  datos: {
+    metodos?: string[]
+    materiales?: string[]
+    requiereLugar?: boolean
+    lugares?: string[]
+    bloqueos?: string[]
+    /** Frases de ambiente de la Guía Maestra («con música de fondo»…): para la pregunta de
+        entorno cuando la tarea no depende de un lugar físico */
+    situaciones?: string[]
+    esDigital?: boolean
+  },
 ): PreguntaContexto[] {
   const palabrasTarea = new Set(quitarTildes(tarea).split(/[^a-zñ]+/).filter((p) => p.length >= 4))
   const preguntas: PreguntaContexto[] = []
@@ -77,8 +90,9 @@ export function preguntasDe(
     })
   } else if (materiales.length >= 2) {
     preguntas.push({
+      // «Punto de contacto»: qué tiene a mano ahora mismo (físico) o desde dónde lo abre (digital)
       id: 'a-mano',
-      texto: '¿Qué tienes a mano?',
+      texto: datos.esDigital ? '¿Desde dónde vas a abrirlo?' : '¿Qué tienes más cerca ahora mismo?',
       opciones: [
         ...materiales.slice(0, 3).map((m): OpcionContexto => ({
           id: `material:${m}`,
@@ -90,6 +104,16 @@ export function preguntasDe(
         { id: 'nada', texto: 'Nada de esto', icono: 'manos', objeto: OBJETOS_UNIVERSALES[1], verbo: 'Usa' },
       ],
     })
+  } else if (datos.esDigital) {
+    // Sin materiales reales pero digital: al menos saber el canal (móvil u ordenador)
+    preguntas.push({
+      id: 'canal',
+      texto: '¿Desde dónde vas a abrirlo?',
+      opciones: [
+        { id: 'canal:movil', texto: 'Desde el móvil', icono: 'movil', objeto: 'el móvil', verbo: 'Coge' },
+        { id: 'canal:ordenador', texto: 'En el ordenador', icono: 'ordenador', objeto: 'el ordenador', verbo: 'Abre' },
+      ],
+    })
   }
   // Lugar según la Guía Maestra (Sheet): sitios concretos de ESTA tarea («el baño», «el sofá»),
   // no los 3 genéricos. Si alguno es la cama, el reto más pesado es simplemente ponerse de pie.
@@ -97,8 +121,17 @@ export function preguntasDe(
   const lugarEspecifico = datos.lugares?.length
     ? {
         id: 'lugar',
-        texto: '¿Dónde vas a ponerte?',
+        texto: '¿Dónde te cuesta menos empezar?',
         opciones: datos.lugares.slice(0, 3).map((l): OpcionContexto => ({ id: `lugar:${l}`, texto: l.replace(/^./, (c) => c.toUpperCase()), icono: iconoLugar(l), lugar: quitarTildes(l) })),
+      }
+    : undefined
+  // Sin lugar físico (escribir, pedir cita…): el anclaje es el ambiente, no el sitio.
+  // Se fija como modificador en Pasión e Interés (accionesMotor), no uno al azar entre los genéricos.
+  const entorno = !datos.requiereLugar && datos.situaciones?.length
+    ? {
+        id: 'entorno',
+        texto: '¿Qué te acompaña mejor ahora?',
+        opciones: datos.situaciones.slice(0, 3).map((s): OpcionContexto => ({ id: `situacion:${s}`, texto: s.replace(/^./, (c) => c.toUpperCase()), icono: 'metodo', situacion: s })),
       }
     : undefined
   // Solo si la tarea depende de un sitio físico concreto (limpiar, hacer ejercicio…) se pregunta
@@ -114,7 +147,7 @@ export function preguntasDe(
             { id: 'de-pie', texto: 'De pie', icono: 'de-pie', lugar: 'de-pie' },
           ],
         })
-      : {
+      : (entorno ?? {
           id: 'antes',
           texto: '¿Lo has hecho antes?',
           opciones: [
@@ -122,12 +155,12 @@ export function preguntasDe(
             { id: 'alguna', texto: 'Alguna vez', icono: 'ideas', experiencia: 'alguna' },
             { id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' },
           ],
-        },
+        }),
     // Bloqueo según la Guía Maestra si la tarea trae los suyos (más concretos que los genéricos);
     // el valor interno (pereza/cansancio/agobio) se mantiene por posición para ORDEN_BLOQUEO.
     {
       id: 'bloqueo',
-      texto: '¿Qué te frena?',
+      texto: '¿Qué parte te da más pereza o freno ahora?',
       opciones:
         datos.bloqueos?.length === 3
           ? datos.bloqueos.map((b, i): OpcionContexto => ({
@@ -155,6 +188,7 @@ export function eleccionDe(opciones: OpcionContexto[] | undefined): Eleccion | u
     if (o.experiencia) e.experiencia = o.experiencia
     if (o.bloqueo) e.bloqueo = o.bloqueo
     if (o.lugar) e.lugar = o.lugar
+    if (o.situacion) e.situacion = o.situacion
   }
   return e
 }

@@ -112,7 +112,15 @@ export default function Inicio() {
     // sobre ESTA tarea («¿Cómo lo haces?» con los métodos reales), así siempre tienen sentido.
     // Sin resultados no hay preguntas. «Saltar» deja de preguntar.
     const preguntas = web
-      ? preguntasDe(texto, { metodos: web.metodos, materiales: web.materiales, requiereLugar: web.requiereLugar, lugares: web.lugares, bloqueos: web.bloqueos })
+      ? preguntasDe(texto, {
+          metodos: web.metodos,
+          materiales: web.materiales,
+          requiereLugar: web.requiereLugar,
+          lugares: web.lugares,
+          bloqueos: web.bloqueos,
+          situaciones: web.situaciones,
+          esDigital: web.tipo === 'digital',
+        })
       : []
     const elegidas: OpcionContexto[] = []
     for (const [i, p] of preguntas.entries()) {

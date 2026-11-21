@@ -231,6 +231,7 @@ export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefine
     ...(e.experiencia && { experiencia: e.experiencia }),
     ...(e.bloqueo && { bloqueo: e.bloqueo }),
     ...(e.lugar && { lugar: e.lugar }),
+    ...(e.situacion && { situacion: e.situacion }),
   }
   return { ...(base ?? { accion: p ? `${p.verbo} ${p.objeto}` : undefined, tipo: 'fisico' }), ...deGuia, eleccion }
 }
