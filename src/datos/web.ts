@@ -108,10 +108,14 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
   const clave = claveDe(tarea, esfuerzo)
   const guardada = leerGuardadas()[clave]
   if (guardada && Date.now() - guardada.t < DURACION_MS) return guardada.r
-  // Antes de gastar una búsqueda: si esta tarea ya está en la hoja (de este dispositivo o de otro),
-  // nos ahorramos internet y la pregunta sale ya con objetos y pasos reales.
-  const deSheet = await buscarEnSheet(tarea)
+  // Hoja (caché entre dispositivos) e internet se consultan a la vez: si la hoja ya trae
+  // pasos u objetos reales, no hace falta esperar a que internet termine para preguntar.
+  const pSheet = buscarEnSheet(tarea)
+  const pWeb = buscarEnServidor(tarea, esfuerzo, senal)
+  const deSheet = await pSheet
   if (deSheet) {
+    // Internet sigue su curso en segundo plano: si trae algo mejor, se queda para la próxima vez
+    pWeb.then((r) => r.status === 'success' && (guardar(clave, r), guardarVocabulario(tarea, r.web))).catch(() => {})
     const catalogo = catalogarConWeb(tarea, '')
     const resultado: ResultadoWeb = {
       status: 'success',
@@ -122,7 +126,7 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
     guardarVocabulario(tarea, resultado.web)
     return resultado
   }
-  const resultado = await buscarEnServidor(tarea, esfuerzo, senal)
+  const resultado = await pWeb
   if (resultado.status === 'success') {
     guardar(clave, resultado)
     guardarVocabulario(tarea, resultado.web)

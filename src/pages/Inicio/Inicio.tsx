@@ -190,13 +190,8 @@ export default function Inicio() {
     pasos[3].detalle = iconoFinal ? `Mazo de ${NOMBRE_CATEGORIA[iconoFinal]}` : undefined
     paso(4)
     await pausa(300)
-    // La pantalla de retos espera a que la fila quede guardada en la hoja: así hoja y app van a la vez.
-    const guardado = await guardarEnSheet(filaDe(texto, categoria ?? (iconoFinal && NOMBRE_CATEGORIA[iconoFinal]) ?? 'General', web2))
-    if (!guardado) {
-      setPreparando(null)
-      setAviso({ status: 'incomprehensible', mensaje: 'No se ha podido guardar la tarea. Revisa tu conexión e inténtalo de nuevo.' })
-      return
-    }
+    // En segundo plano: si falla (sin conexión, Apps Script caído…) no bloquea los retos
+    guardarEnSheet(filaDe(texto, categoria ?? (iconoFinal && NOMBRE_CATEGORIA[iconoFinal]) ?? 'General', web2)).catch(() => {})
     despachar({ tipo: 'nueva-tarea', texto, web: web2, ...(icono && { icono }) })
     setPreparando(null)
     navegar('/reto')
