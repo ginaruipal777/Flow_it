@@ -2,7 +2,7 @@
    (ley del esfuerzo inverso + investigación de docs/comunicacion.md).
    Uso: npm run validar */
 import { BANCO, PLAZO, type Acciones, type Nivel } from '../src/datos/banco.ts'
-import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, hechoDe, numMazos, retosDe } from '../src/datos/reglas.ts'
+import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, empiezaConConectorPesado, hechoDe, numMazos, retosDe } from '../src/datos/reglas.ts'
 import { METODOS } from '../src/datos/metodos.ts'
 import { descartarReto, opcionesDe, type RetosFallidos } from '../src/datos/descartes.ts'
 import { limpiarPaso, materialesDe } from '../src/datos/pasos.ts'
@@ -131,8 +131,8 @@ for (const tarea of tareas) {
         const plazo = Object.values(PLAZO).find((p) => r.titulo.includes(p))
         if (r.tipo === 'urgencia' && !plazo) errores.push(`${origen}: Urgencia sin plazo → «${r.titulo}»`)
         if (r.tipo !== 'urgencia' && TIEMPO.test(r.titulo)) errores.push(`${origen}: tiempo fuera de Urgencia → «${r.titulo}»`)
-        if (r.titulo.startsWith('Solo ') !== r.permiso.startsWith('Con eso'))
-          errores.push(`${origen}: «Solo…» solo en el nivel Pesado → «${r.titulo}»`)
+        if (empiezaConConectorPesado(r.titulo) !== r.permiso.startsWith('Con eso'))
+          errores.push(`${origen}: conector de Pesado (Solo/Tan solo/Nada más) solo en ese nivel → «${r.titulo}»`)
         if (r.titulo.length > 110) errores.push(`${origen}: demasiado largo para la carta (${r.titulo.length}) → «${r.titulo}»`)
       }
     }

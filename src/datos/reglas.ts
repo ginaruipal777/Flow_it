@@ -335,11 +335,22 @@ export function hechoDe(accion: string): string {
   return `${p.pron ? `${p.pron} ` : ''}has ${p.part}${resto.length ? ` ${resto.join(' ')}` : ''}`
 }
 
-/** Texto de la carta: la acción sola, con «Solo…» en Pesado y el plazo en Urgencia. */
+/* Pesado siempre baja la exigencia con un adverbio antes del verbo (nunca cambia el modo
+   imperativo: «Tan solo suelta…», no «Basta con suelta…», que pediría infinitivo). Cuál le
+   toca a cada carta sale de su propio texto (hash), así no se repite siempre el mismo. */
+export const CONECTORES_PESADO = ['Solo', 'Tan solo', 'Nada más']
+export const empiezaConConectorPesado = (titulo: string) => CONECTORES_PESADO.some((c) => titulo.startsWith(`${c} `))
+function conectorPesado(texto: string): string {
+  let h = 0
+  for (const c of texto) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return CONECTORES_PESADO[h % CONECTORES_PESADO.length]
+}
+
+/** Texto de la carta: la acción sola, con un conector de mínimo esfuerzo en Pesado y el plazo en Urgencia. */
 export function fraseReto(accion: string, nivel: Nivel, tipo: TipoReto): string {
   let A = sinPunto(accion)
   if (tipo === 'urgencia') A = `${A} ${PLAZO[nivel]}`
-  return nivel === 'pesado' ? `Solo ${minuscula(A)}` : mayuscula(A)
+  return nivel === 'pesado' ? `${conectorPesado(A)} ${minuscula(A)}` : mayuscula(A)
 }
 
 /* ── 5. Lógica de ejecución ─────────────────────────────────── */
