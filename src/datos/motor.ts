@@ -339,15 +339,30 @@ const CON_OBJETO = /^(p-toca|p-mira|p-abre|p-busca|p-unidad|m-unidad|m-paso|m-ve
 const contraer = (s: string) => s.replace(/(^|\s)(a|de) el(?=\s|$)/g, (_, pre: string, p: string) => `${pre}${p === 'a' ? 'al' : 'del'}`)
 const MAXIMO = 100 // la carta admite ~110 con «Solo…»
 const MAXIMO_URGENCIA = 75 // Urgencia lleva además el plazo («antes de que pase una hora»)
+const LIMITE_CARTA = 110
+
+/* Pesado baja la exigencia con un adverbio antes del verbo (nunca cambia el modo imperativo:
+   «Tan solo suelta…», no «Basta con suelta…», que pediría infinitivo). Cuál le toca a cada
+   carta sale de su propio texto (hash), así no se repite siempre el mismo; reglas.ts usa esta
+   misma lista para escribirlo, y aquí se usa para saber cuánto margen le queda a la frase. */
+export const CONECTORES_PESADO = ['Solo', 'Tan solo', 'Nada más', 'Únicamente', 'Apenas', 'Simplemente']
+export function conectorPesado(texto: string): string {
+  let h = 0
+  for (const c of texto) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return CONECTORES_PESADO[h % CONECTORES_PESADO.length]
+}
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 const TIPOS: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']
 
-/** De dónde sale cada carta: plantilla (para «No encaja») y estrategia */
-export type Origen = { plantilla: string; estrategia: Estrategia; pasos?: string[] }
+/** De dónde sale cada carta: plantilla (para «No encaja»), estrategia y el núcleo a solas
+    (verbo primero, sin el modificador): «Está hecho cuando…» sale de ahí, nunca de la frase
+    completa, porque con el modificador delante («Con música…, coge…») la primera palabra ya
+    no es el verbo. */
+export type Origen = { plantilla: string; estrategia: Estrategia; pasos?: string[]; nucleoTexto: string }
 export type ResultadoMotor = { acciones: Acciones; origen: Record<Nivel, Record<TipoReto, Origen>> }
 
-type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nucleo: Estrategia; pasos?: string[] }
+type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nucleo: Estrategia; pasos?: string[]; nucleoTexto: string }
 
 /** Orden con lo que falló: fuera las plantillas descartadas; la estrategia descartada al final;
     con descartes, primero la estrategia opuesta (casi siempre la acción mecánica). */
@@ -390,7 +405,7 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       const s = (sem + i * 7919 + NIVELES.indexOf(nivel) * 104729) >>> 0
       let candidatas: Candidata[]
       if (tipo === 'urgencia') {
-        candidatas = mezclar(base, s).map((n) => ({ texto: n.texto, plantilla: `${n.id}`, estrategia: n.estrategia, nucleo: n.estrategia, pasos: n.pasos }))
+        candidatas = mezclar(base, s).map((n) => ({ texto: n.texto, plantilla: `${n.id}`, estrategia: n.estrategia, nucleo: n.estrategia, pasos: n.pasos, nucleoTexto: n.texto }))
       } else {
         // Con un objeto o método elegido, el reto ya tiene sitio propio: no se cambia de sitio
         const fijo = Boolean(v.eleccion?.objeto || v.eleccion?.metodo)
@@ -410,26 +425,42 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
           (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) &&
           (m.id !== 'i-detalle' || CON_OBJETO.test(n.id)) &&
           !(/móvil/.test(m.texto) && /móvil|guía|app|web/.test(n.texto))
+        // Núcleo modificador. (siempre el núcleo primero: «acciones[nivel][tipo]» tiene que
+        // seguir empezando por un verbo físico en TODA la app, no solo en la carta — accionesWeb()
+        // se usa fuera de aquí y revisarAccion lo comprueba en todas partes, no solo en el título)
         const combinadas = mezclar(base, s).flatMap((n) =>
           mezclar(mods, s >>> 3)
             .filter((m) => encaja(n, m))
-            .map((m) => ({ texto: `${n.texto} ${m.texto}`, plantilla: `${n.id}+${m.id}`, estrategia: m.estrategia === 'mecanica' ? n.estrategia : m.estrategia, nucleo: n.estrategia, pasos: n.pasos })),
+            .map((m) => ({
+              texto: `${n.texto} ${m.texto}`,
+              plantilla: `${n.id}+${m.id}`,
+              estrategia: m.estrategia === 'mecanica' ? n.estrategia : m.estrategia,
+              nucleo: n.estrategia,
+              pasos: n.pasos,
+              nucleoTexto: n.texto,
+            })),
         )
-        const sueltas = enteras(v, nivel, tipo).map((e) => ({ texto: e.texto, plantilla: e.id, estrategia: e.estrategia, nucleo: e.estrategia }))
+        const sueltas = enteras(v, nivel, tipo).map((e) => ({ texto: e.texto, plantilla: e.id, estrategia: e.estrategia, nucleo: e.estrategia, nucleoTexto: e.texto }))
         // Las frases enteras salen a veces, no siempre: así cambian de un mazo a otro.
         // En Novedad, los cambios comunes («cambia una sola cosa…») salen la mitad de las veces
         const primero = tipo === 'novedad' ? s % 2 === 0 : s % 3 === 0
         candidatas = primero ? [...sueltas, ...combinadas] : [...combinadas, ...sueltas]
       }
       const listas = conDescartes(candidatas, opciones).map((c) => ({ ...c, texto: contraer(c.texto) }))
-      const cabe = (c: (typeof listas)[number]) => c.texto.length <= (tipo === 'urgencia' ? MAXIMO_URGENCIA : MAXIMO) && !usadas.has(c.texto)
+      const cabe = (c: (typeof listas)[number]) => {
+        if (usadas.has(c.texto)) return false
+        if (tipo === 'urgencia') return c.texto.length <= MAXIMO_URGENCIA
+        // +1 el espacio del conector, +1 el punto final que le pone retosDe al título
+        if (nivel === 'pesado') return c.texto.length + 1 + conectorPesado(c.texto).length + 1 <= LIMITE_CARTA
+        return c.texto.length <= MAXIMO
+      }
       const elegida =
         listas.find((c) => cabe(c) && !usadosNucleos.has(nucleoDePlantilla(c.plantilla))) ??
         listas.find((c) => cabe(c)) ?? { ...candidatas[0], texto: contraer(candidatas[0].texto) }
       usadas.add(elegida.texto)
       usadosNucleos.add(nucleoDePlantilla(elegida.plantilla))
       cartas[tipo] = elegida.texto
-      origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia, ...(elegida.pasos && { pasos: elegida.pasos }) }
+      origenes[tipo] = { plantilla: elegida.plantilla, estrategia: elegida.estrategia, nucleoTexto: elegida.nucleoTexto, ...(elegida.pasos && { pasos: elegida.pasos }) }
     })
     acciones[nivel] = cartas
     origen[nivel] = origenes

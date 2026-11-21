@@ -4,7 +4,7 @@ import { BANCO, PERMISO, PLAZO, type Acciones, type Nivel } from './banco.ts'
 import { ACTIVIDAD_DE_CATEGORIA, ACTIVIDAD_DE_SITUACION, type Actividad } from './metodos.ts'
 import { leerSituacion, type Fuente } from './situacion.ts'
 import { esVerbo } from './filtros.ts'
-import { accionesMotor, mezclarMazo, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
+import { accionesMotor, CONECTORES_PESADO, conectorPesado, mezclarMazo, semillaDe, type ResultadoMotor, type Variables } from './motor.ts'
 import type { Estrategia, OpcionesMotor } from './descartes.ts'
 import { objetoDePaso } from './pasos.ts'
 import { eleccionDe, type OpcionContexto } from './contexto.ts'
@@ -335,16 +335,9 @@ export function hechoDe(accion: string): string {
   return `${p.pron ? `${p.pron} ` : ''}has ${p.part}${resto.length ? ` ${resto.join(' ')}` : ''}`
 }
 
-/* Pesado siempre baja la exigencia con un adverbio antes del verbo (nunca cambia el modo
-   imperativo: «Tan solo suelta…», no «Basta con suelta…», que pediría infinitivo). Cuál le
-   toca a cada carta sale de su propio texto (hash), así no se repite siempre el mismo. */
-export const CONECTORES_PESADO = ['Solo', 'Tan solo', 'Nada más']
+/* CONECTORES_PESADO y conectorPesado viven en motor.ts: ahí también se usan para saber cuánto
+   margen de longitud le queda a cada frase antes de escoger un conector más largo. */
 export const empiezaConConectorPesado = (titulo: string) => CONECTORES_PESADO.some((c) => titulo.startsWith(`${c} `))
-function conectorPesado(texto: string): string {
-  let h = 0
-  for (const c of texto) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  return CONECTORES_PESADO[h % CONECTORES_PESADO.length]
-}
 
 /** Texto de la carta: la acción sola, con un conector de mínimo esfuerzo en Pesado y el plazo en Urgencia. */
 export function fraseReto(accion: string, nivel: Nivel, tipo: TipoReto): string {
@@ -526,7 +519,9 @@ export function retosDe(
       titulo: `${frase}.`,
       // «Sigue los pasos hasta…»: el detalle muestra los pasos reales de la guía
       pasos: deMotor?.pasos?.length ? deMotor.pasos : [frase],
-      hecho: hechoDe(accion),
+      // Del núcleo a solas (verbo primero), nunca de la frase completa: con el modificador
+      // delante («Con música…, coge…») la primera palabra ya no sería el verbo.
+      hecho: hechoDe(deMotor?.nucleoTexto ?? accion),
       permiso: PERMISO[nivel],
       plantilla: deMotor ? deMotor.plantilla : `respaldo:${nivel}:${tipo}`,
       estrategia: deMotor ? deMotor.estrategia : ESTRATEGIA_DE_TIPO[tipo],
