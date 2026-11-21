@@ -1,7 +1,8 @@
 /* Integración con la Guía Maestra de Retos (Google Sheets vía Apps Script).
-   Cada tarea nueva envía una fila con las 19 columnas de la hoja, para ir construyendo
-   una base de datos de tareas y retos reales. Si falla (sin conexión, CORS…) no bloquea
-   nada: es «fire and forget», igual que el resto de llamadas a la web. */
+   1. Antes de buscar en internet, se mira si la tarea ya está en la hoja (GET ?tarea=…):
+      si trae pasos u objetos reales, nos ahorramos la búsqueda y la pregunta sale con eso.
+   2. Al terminar de preguntar, se guarda la fila completa (POST): la pantalla de retos
+      espera a que termine, así la hoja y lo que ve la persona van siempre a la vez. */
 
 import type { MicroPasoWeb } from './modelo.ts'
 import { preguntasDe } from './contexto.ts'
@@ -67,15 +68,48 @@ export function filaDe(texto: string, dominio: string, web?: MicroPasoWeb): Fila
   }
 }
 
-/** Envía la fila a la hoja. No bloquea ni avisa si falla: solo va construyendo la base de datos. */
-export function guardarEnSheet(fila: FilaSheet): void {
+/** Envía la fila a la hoja; la pantalla de retos espera esta respuesta antes de mostrarse.
+    true si se guardó, false si falló (sin conexión, CORS, el script caído…). */
+export async function guardarEnSheet(fila: FilaSheet): Promise<boolean> {
   try {
-    fetch(URL_SHEET, {
+    const r = await fetch(URL_SHEET, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita el preflight CORS en Apps Script
       body: JSON.stringify(fila),
-    }).catch(() => {})
+    })
+    return r.ok
   } catch {
-    /* sin conexión o bloqueado: no pasa nada, es solo un registro adicional */
+    return false
+  }
+}
+
+/** Lo que ya sabe la hoja de esta tarea (caché entre dispositivos), reconstruido como si
+    viniera de la búsqueda en internet. undefined si no está, o si está pero vacía (una fila
+    guardada sin búsqueda real: no sirve como caché). */
+export async function buscarEnSheet(tarea: string): Promise<MicroPasoWeb | undefined> {
+  try {
+    const r = await fetch(`${URL_SHEET}?tarea=${encodeURIComponent(tarea)}`)
+    if (!r.ok) return undefined
+    const datos = (await r.json()) as { found?: boolean; data?: FilaSheet }
+    const fila = datos.found ? datos.data : undefined
+    if (!fila || (!fila.Secuencia_Pasos_Reales && !fila.Objetos_Ubicuos)) return undefined
+    const quitarNumero = (p: string) => p.replace(/^\d+\.\s*/, '')
+    const pasos = fila.Secuencia_Pasos_Reales ? fila.Secuencia_Pasos_Reales.split('; ').map(quitarNumero) : []
+    const materiales = fila.Objetos_Ubicuos ? fila.Objetos_Ubicuos.split('; ') : []
+    const tecnicas = fila.Hacks_Neurodivergentes_TDAH ? fila.Hacks_Neurodivergentes_TDAH.split('; ') : []
+    return {
+      contexto: fila.Tarea,
+      microPaso: pasos[0] ?? materiales[0] ?? '',
+      objeto: materiales[0] ?? '',
+      tipo: fila.Es_Digital === 'Verdadero' ? 'digital' : 'fisico',
+      nivel: 'medio',
+      fiable: true,
+      categoria: fila.Dominio || undefined,
+      ...(pasos.length && { pasos }),
+      ...(materiales.length && { materiales }),
+      ...(tecnicas.length && { tecnicas }),
+    }
+  } catch {
+    return undefined
   }
 }

@@ -3,6 +3,7 @@ import type { Categoria } from '../components/Icono/iconos'
 import { catalogarConWeb } from './reglas'
 import { filtrarTarea, type Filtro } from './filtros'
 import { materialesDe, metodosDe, pasosDe, tecnicasDe, type LineaLista, type LineaPaso } from './pasos'
+import { buscarEnSheet } from './sheet'
 
 /* Llamada a la función api/micro_paso.py (Vercel): busca en internet cómo se hace la tarea.
    Con lo encontrado la app cataloga la tarea (si sus palabras no bastan) y, si la búsqueda
@@ -107,6 +108,20 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
   const clave = claveDe(tarea, esfuerzo)
   const guardada = leerGuardadas()[clave]
   if (guardada && Date.now() - guardada.t < DURACION_MS) return guardada.r
+  // Antes de gastar una búsqueda: si esta tarea ya está en la hoja (de este dispositivo o de otro),
+  // nos ahorramos internet y la pregunta sale ya con objetos y pasos reales.
+  const deSheet = await buscarEnSheet(tarea)
+  if (deSheet) {
+    const catalogo = catalogarConWeb(tarea, '')
+    const resultado: ResultadoWeb = {
+      status: 'success',
+      ...(catalogo && { icono: catalogo.icono }),
+      web: { ...deSheet, nivel: esfuerzo, ...(catalogo && !deSheet.categoria && { categoria: catalogo.categoria }) },
+    }
+    guardar(clave, resultado)
+    guardarVocabulario(tarea, resultado.web)
+    return resultado
+  }
   const resultado = await buscarEnServidor(tarea, esfuerzo, senal)
   if (resultado.status === 'success') {
     guardar(clave, resultado)
