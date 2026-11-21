@@ -90,6 +90,9 @@ export async function buscarEnSheet(tarea: string): Promise<MicroPasoWeb | undef
     const pasos = partir(fila.Acciones_Medio)
     const tecnicas = partir(fila.Situaciones)
     const lugares = partir(fila.Lugares)
+    const bloqueos = partir(fila.Bloqueos)
+    const nucleosPesado = partir(fila.Acciones_Pesado)
+    const nucleosLigero = partir(fila.Acciones_Ligero)
     return {
       contexto: fila.Tarea,
       microPaso: pasos[0] ?? materiales[0] ?? '',
@@ -100,8 +103,12 @@ export async function buscarEnSheet(tarea: string): Promise<MicroPasoWeb | undef
       categoria: fila.Dominio || undefined,
       ...(pasos.length && { pasos }),
       ...(materiales.length && { materiales }),
-      ...(tecnicas.length && { tecnicas }),
-      ...(lugares.length && { requiereLugar: true, lugarProbable: lugares[0] }),
+      ...(tecnicas.length && { tecnicas, situaciones: tecnicas }),
+      ...(lugares.length && { requiereLugar: true, lugarProbable: lugares[0], lugares }),
+      ...(bloqueos.length && { bloqueos }),
+      ...(nucleosPesado.length && { nucleosPesado }),
+      ...(pasos.length && { nucleosMedio: pasos }),
+      ...(nucleosLigero.length && { nucleosLigero }),
     }
   } catch {
     return undefined

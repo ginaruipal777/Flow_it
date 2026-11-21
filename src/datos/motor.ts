@@ -38,6 +38,14 @@ export type Variables = {
   tecnicas?: string[]
   /** La tarea cuando es solo un nombre, sin verbo («el café») */
   tema?: string
+  /** Frases de ambiente ya escritas para esta tarea en la Guía Maestra (Sheet): se suman a los
+      modificadores INCUP genéricos como candidatas más específicas. */
+  situaciones?: string[]
+  /** Núcleos ya escritos en la Guía Maestra para cada nivel: si están, el motor los usa tal
+      cual en vez de construir el núcleo a partir de pasos/materiales o de reglas genéricas. */
+  nucleosPesado?: string[]
+  nucleosMedio?: string[]
+  nucleosLigero?: string[]
   /** Lo que contestó la persona en las preguntas de contexto (contexto.ts) */
   eleccion?: {
     /** Un método u objeto concreto que sí tiene («la prensa francesa») */
@@ -156,7 +164,7 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       }
       if (!propios.length && nombrar) propios.push(m('c-posit', `Escribe en un pósit «${nombrar}»`))
       // Si la tarea necesita un sitio y la persona está en la cama, el contacto mínimo es levantarse
-      if (e.lugar === 'cama') propios.push(m('c-ponte', 'Ponte de pie'))
+      if (e.lugar?.includes('cama')) propios.push(m('c-ponte', 'Ponte de pie'))
     } else if (nivel === 'medio') {
       if (e.objeto) {
         propios.push(
@@ -185,6 +193,10 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
     }
     if (propios.length) return propios
   }
+  // Núcleos ya escritos para esta tarea en la Guía Maestra (Sheet): más naturales que construirlos,
+  // se usan tal cual en vez de los conectores genéricos de abajo.
+  const nucleosGuia = nivel === 'pesado' ? v.nucleosPesado : nivel === 'medio' ? v.nucleosMedio : v.nucleosLigero
+  if (nucleosGuia?.length) return nucleosGuia.map((texto, n) => m(`sheet-${nivel[0]}${n}`, texto))
   // Con lo que trae internet, los conectores se rellenan con datos reales:
   // pasos de la guía, materiales que nombran las webs y técnicas que recomiendan
   const pasos = v.pasos ?? []
@@ -388,6 +400,9 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
             (!m.solo || m.solo === 'unidad' || m.solo === v.tipo) &&
             !(fijo && /^(n-sitio|n-rincon|n-ventana|p-rincon)$/.test(m.id)),
         )
+        // Frases de ambiente ya escritas para esta tarea (Sheet): candidatas de más, además
+        // de las genéricas, para cualquier carta (no son de un tipo INCUP en concreto)
+        if (v.situaciones?.length) mods.push(...v.situaciones.map((texto, n): Modificador => ({ id: `sheet-sit-${n}`, texto, estrategia: 'emocional' })))
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
         // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
         // y nada de «sin mirar el móvil» cuando el núcleo se hace con el móvil o con la guía

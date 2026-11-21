@@ -181,7 +181,26 @@ export function partesDe(tarea: string): { verbo: string; objeto: string } | und
 }
 
 /* Retos con lo que encontró la búsqueda web (api/micro_paso.py). */
-export type DatosWeb = { microPaso: string; objeto: string; tipo: 'digital' | 'fisico'; nivel: Nivel; fiable?: boolean; categoria?: string; verboTarea?: string; verboAccion?: string; pasos?: string[]; materiales?: string[]; tecnicas?: string[]; eleccion?: OpcionContexto[] }
+export type DatosWeb = {
+  microPaso: string
+  objeto: string
+  tipo: 'digital' | 'fisico'
+  nivel: Nivel
+  fiable?: boolean
+  categoria?: string
+  verboTarea?: string
+  verboAccion?: string
+  pasos?: string[]
+  materiales?: string[]
+  tecnicas?: string[]
+  eleccion?: OpcionContexto[]
+  /** Frases de ambiente de la Guía Maestra (Sheet): más modificadores INCUP, además de los genéricos */
+  situaciones?: string[]
+  /** Núcleos ya escritos en la Guía Maestra para cada nivel */
+  nucleosPesado?: string[]
+  nucleosMedio?: string[]
+  nucleosLigero?: string[]
+}
 
 const MANIPULAR = /^(Coge|Saca|Retira|Quita|Extrae|Llena|Vacía|Coloca|Pon|Mete|Abre|Lava|Limpia|Seca|Monta|Desmonta|Enrosca|Desenrosca|Atornilla|Levanta|Mueve|Gira)$/
 const DIGITAL = /\b(test|tests|formulario|solicitud|correo|email|mail|documento|pdf|informe|web|app|sede|cita previa|tramite|trámite|presentaci[oó]n|tfg|tfm)\b/i
@@ -195,8 +214,16 @@ export function tipoDe(tarea: string, web?: DatosWeb): 'digital' | 'fisico' {
 /** Variables para el motor: de la web (si es fiable) y de la frase. */
 export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefined {
   const base = variablesSinEleccion(tarea, web)
+  // Lo que ya trae escrito la Guía Maestra (Sheet) manda sobre cómo se construye el núcleo,
+  // vaya la frase por la rama que vaya (con o sin elección de la persona).
+  const deGuia = web?.fiable && {
+    ...(web.situaciones?.length && { situaciones: web.situaciones }),
+    ...(web.nucleosPesado?.length && { nucleosPesado: web.nucleosPesado }),
+    ...(web.nucleosMedio?.length && { nucleosMedio: web.nucleosMedio }),
+    ...(web.nucleosLigero?.length && { nucleosLigero: web.nucleosLigero }),
+  }
   const e = eleccionDe(web?.eleccion)
-  if (!e) return base
+  if (!e) return base && deGuia ? { ...base, ...deGuia } : base
   const p = partesDe(tarea)
   const eleccion = {
     ...(e.objeto && { objeto: e.objeto, verbo: e.verbo }),
@@ -205,7 +232,7 @@ export function variablesDe(tarea: string, web?: DatosWeb): Variables | undefine
     ...(e.bloqueo && { bloqueo: e.bloqueo }),
     ...(e.lugar && { lugar: e.lugar }),
   }
-  return { ...(base ?? { accion: p ? `${p.verbo} ${p.objeto}` : undefined, tipo: 'fisico' }), eleccion }
+  return { ...(base ?? { accion: p ? `${p.verbo} ${p.objeto}` : undefined, tipo: 'fisico' }), ...deGuia, eleccion }
 }
 
 function variablesSinEleccion(tarea: string, web?: DatosWeb): Variables | undefined {

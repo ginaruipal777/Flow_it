@@ -67,6 +67,18 @@ export type MicroPasoWeb = {
   requiereLugar?: boolean
   /** Sitio orientativo de la tarea cuando requiereLugar es true («la cocina») */
   lugarProbable?: string
+  /** Sitios concretos de la Guía Maestra (Sheet) para preguntar «¿Dónde vas a ponerte?» */
+  lugares?: string[]
+  /** Bloqueos concretos de la Guía Maestra («cambio de temperatura», «elegir ropa limpia»…) */
+  bloqueos?: string[]
+  /** Frases de ambiente de la Guía Maestra («con tu playlist de ducha a tope»…): modificadores
+      INCUP ya escritos para esta tarea, además de los genéricos de motor.ts */
+  situaciones?: string[]
+  /** Núcleos ya escritos en la Guía Maestra para cada nivel («tocar la toalla limpia»…):
+      si están, el motor los usa en vez de construir el núcleo a partir de pasos/materiales */
+  nucleosPesado?: string[]
+  nucleosMedio?: string[]
+  nucleosLigero?: string[]
 }
 
 export type Reto = {

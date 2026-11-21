@@ -52,7 +52,7 @@ function iconoDe(nombre: string): string {
     api/micro_paso.py, requiere_lugar_tarea). Tareas como estudiar o llamar no lo necesitan. */
 export function preguntasDe(
   tarea: string,
-  datos: { metodos?: string[]; materiales?: string[]; requiereLugar?: boolean },
+  datos: { metodos?: string[]; materiales?: string[]; requiereLugar?: boolean; lugares?: string[]; bloqueos?: string[] },
 ): PreguntaContexto[] {
   const palabrasTarea = new Set(quitarTildes(tarea).split(/[^a-zñ]+/).filter((p) => p.length >= 4))
   const preguntas: PreguntaContexto[] = []
@@ -91,11 +91,21 @@ export function preguntasDe(
       ],
     })
   }
+  // Lugar según la Guía Maestra (Sheet): sitios concretos de ESTA tarea («el baño», «el sofá»),
+  // no los 3 genéricos. Si alguno es la cama, el reto más pesado es simplemente ponerse de pie.
+  const iconoLugar = (l: string) => (/cama/.test(quitarTildes(l)) ? 'cama' : /mesa|escritorio|ordenador/.test(quitarTildes(l)) ? 'mesa' : 'de-pie')
+  const lugarEspecifico = datos.lugares?.length
+    ? {
+        id: 'lugar',
+        texto: '¿Dónde vas a ponerte?',
+        opciones: datos.lugares.slice(0, 3).map((l): OpcionContexto => ({ id: `lugar:${l}`, texto: l.replace(/^./, (c) => c.toUpperCase()), icono: iconoLugar(l), lugar: quitarTildes(l) })),
+      }
+    : undefined
   // Solo si la tarea depende de un sitio físico concreto (limpiar, hacer ejercicio…) se pregunta
   // dónde está la persona: así, si dice «en la cama», el reto más pesado es simplemente ponerse de pie.
   preguntas.push(
     datos.requiereLugar
-      ? {
+      ? (lugarEspecifico ?? {
           id: 'lugar',
           texto: '¿Dónde estás ahora?',
           opciones: [
@@ -103,7 +113,7 @@ export function preguntasDe(
             { id: 'mesa', texto: 'En una mesa', icono: 'mesa', lugar: 'mesa' },
             { id: 'de-pie', texto: 'De pie', icono: 'de-pie', lugar: 'de-pie' },
           ],
-        }
+        })
       : {
           id: 'antes',
           texto: '¿Lo has hecho antes?',
@@ -113,14 +123,24 @@ export function preguntasDe(
             { id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' },
           ],
         },
+    // Bloqueo según la Guía Maestra si la tarea trae los suyos (más concretos que los genéricos);
+    // el valor interno (pereza/cansancio/agobio) se mantiene por posición para ORDEN_BLOQUEO.
     {
       id: 'bloqueo',
       texto: '¿Qué te frena?',
-      opciones: [
-        { id: 'pereza', texto: 'Pereza', icono: 'pereza', bloqueo: 'pereza' },
-        { id: 'cansancio', texto: 'Cansancio', icono: 'cansancio', bloqueo: 'cansancio' },
-        { id: 'agobio', texto: 'Me agobia', icono: 'ansiedad', bloqueo: 'agobio' },
-      ],
+      opciones:
+        datos.bloqueos?.length === 3
+          ? datos.bloqueos.map((b, i): OpcionContexto => ({
+              id: `bloqueo:${b}`,
+              texto: b.replace(/^./, (c) => c.toUpperCase()),
+              icono: ['pereza', 'cansancio', 'ansiedad'][i],
+              bloqueo: ['pereza', 'cansancio', 'agobio'][i],
+            }))
+          : [
+              { id: 'pereza', texto: 'Pereza', icono: 'pereza', bloqueo: 'pereza' },
+              { id: 'cansancio', texto: 'Cansancio', icono: 'cansancio', bloqueo: 'cansancio' },
+              { id: 'agobio', texto: 'Me agobia', icono: 'ansiedad', bloqueo: 'agobio' },
+            ],
     },
   )
   return preguntas.slice(0, 3)

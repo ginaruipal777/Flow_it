@@ -117,14 +117,13 @@ export async function buscarMicroPaso(tarea: string, esfuerzo: Esfuerzo, senal?:
     // Internet sigue su curso en segundo plano: si trae algo mejor, se queda para la próxima vez
     pWeb.then((r) => r.status === 'success' && (guardar(clave, r), guardarVocabulario(tarea, r.web))).catch(() => {})
     const catalogo = catalogarConWeb(tarea, '')
-    const resultado: ResultadoWeb = {
+    // La respuesta del Sheet NO se guarda en la caché de 7 días: la Guía Maestra puede cambiar
+    // (más filas, filas editadas) y cada intento debe poder leerla de nuevo, no quedarse congelado.
+    return {
       status: 'success',
       ...(catalogo && { icono: catalogo.icono }),
       web: { ...deSheet, nivel: esfuerzo, ...(catalogo && !deSheet.categoria && { categoria: catalogo.categoria }) },
     }
-    guardar(clave, resultado)
-    guardarVocabulario(tarea, resultado.web)
-    return resultado
   }
   const resultado = await pWeb
   if (resultado.status === 'success') {
