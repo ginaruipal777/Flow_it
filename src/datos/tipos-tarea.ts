@@ -18,5 +18,5 @@ export const TIPOS_TAREA: TipoTarea[] = [
   { texto: 'Cocinar o comer', categoria: 'Cocina', icono: 'alimentacion' },
   { texto: 'Estudiar o leer', categoria: 'Académico', icono: 'estudios' },
   { texto: 'Moverte o salir a la calle', categoria: 'Caminar', icono: 'deporte' },
-  { texto: 'Cuidarte', categoria: 'Aseo', icono: 'autocuidado' },
+  { texto: 'Cuidarte', categoria: 'Aseo', icono: 'higiene' },
 ]

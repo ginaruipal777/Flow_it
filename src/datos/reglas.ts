@@ -115,7 +115,7 @@ export const REGLAS: Regla[] = [
 
   // 2.7 Descanso y Autocuidado
   r('dormir, siesta, descansar, acostarme, irme a dormir, acostarse, sueño, cama, dormir pronto', 'Descanso', 'autocuidado', 'Prepara la cama y apaga pantallas', 'la cama está abierta y las pantallas apagadas'),
-  r('ducha, baño, aseo, ducharme, duchar, lavarme, dientes, lavarme los dientes, bañarme, higiene, afeitarme, depilarme', 'Aseo', 'autocuidado', 'Ve al baño y abre el grifo', 'estás en el baño con el grifo abierto'),
+  r('ducha, baño, aseo, ducharme, duchar, lavarme, dientes, lavarme los dientes, bañarme, higiene, afeitarme, depilarme', 'Aseo', 'higiene', 'Ve al baño y abre el grifo', 'estás en el baño con el grifo abierto'),
   r('skincare, crema, rutina facial, cuidado de la piel, cara, mascarilla, protector solar', 'Skincare', 'autocuidado', 'Aplica un solo producto', 'te has puesto un producto'),
   r('desayuno, comer, cena, alimentarme, comer algo, desayunar, almorzar, merendar, cenar, merienda, almuerzo, picar algo, comer bien, dieta', 'Comida', 'alimentacion', 'Prepara algo simple y siéntate a comer', 'tienes algo de comer en la mesa y has empezado'),
   r('agua, beber, hidratarme, beber agua, vaso de agua, botella, hidratación', 'Hidratación', 'autocuidado', 'Bebe un vaso de agua', 'el vaso de agua está vacío'),

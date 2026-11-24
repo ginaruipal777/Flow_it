@@ -116,6 +116,7 @@ export const NOMBRE_CATEGORIA: Record<Categoria, string> = {
   alimentacion: 'Alimentación',
   mascotas: 'Mascotas',
   social: 'Social',
+  higiene: 'Higiene',
 }
 
 export const ORDEN_TIPOS: TipoReto[] = ['novedad', 'desafio', 'pasion', 'interes', 'urgencia']

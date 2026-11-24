@@ -33,6 +33,7 @@ import casa from '../../assets/iconos/categoria/casa.svg?raw'
 import alimentacion from '../../assets/iconos/categoria/alimentacion.svg?raw'
 import mascotas from '../../assets/iconos/categoria/mascotas.svg?raw'
 import social from '../../assets/iconos/categoria/social.svg?raw'
+import higiene from '../../assets/iconos/categoria/higiene.svg?raw'
 
 import novedad from '../../assets/iconos/tipo/novedad.svg?raw'
 import desafio from '../../assets/iconos/tipo/desafio.svg?raw'
@@ -54,6 +55,7 @@ export const ICONOS_CATEGORIA = {
   alimentacion,
   mascotas,
   social,
+  higiene,
 } as const
 
 export const ICONOS_TIPO = { novedad, desafio, pasion, interes, urgencia } as const
