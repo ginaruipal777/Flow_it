@@ -439,22 +439,6 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
       } else {
         // Con un objeto o método elegido, el reto ya tiene sitio propio: no se cambia de sitio
         const fijo = Boolean(v.eleccion?.objeto || v.eleccion?.metodo)
-        // El ambiente que eligió la persona (pregunta «¿Qué te acompaña mejor?», sin lugar físico)
-        // es EL modificador de Pasión e Interés, no uno más entre los genéricos.
-        const situacionElegida = v.eleccion?.situacion
-        const mods =
-          situacionElegida && (tipo === 'pasion' || tipo === 'interes')
-            ? [{ id: 'eleccion-situacion', texto: situacionElegida, estrategia: tipo === 'pasion' ? 'emocional' : 'social' } as Modificador]
-            : MODIFICADORES[tipo].filter(
-                (m) =>
-                  (!m.niveles || m.niveles.includes(nivel)) &&
-                  (!m.solo || m.solo === 'unidad' || m.solo === v.tipo) &&
-                  !(fijo && /^(n-sitio|n-rincon|n-ventana|p-rincon)$/.test(m.id)),
-              )
-        // Frases de ambiente ya escritas para esta tarea (Sheet): candidatas de más, además
-        // de las genéricas, para cualquier carta (no son de un tipo INCUP en concreto)
-        if (!situacionElegida && v.situaciones?.length)
-          mods.push(...v.situaciones.map((texto, n): Modificador => ({ id: `sheet-sit-${n}`, texto, estrategia: 'emocional' })))
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
         // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
         // y nada de «sin mirar el móvil» cuando el núcleo se hace con el móvil o con la guía
@@ -462,6 +446,25 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
           (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) &&
           (m.id !== 'i-detalle' || CON_OBJETO.test(n.id)) &&
           !(/móvil/.test(m.texto) && /móvil|guía|app|web/.test(n.texto))
+        const modsGenericos = MODIFICADORES[tipo].filter(
+          (m) =>
+            (!m.niveles || m.niveles.includes(nivel)) &&
+            (!m.solo || m.solo === 'unidad' || m.solo === v.tipo) &&
+            !(fijo && /^(n-sitio|n-rincon|n-ventana|p-rincon)$/.test(m.id)),
+        )
+        // El ambiente que eligió la persona (pregunta «¿Qué te acompaña mejor?», sin lugar físico)
+        // es EL modificador de Pasión e Interés, no uno más entre los genéricos — pero solo si
+        // encaja con algún núcleo del mazo; si no, se cae a los genéricos (nunca una lista vacía).
+        const situacionElegida = v.eleccion?.situacion
+        const forzado: Modificador | undefined =
+          situacionElegida && (tipo === 'pasion' || tipo === 'interes')
+            ? { id: 'eleccion-situacion', texto: situacionElegida, estrategia: tipo === 'pasion' ? 'emocional' : 'social' }
+            : undefined
+        const mods = forzado && base.some((n) => encaja(n, forzado)) ? [forzado] : modsGenericos
+        // Frases de ambiente ya escritas para esta tarea (Sheet): candidatas de más, además
+        // de las genéricas, para cualquier carta (no son de un tipo INCUP en concreto)
+        if (mods === modsGenericos && !forzado && v.situaciones?.length)
+          mods.push(...v.situaciones.map((texto, n): Modificador => ({ id: `sheet-sit-${n}`, texto, estrategia: 'emocional' })))
         // Núcleo modificador. (siempre el núcleo primero: «acciones[nivel][tipo]» tiene que
         // seguir empezando por un verbo físico en TODA la app, no solo en la carta — accionesWeb()
         // se usa fuera de aquí y revisarAccion lo comprueba en todas partes, no solo en el título)
@@ -491,9 +494,12 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         if (nivel === 'pesado') return c.texto.length + 1 + conectorPesado(c.texto).length + 1 <= LIMITE_CARTA
         return c.texto.length <= MAXIMO
       }
+      // Defensivo: candidatas no debería quedar vacía nunca (base siempre tiene algo), pero si
+      // algún filtro la dejara así, un núcleo en bruto es mejor que explotar sin mostrar nada.
+      const base0 = candidatas[0] ?? { texto: base[0]?.texto ?? texto, plantilla: `${base[0]?.id ?? 'respaldo'}`, estrategia: 'mecanica' as const, nucleo: 'mecanica' as const, nucleoTexto: base[0]?.texto ?? texto }
       const elegida =
         listas.find((c) => cabe(c) && !usadosNucleos.has(nucleoDePlantilla(c.plantilla))) ??
-        listas.find((c) => cabe(c)) ?? { ...candidatas[0], texto: contraer(candidatas[0].texto) }
+        listas.find((c) => cabe(c)) ?? { ...base0, texto: contraer(base0.texto) }
       usadas.add(elegida.texto)
       usadosNucleos.add(nucleoDePlantilla(elegida.plantilla))
       cartas[tipo] = elegida.texto
