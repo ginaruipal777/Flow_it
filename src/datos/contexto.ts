@@ -125,15 +125,17 @@ export function preguntasDe(
         opciones: datos.lugares.slice(0, 3).map((l): OpcionContexto => ({ id: `lugar:${l}`, texto: l.replace(/^./, (c) => c.toUpperCase()), icono: iconoLugar(l), lugar: quitarTildes(l) })),
       }
     : undefined
-  // Sin lugar físico (escribir, pedir cita…): el anclaje es el ambiente, no el sitio.
-  // Se fija como modificador en Pasión e Interés (accionesMotor), no uno al azar entre los genéricos.
-  const entorno = !datos.requiereLugar && datos.situaciones?.length
-    ? {
-        id: 'entorno',
-        texto: '¿Qué te acompaña mejor ahora?',
-        opciones: datos.situaciones.slice(0, 3).map((s): OpcionContexto => ({ id: `situacion:${s}`, texto: s.replace(/^./, (c) => c.toUpperCase()), icono: 'metodo', situacion: s })),
-      }
-    : undefined
+  // Sin lugar físico (escribir, pedir cita…): el anclaje es el ambiente, no el sitio. Siempre se
+  // pregunta (con lo real del Sheet si lo hay, si no con las 3 formas de acompañamiento genéricas);
+  // se fija como modificador en Pasión e Interés (accionesMotor), no uno al azar entre los genéricos.
+  const AMBIENTE_GENERICO = ['con tu música favorita de fondo', 'con tu bebida favorita al lado', 'en tu rincón favorito de la casa']
+  const entorno: PreguntaContexto = {
+    id: 'entorno',
+    texto: '¿Qué te acompaña mejor ahora?',
+    opciones: (datos.situaciones?.length ? datos.situaciones.slice(0, 3) : AMBIENTE_GENERICO).map(
+      (s): OpcionContexto => ({ id: `situacion:${s}`, texto: s.replace(/^./, (c) => c.toUpperCase()), icono: 'metodo', situacion: s }),
+    ),
+  }
   // Solo si la tarea depende de un sitio físico concreto (limpiar, hacer ejercicio…) se pregunta
   // dónde está la persona: así, si dice «en la cama», el reto más pesado es simplemente ponerse de pie.
   preguntas.push(
@@ -147,15 +149,7 @@ export function preguntasDe(
             { id: 'de-pie', texto: 'De pie', icono: 'de-pie', lugar: 'de-pie' },
           ],
         })
-      : (entorno ?? {
-          id: 'antes',
-          texto: '¿Lo has hecho antes?',
-          opciones: [
-            { id: 'mucha', texto: 'Muchas veces', icono: 'repasar', experiencia: 'mucha' },
-            { id: 'alguna', texto: 'Alguna vez', icono: 'ideas', experiencia: 'alguna' },
-            { id: 'nunca', texto: 'Nunca', icono: 'nose', experiencia: 'nunca' },
-          ],
-        }),
+      : entorno,
     // Bloqueo según la Guía Maestra si la tarea trae los suyos (más concretos que los genéricos);
     // el valor interno (pereza/cansancio/agobio) se mantiene por posición para ORDEN_BLOQUEO.
     {
