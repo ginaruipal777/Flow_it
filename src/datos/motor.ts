@@ -17,6 +17,7 @@
 import type { TipoReto } from '../components/CartaReto/tipos'
 import type { Acciones, Nivel } from './banco.ts'
 import type { Estrategia, OpcionesMotor } from './descartes.ts'
+import { compatible, etiquetasDe, sinEtiquetasDeLugar, type Etiqueta } from './etiquetas.ts'
 
 export type Variables = {
   /** Objeto concreto con artículo («la app del test», «la cafetera») */
@@ -55,6 +56,9 @@ export type Variables = {
     metodo?: string
     experiencia?: 'mucha' | 'alguna' | 'nunca'
     bloqueo?: string
+    /** El texto real del bloqueo elegido («textura del agua o grasa»), cuando viene del Sheet:
+        `bloqueo` es solo el slot (pereza/cansancio/agobio) para ORDEN_BLOQUEO */
+    bloqueoTexto?: string
     /** Dónde está ahora («cama», «mesa», «de-pie»); solo si la tarea requiere un lugar físico */
     lugar?: string
     /** Ambiente elegido cuando no hay lugar físico: se fija en Pasión e Interés */
@@ -98,37 +102,37 @@ type Pieza = { id: string; texto: string; estrategia: Estrategia; pasos?: string
 /* ── Modificadores INCUP: van detrás del núcleo ─────────────────
    Sin «mano no dominante» ni «de forma distinta» (fricción artificial), sin prisas («ya»,
    «sin pensarlo») y sin juicios («te lo mereces»): lo pide la investigación de la app. */
-type Modificador = Pieza & { solo?: 'fisico' | 'digital' | 'unidad'; niveles?: Nivel[] }
+type Modificador = Pieza & { solo?: 'fisico' | 'digital' | 'unidad'; niveles?: Nivel[]; etiquetas?: Etiqueta[] }
 
 const MODIFICADORES: Record<Exclude<TipoReto, 'urgencia'>, Modificador[]> = {
   novedad: [
-    { id: 'n-sitio', texto: 'desde otro sitio de la casa', estrategia: 'mecanica' },
-    { id: 'n-rincon', texto: 'en un sitio de la casa donde casi nunca estás', estrategia: 'mecanica' },
+    { id: 'n-sitio', texto: 'desde otro sitio de la casa', estrategia: 'mecanica', etiquetas: ['cambia-sitio'] },
+    { id: 'n-rincon', texto: 'en un sitio de la casa donde casi nunca estás', estrategia: 'mecanica', etiquetas: ['cambia-sitio'] },
     { id: 'n-final', texto: 'empezando por el final', estrategia: 'mecanica', solo: 'unidad', niveles: ['medio', 'ligero'] },
-    { id: 'n-oscuro', texto: 'con la pantalla en modo oscuro', estrategia: 'mecanica', solo: 'digital' },
-    { id: 'n-ventana', texto: 'junto a una ventana', estrategia: 'mecanica' },
+    { id: 'n-oscuro', texto: 'con la pantalla en modo oscuro', estrategia: 'mecanica', solo: 'digital', etiquetas: ['digital'] },
+    { id: 'n-ventana', texto: 'junto a una ventana', estrategia: 'mecanica', etiquetas: ['cambia-sitio'] },
   ],
   desafio: [
-    { id: 'd-voz', texto: 'contando cada paso en voz alta', estrategia: 'mecanica', niveles: ['medio', 'ligero'] },
-    { id: 'd-quieto', texto: 'sin moverte de donde estás', estrategia: 'mecanica', niveles: ['pesado'] },
-    { id: 'd-movil', texto: 'con el móvil boca abajo', estrategia: 'mecanica', solo: 'fisico' },
-    { id: 'd-sinmovil', texto: 'sin mirar el móvil ni una vez', estrategia: 'mecanica', solo: 'fisico' },
-    { id: 'd-avisos', texto: 'con las notificaciones silenciadas', estrategia: 'mecanica', solo: 'digital' },
-    { id: 'd-hasta', texto: 'sin levantarte hasta terminar', estrategia: 'mecanica', niveles: ['medio', 'ligero'] },
+    { id: 'd-voz', texto: 'contando cada paso en voz alta', estrategia: 'mecanica', niveles: ['medio', 'ligero'], etiquetas: ['ruido', 'voz'] },
+    { id: 'd-quieto', texto: 'sin moverte de donde estás', estrategia: 'mecanica', niveles: ['pesado'], etiquetas: ['quieto'] },
+    { id: 'd-movil', texto: 'con el móvil boca abajo', estrategia: 'mecanica', solo: 'fisico', etiquetas: ['sin-movil'] },
+    { id: 'd-sinmovil', texto: 'sin mirar el móvil ni una vez', estrategia: 'mecanica', solo: 'fisico', etiquetas: ['sin-movil'] },
+    { id: 'd-avisos', texto: 'con las notificaciones silenciadas', estrategia: 'mecanica', solo: 'digital', etiquetas: ['digital'] },
+    { id: 'd-hasta', texto: 'sin levantarte hasta terminar', estrategia: 'mecanica', niveles: ['medio', 'ligero'], etiquetas: ['quieto'] },
   ],
   pasion: [
-    { id: 'p-musica', texto: 'con tu música favorita de fondo', estrategia: 'emocional' },
-    { id: 'p-bebida', texto: 'con tu bebida favorita al lado', estrategia: 'emocional' },
-    { id: 'p-cancion', texto: 'con tu canción favorita sonando', estrategia: 'emocional' },
-    { id: 'p-rincon', texto: 'en tu rincón favorito de la casa', estrategia: 'emocional' },
+    { id: 'p-musica', texto: 'con tu música favorita de fondo', estrategia: 'emocional', etiquetas: ['ruido'] },
+    { id: 'p-bebida', texto: 'con tu bebida favorita al lado', estrategia: 'emocional', etiquetas: ['bebida'] },
+    { id: 'p-cancion', texto: 'con tu canción favorita sonando', estrategia: 'emocional', etiquetas: ['ruido'] },
+    { id: 'p-rincon', texto: 'en tu rincón favorito de la casa', estrategia: 'emocional', etiquetas: ['cambia-sitio'] },
     // Pasión como juego (mecánica): sale primero cuando lo emocional no encajó
     { id: 'p-puntos', texto: 'sumando un punto por cada movimiento', estrategia: 'mecanica' },
     { id: 'p-juego', texto: 'como en un juego de contar movimientos', estrategia: 'mecanica' },
   ],
   interes: [
-    { id: 'i-casa', texto: 'con alguien de casa cerca', estrategia: 'social' },
-    { id: 'i-confianza', texto: 'con una persona de confianza al lado', estrategia: 'social' },
-    { id: 'i-video', texto: 'en una videollamada con alguien de confianza', estrategia: 'social', niveles: ['medio', 'ligero'] },
+    { id: 'i-casa', texto: 'con alguien de casa cerca', estrategia: 'social', etiquetas: ['social'] },
+    { id: 'i-confianza', texto: 'con una persona de confianza al lado', estrategia: 'social', etiquetas: ['social'] },
+    { id: 'i-video', texto: 'en una videollamada con alguien de confianza', estrategia: 'social', niveles: ['medio', 'ligero'], etiquetas: ['social', 'digital'] },
     // Interés sin persona (curiosidad por el objeto): sale primero cuando lo social no encajó
     { id: 'i-detalle', texto: 'fijándote en un detalle que no habías visto', estrategia: 'mecanica' },
   ],
@@ -139,10 +143,6 @@ const MODIFICADORES: Record<Exclude<TipoReto, 'urgencia'>, Modificador[]> = {
 /* Tareas cotidianas: nadie busca «cómo llamar a tu madre». Las demás (descalcificar, pintar,
    montar…) sí se aprenden, y ahí «busca un vídeo» o «lee los pasos» es un primer paso real. */
 const COTIDIANOS = /^(llamar|responder|contestar|escribir|leer|estudiar|comer|cenar|desayunar|almorzar|merendar|duchar\w*|banar\w*|ir|salir|comprar|hablar|quedar|enviar|mandar|ver|jugar|dormir|descansar|pasear|caminar|correr|recoger|ordenar|visitar|felicitar|pedir|repasar|tender|doblar|fregar|regar|sacar|beber|tomar)\b/
-
-// Si está en la cama o el sofá (eleccion.lugar), un núcleo que ya dé por hecho estar de pie en
-// otro sitio concreto (el grifo, la encimera…) no tiene sentido todavía: se descarta.
-const FIJO_SITIO = /\b(grifo|encimera|fregadero|horno|lavadora|microondas)\b/i
 
 /** Las Acciones_[Nivel] de la Guía Maestra que no nombran OTRO objeto distinto del elegido
     (filtro de ubicuidad: solo lo que la persona dijo que tiene). */
@@ -165,8 +165,7 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
   const i = (id: string, texto: string): Pieza => ({ id, texto, estrategia: 'informativa' })
   // Lo que contestó la persona manda (filtro de ubicuidad: solo lo que ha dicho que tiene o hace).
   const e = v.eleccion
-  const reposo = Boolean(e?.lugar && /cama|sofa/.test(e.lugar))
-  const sinSitioFijo = (lista: string[]) => (reposo ? lista.filter((t) => !FIJO_SITIO.test(t)) : lista)
+  const sinSitioFijo = (lista: string[]) => sinEtiquetasDeLugar(lista, e?.lugar)
   if (e) {
     const propios: Pieza[] = []
     // Sin una frase con verbo («café»), se completa con el tema («el café»): «Usa X para el café»
@@ -398,18 +397,22 @@ type Candidata = { texto: string; plantilla: string; estrategia: Estrategia; nuc
     con descartes, primero la estrategia opuesta (casi siempre la acción mecánica). */
 const nucleoDePlantilla = (plantilla: string) => plantilla.split('+')[0]
 
-function conDescartes(lista: Candidata[], op?: OpcionesMotor): Candidata[] {
-  if (!op) return lista
+/** `etiquetasBloqueo`: si la persona dijo qué le frena con un texto concreto del Sheet («textura
+    del agua o grasa»), las candidatas que comparten esa etiqueta (agua, sucio…) bajan al final
+    — despriorizan, nunca se eliminan: si no quedara nada, el mazo reventaría. */
+function conDescartes(lista: Candidata[], op: OpcionesMotor | undefined, etiquetasBloqueo: Etiqueta[]): Candidata[] {
   // Primero se evita hasta el NÚCLEO de lo que ya rechazaste (no solo esa combinación exacta
   // con ese modificador): si dijiste que no a «Pon X a la vista con música», no vuelve a
   // ofrecerte «Pon X a la vista» con otro modificador mientras haya alternativa.
-  const nucleosDescartados = new Set([...op.descartadas].map(nucleoDePlantilla))
-  const sinNucleo = lista.filter((c) => !nucleosDescartados.has(nucleoDePlantilla(c.plantilla)))
-  const libres = (sinNucleo.length ? sinNucleo : lista).filter((c) => !op.descartadas.has(c.plantilla))
-  const pool = libres.length ? libres : sinNucleo.length ? sinNucleo : lista
-  const puntos = (c: Candidata) =>
-    (c.estrategia === op.estrategiaDescartada || c.nucleo === op.estrategiaDescartada ? 2 : 0) +
-    (c.nucleo === (op.preferida ?? 'mecanica') ? 0 : 1)
+  const nucleosDescartados = op ? new Set([...op.descartadas].map(nucleoDePlantilla)) : new Set<string>()
+  const sinNucleo = op ? lista.filter((c) => !nucleosDescartados.has(nucleoDePlantilla(c.plantilla))) : lista
+  const libres = op ? (sinNucleo.length ? sinNucleo : lista).filter((c) => !op.descartadas.has(c.plantilla)) : lista
+  const pool = op ? (libres.length ? libres : sinNucleo.length ? sinNucleo : lista) : lista
+  const puntos = (c: Candidata) => {
+    let p = op ? (c.estrategia === op.estrategiaDescartada || c.nucleo === op.estrategiaDescartada ? 2 : 0) + (c.nucleo === (op.preferida ?? 'mecanica') ? 0 : 1) : 0
+    if (etiquetasBloqueo.length && etiquetasDe(c.texto).some((e) => etiquetasBloqueo.includes(e))) p += 3
+    return p
+  }
   return pool.map((c, i) => ({ c, i })).sort((x, y) => puntos(x.c) - puntos(y.c) || x.i - y.i).map((x) => x.c)
 }
 
@@ -421,6 +424,7 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
   const acciones = {} as Acciones
   const origen = {} as ResultadoMotor['origen']
   const sem = semilla + (opciones?.vuelta ?? 0) * 15485863
+  const etiquetasBloqueo = v.eleccion?.bloqueoTexto ? etiquetasDe(v.eleccion.bloqueoTexto) : []
   for (const nivel of NIVELES) {
     const base = nucleos(v, nivel, unidad)
     if (!base.length) return undefined
@@ -441,11 +445,14 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         const fijo = Boolean(v.eleccion?.objeto || v.eleccion?.metodo)
         // «empezando por el final» solo con núcleos de unidades («Lee 5 párrafos…»)
         // «fijándote en un detalle» solo con núcleos que tienen un objeto delante
-        // y nada de «sin mirar el móvil» cuando el núcleo se hace con el móvil o con la guía
+        // y las 11 reglas semánticas de docs/spec-etiquetas.md (nada de «sin mirar el móvil»
+        // cuando el núcleo se hace con el móvil, nada de compañía en una acción íntima…):
+        // los modificadores fijos llevan sus etiquetas a mano; los dinámicos (Situaciones del
+        // Sheet) se deducen de su propio texto, igual que los núcleos.
         const encaja = (n: Pieza, m: Modificador) =>
           (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) &&
           (m.id !== 'i-detalle' || CON_OBJETO.test(n.id)) &&
-          !(/móvil/.test(m.texto) && /móvil|guía|app|web/.test(n.texto))
+          compatible(n.texto, m.etiquetas ?? etiquetasDe(m.texto))
         const modsGenericos = MODIFICADORES[tipo].filter(
           (m) =>
             (!m.niveles || m.niveles.includes(nivel)) &&
@@ -465,12 +472,20 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         // de las genéricas, para cualquier carta (no son de un tipo INCUP en concreto)
         if (mods === modsGenericos && !forzado && v.situaciones?.length)
           mods.push(...v.situaciones.map((texto, n): Modificador => ({ id: `sheet-sit-${n}`, texto, estrategia: 'emocional' })))
+        // Si las reglas semánticas no dejan NINGÚN par válido en todo el mazo (tareas con poco
+        // vocabulario propio: «limpiar el horno»), se desactiva solo esa comprobación — las 2
+        // estructurales (unidad, con-objeto) se mantienen siempre. Mismo principio que el resto
+        // del archivo: mejor una combinación algo forzada que agotar las opciones y repetir.
+        const hayCompatible = base.some((n) => mods.some((m) => encaja(n, m)))
+        const encajaSegura = hayCompatible
+          ? encaja
+          : (n: Pieza, m: Modificador) => (m.solo !== 'unidad' || NUCLEO_UNIDAD.test(n.texto)) && (m.id !== 'i-detalle' || CON_OBJETO.test(n.id))
         // Núcleo modificador. (siempre el núcleo primero: «acciones[nivel][tipo]» tiene que
         // seguir empezando por un verbo físico en TODA la app, no solo en la carta — accionesWeb()
         // se usa fuera de aquí y revisarAccion lo comprueba en todas partes, no solo en el título)
         const combinadas = mezclar(base, s).flatMap((n) =>
           mezclar(mods, s >>> 3)
-            .filter((m) => encaja(n, m))
+            .filter((m) => encajaSegura(n, m))
             .map((m) => ({
               texto: `${n.texto} ${m.texto}`,
               plantilla: `${n.id}+${m.id}`,
@@ -486,7 +501,7 @@ export function accionesMotor(variables: Variables, texto: string, semilla: numb
         const primero = tipo === 'novedad' ? s % 2 === 0 : s % 3 === 0
         candidatas = primero ? [...sueltas, ...combinadas] : [...combinadas, ...sueltas]
       }
-      const listas = conDescartes(candidatas, opciones).map((c) => ({ ...c, texto: contraer(c.texto) }))
+      const listas = conDescartes(candidatas, opciones, etiquetasBloqueo).map((c) => ({ ...c, texto: contraer(c.texto) }))
       const cabe = (c: (typeof listas)[number]) => {
         if (usadas.has(c.texto)) return false
         if (tipo === 'urgencia') return c.texto.length <= MAXIMO_URGENCIA

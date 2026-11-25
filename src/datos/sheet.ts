@@ -1,11 +1,12 @@
 /* Integración con la Guía Maestra de Retos (Google Sheets vía Apps Script).
    1. Antes de buscar en internet, se mira si la tarea ya está en la hoja (GET ?tarea=…):
       si trae objetos reales, nos ahorramos la búsqueda y la pregunta sale con eso.
-   2. Al terminar de preguntar, se guarda la fila (POST) en segundo plano, en una pestaña
-      aparte de las 20 filas guía: si falla, no afecta a la app. */
+   2. Al terminar de preguntar, se guarda la fila (POST) en segundo plano, debajo de las 20
+      filas guía en la misma pestaña: si falla, no afecta a la app. */
 
 import type { MicroPasoWeb } from './modelo.ts'
 import { PLAZO } from './banco.ts'
+import { ambitoDe } from './etiquetas.ts'
 import { analizarTarea, retosDe, tipoDe, type RetoCarta } from './reglas.ts'
 
 const URL_SHEET = 'https://script.google.com/macros/s/AKfycbytxPbRh349fLni8cgtIIrIUl4rgy26E2Ocli7pH_-gxyRav6DUzsseU-Jke_QuO_jDuQ/exec'
@@ -26,6 +27,9 @@ export type FilaSheet = {
   Acciones_Medio: string
   Acciones_Ligero: string
   Bloqueos: string
+  /** De qué «zona» va la tarea («boca», «cuerpo», «cocina»…): para no confundir tareas que
+      comparten una palabra pero son de ámbitos distintos (docs/spec-etiquetas.md) */
+  Ambito?: string
 }
 
 function carta(retos: RetoCarta[], tipo: RetoCarta['tipo']): string {
@@ -57,6 +61,7 @@ export function filaDe(texto: string, dominio: string, web?: MicroPasoWeb): Fila
     Acciones_Medio: accionesDe(medio),
     Acciones_Ligero: accionesDe(ligero),
     Bloqueos: 'Pereza | Cansancio | Me agobia',
+    Ambito: ambitoDe(texto) ?? '',
   }
 }
 
@@ -80,7 +85,9 @@ export async function guardarEnSheet(fila: FilaSheet): Promise<boolean> {
     (una fila guardada sin búsqueda real: no sirve como caché). */
 export async function buscarEnSheet(tarea: string): Promise<MicroPasoWeb | undefined> {
   try {
-    const r = await fetch(`${URL_SHEET}?tarea=${encodeURIComponent(tarea)}`)
+    const ambito = ambitoDe(tarea)
+    const url = `${URL_SHEET}?tarea=${encodeURIComponent(tarea)}${ambito ? `&ambito=${encodeURIComponent(ambito)}` : ''}`
+    const r = await fetch(url)
     if (!r.ok) return undefined
     const datos = (await r.json()) as { found?: boolean; data?: FilaSheet }
     const fila = datos.found ? datos.data : undefined

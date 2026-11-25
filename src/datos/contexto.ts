@@ -22,8 +22,11 @@ export type OpcionContexto = {
   /** Un estilo o forma, no un objeto («hatha yoga») */
   metodo?: string
   experiencia?: 'mucha' | 'alguna' | 'nunca'
-  /** Qué le frena: pereza, cansancio, agobio */
+  /** Qué le frena: pereza, cansancio, agobio (el slot, para ORDEN_BLOQUEO) */
   bloqueo?: string
+  /** El texto real del bloqueo cuando viene del Sheet («textura del agua o grasa»): el motor lo
+      usa para despriorizar núcleos que compartan esa sensación (docs/spec-etiquetas.md) */
+  bloqueoTexto?: string
   /** Dónde está ahora («cama», «mesa», «de-pie»): solo se pregunta si la tarea requiere un lugar */
   lugar?: string
   /** Ambiente elegido cuando la tarea NO depende de un lugar físico («con música de fondo»):
@@ -34,7 +37,7 @@ export type OpcionContexto = {
 export type PreguntaContexto = { id: string; texto: string; opciones: OpcionContexto[] }
 
 /** Lo elegido, junto, listo para el motor de retos */
-export type Eleccion = Pick<OpcionContexto, 'objeto' | 'verbo' | 'metodo' | 'experiencia' | 'bloqueo' | 'lugar' | 'situacion'>
+export type Eleccion = Pick<OpcionContexto, 'objeto' | 'verbo' | 'metodo' | 'experiencia' | 'bloqueo' | 'bloqueoTexto' | 'lugar' | 'situacion'>
 
 const quitarTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
@@ -162,6 +165,7 @@ export function preguntasDe(
               texto: b.replace(/^./, (c) => c.toUpperCase()),
               icono: ['pereza', 'cansancio', 'ansiedad'][i],
               bloqueo: ['pereza', 'cansancio', 'agobio'][i],
+              bloqueoTexto: b,
             }))
           : [
               { id: 'pereza', texto: 'Pereza', icono: 'pereza', bloqueo: 'pereza' },
@@ -181,6 +185,7 @@ export function eleccionDe(opciones: OpcionContexto[] | undefined): Eleccion | u
     if (o.metodo) e.metodo = o.metodo
     if (o.experiencia) e.experiencia = o.experiencia
     if (o.bloqueo) e.bloqueo = o.bloqueo
+    if (o.bloqueoTexto) e.bloqueoTexto = o.bloqueoTexto
     if (o.lugar) e.lugar = o.lugar
     if (o.situacion) e.situacion = o.situacion
   }
