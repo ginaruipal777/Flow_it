@@ -323,44 +323,15 @@
   cursor: pointer;
 }
 
-/* Móviles con poco alto (Samsung A33 con barras del navegador ≈ 800 px):
-   la carta se reduce para que Rechazar / Aceptar se vean sin hacer scroll.
-   Factores reescalados (×0.94 de nuevo) tras agrandar otra vez la carta, para que el
-   tamaño final en pantallas bajas sea el mismo de antes aunque la base sea más grande
-   (la cabecera, además, ya se achicó aparte y deja algo más de margen real). */
-@media (max-height: 960px) {
-  .mazo {
-    zoom: 0.64;
-  }
-}
-@media (max-height: 900px) {
-  .mazo {
-    zoom: 0.57;
-  }
-}
-@media (max-height: 820px) {
-  .mazo {
-    zoom: 0.52;
-  }
-}
-/* De mayor a menor alto, para que la regla más pequeña sea la que gane */
-@media (max-height: 760px) {
-  .mazo {
-    zoom: 0.42;
-  }
+/* La carta ya NO se encoge en pantallas bajas: «zoom» reducía ANCHO y ALTO a la vez, así
+   que en un móvil ancho pero con poca altura real (barra de Chrome + un reproductor de
+   música encima, por ejemplo) la carta salía mucho más estrecha de lo que el ancho de
+   pantalla permitía — justo lo que no pasa en el prototipo de Figma. Se prefiere que la
+   pantalla haga scroll en lo más bajo antes que achicar la carta. */
+@media (max-height: 740px) {
   .seleccion__no-encaja {
     margin-top: 6px;
     min-height: 40px;
-  }
-}
-@media (max-height: 720px) {
-  .mazo {
-    zoom: 0.4;
-  }
-}
-@media (max-height: 680px) {
-  .mazo {
-    zoom: 0.37;
   }
 }
 
