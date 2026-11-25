@@ -1,12 +1,13 @@
-/* Medidas base de Figma (340 × 413,33 px) ampliadas de verdad (340×413 → 375×600); la cabecera
-   de Seleccion.tsx se achicó para dejarle sitio. El pie va anclado al fondo (no a un «top»
-   fijo) para que crecer la carta no lo descoloque. */
+/* Ancho = 100% del contenedor (el mismo margen de 16px que ya tiene el resto de la
+   cabecera), con un tope para que no se desmadre en pantallas grandes; no un px fijo que
+   podía no alinear con el margen real del dispositivo. Alto fijo (antes 340×413, ahora 600):
+   el pie va anclado al fondo, no a un «top» fijo, para que esto no lo descoloque. */
 .carta-reto {
   position: relative;
   flex-shrink: 0; /* todo su contenido es absoluto: sin esto un flex la colapsa a 0 */
-  width: 375px;
+  width: 100%;
+  max-width: 400px;
   height: 600px;
-  max-width: 100%;
   border-radius: 31.733px;
   overflow: hidden;
   background: var(--carta-fondo);
@@ -22,7 +23,7 @@
 .carta-reto__categoria {
   position: absolute;
   top: 49px;
-  left: 131px;
+  left: 35%;
   color: var(--carta-linea);
 }
 
@@ -30,9 +31,8 @@
   position: absolute;
   top: 204px;
   bottom: 129px;
-  left: 50%;
-  width: 317px;
-  transform: translateX(-50%);
+  left: 29px;
+  right: 29px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@
   position: absolute;
   bottom: 39px;
   left: 30px;
-  width: 315px;
+  right: 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;

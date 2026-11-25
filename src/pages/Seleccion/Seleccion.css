@@ -94,10 +94,12 @@
 .mazo {
   position: relative;
   display: grid;
-  place-items: center;
-  width: 375px;
+  grid-template-columns: 1fr; /* columna explícita a todo lo ancho: si no, el track «auto»
+    se encoge al contenido y «stretch» no tiene a qué estirarse */
+  place-items: center stretch; /* vertical centrado, horizontal estirado */
+  width: 100%;
+  max-width: 400px;
   height: 660px;
-  max-width: 100%;
 }
 .mazo > * {
   grid-area: 1 / 1;
