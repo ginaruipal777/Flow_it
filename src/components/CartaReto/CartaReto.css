@@ -1,10 +1,12 @@
-/* Medidas base de Figma (340 × 413,33 px) ampliadas ~16% para que el texto se lea mejor;
-   el pie va anclado al fondo (no a un «top» fijo) para que crecer la carta no lo descoloque. */
+/* Medidas base de Figma (340 × 413,33 px) ampliadas de verdad (340×413 → 360×560) para que el
+   texto se lea mejor; el pie va anclado al fondo (no a un «top» fijo) para que crecer la carta
+   no lo descoloque. */
 .carta-reto {
   position: relative;
   flex-shrink: 0; /* todo su contenido es absoluto: sin esto un flex la colapsa a 0 */
-  width: 340px;
-  height: 480px;
+  width: 360px;
+  height: 560px;
+  max-width: 100%;
   border-radius: 31.733px;
   overflow: hidden;
   background: var(--carta-fondo);
@@ -20,16 +22,16 @@
 .carta-reto__categoria {
   position: absolute;
   top: 45.33px;
-  left: 115.6px;
+  left: 125.6px;
   color: var(--carta-linea);
 }
 
 .carta-reto__reto {
   position: absolute;
   top: 190px;
-  bottom: 96px;
+  bottom: 120px;
   left: 50%;
-  width: 285.6px;
+  width: 304px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -40,9 +42,9 @@
 
 .carta-reto__pie {
   position: absolute;
-  bottom: 32px;
-  left: 27.2px;
-  width: 285.6px;
+  bottom: 36px;
+  left: 29px;
+  width: 302px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,11 +64,11 @@
    El área de texto ya está centrada entre top/bottom (más alta que antes), así que aquí
    solo cambia el tamaño de letra, no la posición. */
 .carta-reto__reto[data-largo] {
-  font-size: 24px;
+  font-size: 27px;
   line-height: 1.3;
 }
 /* Retos muy largos (mazos 2 y 3, con el nombre de la tarea dentro) */
 .carta-reto__reto[data-largo="2"] {
-  font-size: 21px;
+  font-size: 24px;
   line-height: 1.3;
 }

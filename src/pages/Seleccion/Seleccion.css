@@ -94,8 +94,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 340px;
-  height: 540px;
+  width: 360px;
+  height: 620px;
   max-width: 100%;
 }
 .mazo > * {
@@ -324,21 +324,21 @@
 
 /* Móviles con poco alto (Samsung A33 con barras del navegador ≈ 800 px):
    la carta se reduce para que Rechazar / Aceptar se vean sin hacer scroll.
-   Factores reescalados (×0.87) tras agrandar la carta, para que el tamaño final en
-   pantallas bajas sea el mismo de antes aunque la base de partida sea más grande. */
+   Factores reescalados (×0.87 de nuevo) tras agrandar otra vez la carta, para que el
+   tamaño final en pantallas bajas sea el mismo de antes aunque la base sea más grande. */
 @media (max-height: 960px) {
   .mazo {
-    zoom: 0.78;
+    zoom: 0.68;
   }
 }
 @media (max-height: 900px) {
   .mazo {
-    zoom: 0.7;
+    zoom: 0.61;
   }
 }
 @media (max-height: 820px) {
   .mazo {
-    zoom: 0.63;
+    zoom: 0.55;
   }
   .seleccion__tarea {
     font-size: 38px;
@@ -352,7 +352,7 @@
 /* De mayor a menor alto, para que la regla más pequeña sea la que gane */
 @media (max-height: 760px) {
   .mazo {
-    zoom: 0.52;
+    zoom: 0.45;
   }
   .seleccion__no-encaja {
     margin-top: 6px;
@@ -361,12 +361,12 @@
 }
 @media (max-height: 720px) {
   .mazo {
-    zoom: 0.49;
+    zoom: 0.43;
   }
 }
 @media (max-height: 680px) {
   .mazo {
-    zoom: 0.45;
+    zoom: 0.39;
   }
 }
 

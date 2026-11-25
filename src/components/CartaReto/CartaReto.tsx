@@ -19,7 +19,7 @@ export function CartaReto({ tipo, reto, categoria = 'trabajo', className }: Prop
     <article className={['carta-reto', className].filter(Boolean).join(' ')} data-tipo={tipo}>
       <Icono svg={ICONOS_UI['acentos-carta']} className="carta-reto__acentos" />
       <Icono svg={ICONOS_CATEGORIA[categoria]} tamano={108.8} className="carta-reto__categoria" />
-      <p className="carta-reto__reto t-carta-reto" data-largo={reto.length > 120 ? 2 : reto.length > 60 ? 1 : undefined}>
+      <p className="carta-reto__reto t-carta-reto" data-largo={reto.length > 140 ? 2 : reto.length > 70 ? 1 : undefined}>
         {reto}
       </p>
       <div className="carta-reto__pie">
