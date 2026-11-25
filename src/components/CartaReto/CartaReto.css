@@ -1,13 +1,14 @@
 /* Ancho = 100% del contenedor (el mismo margen de 16px que ya tiene el resto de la
    cabecera), con un tope para que no se desmadre en pantallas grandes; no un px fijo que
-   podía no alinear con el margen real del dispositivo. Alto fijo (antes 340×413, ahora 600):
-   el pie va anclado al fondo, no a un «top» fijo, para que esto no lo descoloque. */
+   podía no alinear con el margen real del dispositivo. Alto = --alto-carta (Seleccion.css,
+   responsiva al alto real: no siempre 600px); el pie va anclado al fondo, no a un «top»
+   fijo, para que esto no lo descoloque. */
 .carta-reto {
   position: relative;
   flex-shrink: 0; /* todo su contenido es absoluto: sin esto un flex la colapsa a 0 */
   width: 100%;
   max-width: 400px;
-  height: 600px;
+  height: var(--alto-carta, 600px);
   border-radius: 31.733px;
   overflow: hidden;
   background: var(--carta-fondo);

@@ -11,14 +11,16 @@
 .inicio__cuerpo {
   display: flex;
   flex-direction: column;
-  gap: 56px;
+  gap: 32px; /* antes 56px: el título ya es más chico, no hace falta tanto hueco */
   margin-top: 16px;
   transition: gap 200ms ease;
 }
 .inicio__cuerpo[data-abierto] {
-  gap: 38px;
+  gap: 24px;
 }
 .inicio__titulo {
+  font-size: 48px; /* antes 78px (t-titular-display): menos espacio, el campo de tarea
+    queda más arriba y el teclado del móvil lo tapa menos */
   color: var(--superficie-crema);
   font-variation-settings: "opsz" 14;
 }

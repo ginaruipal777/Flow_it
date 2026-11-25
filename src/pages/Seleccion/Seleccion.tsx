@@ -140,6 +140,16 @@ export default function Seleccion() {
               <Icono svg={ICONOS_UI.lapiz} tamano={20} />
             </span>
           </button>
+          <button
+            type="button"
+            className="seleccion__no-encaja"
+            onClick={noEncaja}
+            disabled={Boolean(salida) || agotado}
+            aria-label="Este reto no encaja: dame otros"
+            title="Este reto no encaja: dame otros"
+          >
+            <Icono svg={ICONOS_UI.reiniciar} tamano={20} />
+          </button>
         </div>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
@@ -199,9 +209,6 @@ export default function Seleccion() {
           </div>
         </div>
         <AccionesCarta onRechazar={() => decidir('izquierda')} onAceptar={() => decidir('derecha')} />
-        <button type="button" className="seleccion__no-encaja t-texto-control" onClick={noEncaja} disabled={Boolean(salida) || agotado}>
-          Este reto no encaja: dame otros
-        </button>
       </main>
 
       {verCategorias && (

@@ -249,9 +249,22 @@ export default function Inicio() {
                 }}
                 onFocus={() => {
                   setFoco(true)
-                  // El teclado del móvil puede tapar el campo: lo llevamos a la vista
-                  // (con margen, no al centro exacto) en cuanto termina de abrirse.
-                  setTimeout(() => campo.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)
+                  // El teclado del móvil puede tapar el campo. visualViewport avisa de
+                  // verdad cuando el teclado termina de abrirse (un setTimeout fijo
+                  // adivinaba mal según el móvil); si el navegador no lo soporta, cae
+                  // al timeout como antes.
+                  const llevarALaVista = () => campo.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+                  const vv = window.visualViewport
+                  if (vv) {
+                    const unaVez = () => {
+                      llevarALaVista()
+                      vv.removeEventListener('resize', unaVez)
+                    }
+                    vv.addEventListener('resize', unaVez)
+                    setTimeout(() => vv.removeEventListener('resize', unaVez), 1000)
+                  } else {
+                    setTimeout(llevarALaVista, 300)
+                  }
                 }}
                 onBlur={() => setFoco(false)}
                 placeholder="Escribe una tarea…"
