@@ -247,7 +247,12 @@ export default function Inicio() {
                   setTexto(e.target.value)
                   setAviso(null)
                 }}
-                onFocus={() => setFoco(true)}
+                onFocus={() => {
+                  setFoco(true)
+                  // El teclado del móvil puede tapar el campo: lo llevamos a la vista
+                  // (con margen, no al centro exacto) en cuanto termina de abrirse.
+                  setTimeout(() => campo.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)
+                }}
                 onBlur={() => setFoco(false)}
                 placeholder="Escribe una tarea…"
                 aria-label="Tarea"

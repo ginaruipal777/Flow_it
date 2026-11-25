@@ -141,9 +141,6 @@ export default function Seleccion() {
             </span>
           </button>
         </div>
-        <button type="button" className="seleccion__no-encaja t-texto-control" onClick={noEncaja} disabled={Boolean(salida) || agotado}>
-          Este reto no encaja: dame otros
-        </button>
         <div className="progreso-mazo">
           <p className="t-texto-cuerpo-s">
             Mazo {mazo + 1} de {totalMazos} · carta {Math.min(indice + 1, 5)} de 5
@@ -202,6 +199,9 @@ export default function Seleccion() {
           </div>
         </div>
         <AccionesCarta onRechazar={() => decidir('izquierda')} onAceptar={() => decidir('derecha')} />
+        <button type="button" className="seleccion__no-encaja t-texto-control" onClick={noEncaja} disabled={Boolean(salida) || agotado}>
+          Este reto no encaja: dame otros
+        </button>
       </main>
 
       {verCategorias && (
