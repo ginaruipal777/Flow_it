@@ -179,7 +179,9 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       } else if (e.metodo) {
         propios.push(i('c-metodo-p', `Busca en el móvil información sobre ${e.metodo}`), i('c-metodo-p2', `Lee en el móvil sobre ${e.metodo}`))
       }
-      if (!propios.length && nombrar) propios.push(m('c-posit', `Escribe en un pósit «${nombrar}»`))
+      // Escribir el nombre de la tarea no vale: ya está escrito, se tecleó al crearla.
+      // Contacto mínimo real: el cuerpo, no el papel.
+      if (!propios.length && nombrar) propios.push(m('c-manos', 'Pon las manos sobre la mesa'))
       // Si la tarea necesita un sitio y la persona está en la cama, el contacto mínimo es levantarse
       if (e.lugar?.includes('cama')) propios.push(m('c-ponte', 'Ponte de pie'))
     } else if (nivel === 'medio') {
@@ -279,7 +281,9 @@ function nucleos(v: Variables, nivel: Nivel, unidad: Unidad | undefined): Pieza[
       )
     if (unidad && o) lista.push(m('p-unidad', unidad.pesado(o)), m('p-vista-o', `Pon ${o} a la vista`), i('p-info', `Busca en el móvil información sobre ${o}`))
     if (aprende) lista.push(i('p-como', `Busca en el móvil cómo ${a}`), i('p-video', `Busca en el móvil un vídeo sobre cómo ${a}`))
-    if (a) lista.push(m('p-vista', `Pon a la vista una cosa que necesitas para ${a}`), m('p-posit', `Escribe en un pósit «${a}»`), !lista.length && m('p-libreta', `Apunta en tu libreta «${a}»`))
+    // Escribir el nombre de la tarea no vale: ya está escrito, se tecleó al crearla.
+    // Si de verdad no hay ninguna otra opción, apunta CUÁNDO vas a empezar, no el nombre.
+    if (a) lista.push(m('p-vista', `Pon a la vista una cosa que necesitas para ${a}`), !lista.length && m('p-libreta', `Apunta en tu libreta cuándo vas a empezar`))
     // Modo inercia: romper la inercia física con el cuerpo, sin depender de ningún objeto de la tarea
     lista.push(m('p-inercia1', 'Estira los brazos'), m('p-inercia2', 'Respira muy hondo'))
   } else if (nivel === 'medio') {
