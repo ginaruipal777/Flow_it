@@ -80,9 +80,41 @@ export async function guardarEnSheet(fila: FilaSheet): Promise<boolean> {
   }
 }
 
-/** Lo que ya sabe la hoja de esta tarea (caché entre dispositivos), reconstruido como si
-    viniera de la búsqueda en internet. undefined si no está, o si está pero sin Objetos
-    (una fila guardada sin búsqueda real: no sirve como caché). */
+/** Reconstruye una fila del Sheet como si viniera de la búsqueda en internet. undefined si la
+    fila no sirve como caché (guardada sin búsqueda real, sin Objetos). Función pura: la usa
+    `buscarEnSheet` con la fila real, y el validador (`scripts/validar-retos.mts`) con el
+    fixture de las 20 filas guía, sin tener que repetir el GET. */
+export function webDeFila(fila: FilaSheet): MicroPasoWeb | undefined {
+  if (!fila?.Objetos) return undefined
+  const partir = (s?: string) => (s ? s.split(' | ').filter(Boolean) : [])
+  const materiales = partir(fila.Objetos)
+  const pasos = partir(fila.Acciones_Medio)
+  const tecnicas = partir(fila.Situaciones)
+  const lugares = partir(fila.Lugares)
+  const bloqueos = partir(fila.Bloqueos)
+  const nucleosPesado = partir(fila.Acciones_Pesado)
+  const nucleosLigero = partir(fila.Acciones_Ligero)
+  return {
+    contexto: fila.Tarea,
+    microPaso: pasos[0] ?? materiales[0] ?? '',
+    objeto: materiales[0] ?? '',
+    tipo: fila.Es_Digital === 'Verdadero' ? 'digital' : 'fisico',
+    nivel: 'medio',
+    fiable: true,
+    categoria: fila.Dominio || undefined,
+    ...(pasos.length && { pasos }),
+    ...(materiales.length && { materiales }),
+    ...(tecnicas.length && { tecnicas, situaciones: tecnicas }),
+    ...(lugares.length && { requiereLugar: true, lugarProbable: lugares[0], lugares }),
+    ...(bloqueos.length && { bloqueos }),
+    ...(nucleosPesado.length && { nucleosPesado }),
+    ...(pasos.length && { nucleosMedio: pasos }),
+    ...(nucleosLigero.length && { nucleosLigero }),
+  }
+}
+
+/** Lo que ya sabe la hoja de esta tarea (caché entre dispositivos). undefined si no está en
+    el Sheet. */
 export async function buscarEnSheet(tarea: string): Promise<MicroPasoWeb | undefined> {
   try {
     const ambito = ambitoDe(tarea)
@@ -91,33 +123,10 @@ export async function buscarEnSheet(tarea: string): Promise<MicroPasoWeb | undef
     if (!r.ok) return undefined
     const datos = (await r.json()) as { found?: boolean; data?: FilaSheet }
     const fila = datos.found ? datos.data : undefined
-    if (!fila?.Objetos) return undefined
-    const partir = (s?: string) => (s ? s.split(' | ').filter(Boolean) : [])
-    const materiales = partir(fila.Objetos)
-    const pasos = partir(fila.Acciones_Medio)
-    const tecnicas = partir(fila.Situaciones)
-    const lugares = partir(fila.Lugares)
-    const bloqueos = partir(fila.Bloqueos)
-    const nucleosPesado = partir(fila.Acciones_Pesado)
-    const nucleosLigero = partir(fila.Acciones_Ligero)
-    return {
-      contexto: fila.Tarea,
-      microPaso: pasos[0] ?? materiales[0] ?? '',
-      objeto: materiales[0] ?? '',
-      tipo: fila.Es_Digital === 'Verdadero' ? 'digital' : 'fisico',
-      nivel: 'medio',
-      fiable: true,
-      categoria: fila.Dominio || undefined,
-      ...(pasos.length && { pasos }),
-      ...(materiales.length && { materiales }),
-      ...(tecnicas.length && { tecnicas, situaciones: tecnicas }),
-      ...(lugares.length && { requiereLugar: true, lugarProbable: lugares[0], lugares }),
-      ...(bloqueos.length && { bloqueos }),
-      ...(nucleosPesado.length && { nucleosPesado }),
-      ...(pasos.length && { nucleosMedio: pasos }),
-      ...(nucleosLigero.length && { nucleosLigero }),
-    }
+    if (!fila) return undefined
+    return webDeFila(fila)
   } catch {
     return undefined
   }
 }
+

@@ -29,10 +29,15 @@ const REGLAS_ETIQUETA: [RegExp, Etiqueta[]][] = [
   [/\b(barr\w+|aspir\w+|tiend\w+|tender|cocin\w+|camin\w+|pase\w+|sube|baja|^sal\b|ve a|ac[eé]rcate)\b/, ['de-pie']],
   [/\b(calle|portal|parque|manzana|acera|supermercado|tienda|gimnasio|roc[oó]dromo)\b/, ['fuera', 'de-pie']],
   [/\b(coge|toca|sujeta|agarra|prepara|junta|saca|llena|vac[ií]a|dobla|monta|enrosca|aprieta)\b/, ['manos']],
-  [/\b(en voz alta|llama|telefon\w+|pregunta|cu[eé]ntale|habla)\b/, ['voz']],
+  // Específico de verdad («en voz alta», no «llama»/«teléfono»/«pregunta»: esas ya las etiqueta
+  // «silencio» más abajo, y etiquetarlas también como «voz» chocaba consigo mismo en toda llamada
+  [/\b(en voz alta|grita\w*|recita\w*)\b/, ['voz']],
   [/\b(m[oó]vil|app|pantalla|web|ordenador|port[aá]til|correo|email|documento|pdf|online|enlace|bandeja)\b/, ['digital']],
   [/\bm[oó]vil\b/, ['movil']],
-  [/\b(llama|llamada|tel[eé]fono|examen|test|estudi\w+|^lee\b|^leer\b|concentr\w+|grab\w+)\b/, ['silencio']],
+  // Sin «leer»: leer no exige silencio total (puede ir con música de fondo sin problema), y
+  // «leer en voz alta» es una frase propia del Sheet que combina las dos cosas a la vez
+  // (docs/spec-etiquetas.md): etiquetarla también como silencio chocaba consigo misma.
+  [/\b(llama|llamada|tel[eé]fono|examen|test|estudi\w+|concentr\w+|grab\w+)\b/, ['silencio']],
   [/\b(m[uú]sica|canci[oó]n|podcast|v[ií]deo|altavoz|televisi[oó]n|playlist)\b/, ['ruido']],
   [/\b(ducha\w*|duchar\w*|bañar\w*|desnud\w*|pelo|cuerpo|dientes|afeit\w+|depil\w+|baño|aseo|pijama|toalla)\b/, ['intimo']],
 ]

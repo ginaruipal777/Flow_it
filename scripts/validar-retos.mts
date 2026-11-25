@@ -6,6 +6,9 @@ import { ORDEN, PARTICIPIOS, REGLAS, RESPALDO, accionesWeb, empiezaConConectorPe
 import { METODOS } from '../src/datos/metodos.ts'
 import { descartarReto, opcionesDe, type RetosFallidos } from '../src/datos/descartes.ts'
 import { limpiarPaso, materialesDe } from '../src/datos/pasos.ts'
+import { etiquetasDe, INCOMPATIBLES } from '../src/datos/etiquetas.ts'
+import { webDeFila } from '../src/datos/sheet.ts'
+import { GUIA_MAESTRA } from '../src/datos/__fixtures__/guia-maestra.ts'
 
 const NIVELES: Nivel[] = ['pesado', 'medio', 'ligero']
 
@@ -198,6 +201,30 @@ for (const [linea, esperado] of ESPECIFICOS) {
 }
 const mats = materialesDe([{ doc: 0, seccion: 'Herramientas necesarias', texto: 'Atornillador a batería con puntas adecuadas' }, { doc: 0, seccion: 'Herramientas', texto: 'Prensa francesa' }])
 if (mats.join('|') !== 'el atornillador') errores.push(`Materiales comunes: ${JSON.stringify(mats)} (se esperaba solo «el atornillador»)`)
+
+// 6. Guía Maestra real (docs/spec-etiquetas.md): las 20 filas guía del Sheet, con varios mazos
+// y rondas de «No encaja», no deben generar ninguna carta que combine dos etiquetas
+// incompatibles (acción íntima + compañía, acción anclada + cambio de sitio…). Esto cubre lo
+// que viene del Sheet, que las secciones de arriba (banco.ts, respaldo) no prueban.
+for (const fila of GUIA_MAESTRA) {
+  const web = webDeFila(fila)
+  if (!web) continue
+  for (const esfuerzo of NIVELES) {
+    let registro: RetosFallidos = {}
+    for (let m = 0; m < 6; m++) {
+      const op = opcionesDe(registro, fila.Tarea)
+      const retos = retosDe(fila.Tarea, esfuerzo, m, web, op)
+      for (const r of retos) {
+        const origen = `Guía real «${fila.Tarea}»/${esfuerzo}/mazo ${m}/${r.tipo}`
+        const etq = etiquetasDe(r.titulo)
+        for (const [en, em] of INCOMPATIBLES) {
+          if (etq.includes(en) && etq.includes(em)) errores.push(`${origen}: combina «${en}»+«${em}» → «${r.titulo}»`)
+        }
+      }
+      registro = descartarReto(registro, fila.Tarea, retos[m % 5])
+    }
+  }
+}
 
 console.log(`Retos distintos que puede mostrar la app: ${titulos.size}`)
 if (errores.length) {
