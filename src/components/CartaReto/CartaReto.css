@@ -1,11 +1,11 @@
-/* Medidas base de Figma (340 × 413,33 px) ampliadas de verdad (340×413 → 360×560) para que el
-   texto se lea mejor; el pie va anclado al fondo (no a un «top» fijo) para que crecer la carta
-   no lo descoloque. */
+/* Medidas base de Figma (340 × 413,33 px) ampliadas de verdad (340×413 → 375×600); la cabecera
+   de Seleccion.tsx se achicó para dejarle sitio. El pie va anclado al fondo (no a un «top»
+   fijo) para que crecer la carta no lo descoloque. */
 .carta-reto {
   position: relative;
   flex-shrink: 0; /* todo su contenido es absoluto: sin esto un flex la colapsa a 0 */
-  width: 360px;
-  height: 560px;
+  width: 375px;
+  height: 600px;
   max-width: 100%;
   border-radius: 31.733px;
   overflow: hidden;
@@ -21,17 +21,17 @@
 
 .carta-reto__categoria {
   position: absolute;
-  top: 45.33px;
-  left: 125.6px;
+  top: 49px;
+  left: 131px;
   color: var(--carta-linea);
 }
 
 .carta-reto__reto {
   position: absolute;
-  top: 190px;
-  bottom: 120px;
+  top: 204px;
+  bottom: 129px;
   left: 50%;
-  width: 304px;
+  width: 317px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -42,9 +42,9 @@
 
 .carta-reto__pie {
   position: absolute;
-  bottom: 36px;
-  left: 29px;
-  width: 302px;
+  bottom: 39px;
+  left: 30px;
+  width: 315px;
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -17,7 +17,8 @@
   color: var(--texto-secundario);
 }
 .seleccion__tarea {
-  margin-top: 4px;
+  margin-top: 2px;
+  font-size: 34px; /* antes 44px (t-titular-l): más chico para que la carta tenga más sitio */
   color: var(--marca-tinta);
   font-variation-settings: "opsz" 14;
 }
@@ -32,19 +33,19 @@
 }
 .seleccion__categoria {
   display: flex;
-  padding-top: 8px;
-  margin-top: 4px;
+  padding-top: 4px;
+  margin-top: 2px;
 }
 
-/* Chip / Categoría editable */
+/* Chip / Categoría editable (antes 48/40px: más chica para dejarle sitio a la carta) */
 .chip-categoria {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  height: 48px;
-  padding: 4px 4px 4px 17px;
-  border-radius: 24px;
-  border: 2.5px solid var(--marca-tinta);
+  gap: 8px;
+  height: 38px;
+  padding: 3px 3px 3px 14px;
+  border-radius: 19px;
+  border: 2px solid var(--marca-tinta);
   background: var(--superficie-blanco);
   color: var(--marca-tinta);
   cursor: pointer;
@@ -53,9 +54,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
   background: var(--marca-lima);
 }
 
@@ -63,8 +64,8 @@
 .progreso-mazo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 4px;
   color: var(--texto-gris);
 }
 .progreso-mazo__pista {
@@ -94,8 +95,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 360px;
-  height: 620px;
+  width: 375px;
+  height: 660px;
   max-width: 100%;
 }
 .mazo > * {
@@ -324,35 +325,28 @@
 
 /* Móviles con poco alto (Samsung A33 con barras del navegador ≈ 800 px):
    la carta se reduce para que Rechazar / Aceptar se vean sin hacer scroll.
-   Factores reescalados (×0.87 de nuevo) tras agrandar otra vez la carta, para que el
-   tamaño final en pantallas bajas sea el mismo de antes aunque la base sea más grande. */
+   Factores reescalados (×0.94 de nuevo) tras agrandar otra vez la carta, para que el
+   tamaño final en pantallas bajas sea el mismo de antes aunque la base sea más grande
+   (la cabecera, además, ya se achicó aparte y deja algo más de margen real). */
 @media (max-height: 960px) {
   .mazo {
-    zoom: 0.68;
+    zoom: 0.64;
   }
 }
 @media (max-height: 900px) {
   .mazo {
-    zoom: 0.61;
+    zoom: 0.57;
   }
 }
 @media (max-height: 820px) {
   .mazo {
-    zoom: 0.55;
-  }
-  .seleccion__tarea {
-    font-size: 38px;
-  }
-}
-@media (max-height: 760px), (max-width: 380px) {
-  .seleccion__tarea {
-    font-size: 34px;
+    zoom: 0.52;
   }
 }
 /* De mayor a menor alto, para que la regla más pequeña sea la que gane */
 @media (max-height: 760px) {
   .mazo {
-    zoom: 0.45;
+    zoom: 0.42;
   }
   .seleccion__no-encaja {
     margin-top: 6px;
@@ -361,12 +355,12 @@
 }
 @media (max-height: 720px) {
   .mazo {
-    zoom: 0.43;
+    zoom: 0.4;
   }
 }
 @media (max-height: 680px) {
   .mazo {
-    zoom: 0.39;
+    zoom: 0.37;
   }
 }
 
